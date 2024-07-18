@@ -5,7 +5,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy the executable JAR file to the working directory
-COPY target/gymhub.jar /app/app.jar
+COPY target/gymhub-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Expose the port the application runs on
 EXPOSE 8080
