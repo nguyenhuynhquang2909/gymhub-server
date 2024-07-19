@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'your-docker-credentials-id'
-        DOCKER_IMAGE = 'your-dockerhub-username/your-app'
-        SSH_CREDENTIALS_ID = 'your-ssh-credentials-id'
-        SERVER_2_IP = 'your-server-2-ip'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-token'
+        DOCKER_IMAGE = 'quangnguyen2909/gymhub'
+        SSH_CREDENTIALS_ID = 'server-ssh-credentials-id'
+        SERVER_2_IP = '14.241.129.58'
+        SSH_PORT = '163'
     }
 
     stages {
