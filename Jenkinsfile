@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/nguyenhuynhquang2909/gymhub-server.git'
+                git credentialsId: GITHUB_CREDENTIALS_ID, url: 'https://github.com/nguyenhuynhquang2909/gymhub-server.git'
             }
         }
         stage('Build') {
@@ -43,7 +43,7 @@ pipeline {
                 script {
                     sshagent([SSH_CREDENTIALS_ID]) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
+                            ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
                                 docker pull ${DOCKER_IMAGE}:latest &&
                                 docker stop app || true &&
                                 docker rm app || true &&
@@ -51,7 +51,7 @@ pipeline {
                             '
                         """
                         sh """
-                            ssh -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
+                            ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
                                 docker ps -a
                             '
                         """
