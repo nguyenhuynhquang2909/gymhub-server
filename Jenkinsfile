@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/your-username/your-repo.git'
+                git 'https://github.com/nguyenhuynhquang2909/gymhub-server.git'
             }
         }
         stage('Build') {
@@ -25,7 +25,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh './gradlew test' // Or './mvnw test' if using Maven
+                sh './mvnw test'
             }
         }
         stage('Push to Docker Hub') {
