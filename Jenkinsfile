@@ -7,6 +7,7 @@ pipeline {
         SSH_CREDENTIALS_ID = 'server-ssh-credentials-id'
         SERVER_2_IP = '14.241.129.58'
         SSH_PORT = '163'
+        GITHUB_CREDENTIALS_ID = 'github-token'
     }
 
     stages {
