@@ -5,6 +5,7 @@ pipeline {
         maven 'my-maven' 
     }
     environment {
+        DOCKER_CREDENTIALS_ID = 'dockerhub-token'
         DOCKER_IMAGE = 'quangnguyen2909/gymhub'
         SSH_CREDENTIALS_ID = 'server-ssh-credentials-id'
         SERVER_2_IP = '14.241.129.58'
@@ -29,6 +30,16 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t quangnguyen2909/gymhub .'
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        sh 'docker push quangnguyen2909/gymhub:latest'
+                    }
+                }
             }
         }
 
