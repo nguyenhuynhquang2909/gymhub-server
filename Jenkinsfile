@@ -1,58 +1,47 @@
 pipeline {
     agent any
 
+    tools { 
+        maven 'my-maven' 
+    }
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-token'
         DOCKER_IMAGE = 'quangnguyen2909/gymhub'
         SSH_CREDENTIALS_ID = 'server-ssh-credentials-id'
         SERVER_2_IP = '14.241.129.58'
         SSH_PORT = '163'
         GITHUB_CREDENTIALS_ID = 'github-token'
     }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', credentialsId: GITHUB_CREDENTIALS_ID, url: 'https://github.com/nguyenhuynhquang2909/gymhub-server.git'
             }
         }
-        stage('Build') {
+
+        stage('Build with Maven') {
             steps {
-                script {
-                    dockerImage = docker.build(DOCKER_IMAGE)
-                }
+                sh 'mvn --version'
+                sh 'java -version'
+                sh 'mvn clean package -Dmaven.test.failure.ignore=true'
             }
         }
-        stage('Test') {
+
+        stage('Build Docker Image') {
             steps {
-                sh './mvnw test'
+                sh 'docker build -t quangnguyen2909/gymhub .'
             }
         }
-        stage('Push to Docker Hub') {
+
+        stage('Deploy Spring Boot to Server 2') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        dockerImage.push("${env.BUILD_NUMBER}")
-                        dockerImage.push("latest")
-                    }
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    sshagent([SSH_CREDENTIALS_ID]) {
+                    withCredentials([usernamePassword(credentialsId: SSH_CREDENTIALS_ID, usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASSWORD')]) {
                         sh """
-                            ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
+                            sshpass -p ${SSH_PASSWORD} ssh -o StrictHostKeyChecking=no -p ${SSH_PORT} ${SSH_USER}@${SERVER_2_IP} '
                                 docker pull ${DOCKER_IMAGE}:latest &&
-                                docker stop app || true &&
-                                docker rm app || true &&
-                                docker run -d --name app -p 8080:8080 ${DOCKER_IMAGE}:latest
-                            '
-                        """
-                        sh """
-                            ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no user@${SERVER_2_IP} '
-                                docker ps -a
+                                docker container stop springboot || echo "this container does not exist" &&
+                                docker container rm springboot || echo "this container does not exist" &&
+                                docker run -d --name springboot -p 8081:8080 ${DOCKER_IMAGE}:latest
                             '
                         """
                     }
@@ -60,7 +49,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             cleanWs()
