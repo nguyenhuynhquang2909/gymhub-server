@@ -40,4 +40,9 @@ public class GymhubApplication {
         return ResponseEntity.ok("The application is running smoothly.");
     }
 
+    @GetMapping("/gym")
+    public String gym() {
+        return "Gym is wonderful";
+    }
+
 }
