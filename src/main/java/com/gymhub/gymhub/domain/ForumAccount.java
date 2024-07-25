@@ -1,4 +1,4 @@
-package com.gymhub.gymhub.entity;
+package com.gymhub.gymhub.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
