@@ -7,7 +7,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
 import javax.sql.DataSource;
 
 @Configuration
@@ -17,7 +16,7 @@ public class JPAConfiguration {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emfb = new LocalContainerEntityManagerFactoryBean();
         emfb.setDataSource(dataSource);
-        emfb.setPackagesToScan("com.gymhub.server.domain");
+        emfb.setPackagesToScan("com.gymhub.gymhub.domain");
         emfb.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         return emfb;
     }

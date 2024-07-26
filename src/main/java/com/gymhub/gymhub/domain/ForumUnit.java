@@ -1,4 +1,6 @@
 package com.gymhub.gymhub.domain;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,18 +13,12 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @MappedSuperclass
-@Entity
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "entityCache")
-@Cacheable
 public abstract class ForumUnit {
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
-
-    @Setter
-    @Column(name = "title", nullable = false, updatable = true)
-    private String name;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "Id of the post or thread")
+    private Long id;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     private LocalDateTime creationDateTime;
@@ -38,30 +34,52 @@ public abstract class ForumUnit {
     //They will be used when we want to convert the object into json
     @Setter
     @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "The like count of the post or thread")
     private int likeCount;
 
     @Setter
     @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "The view count of the post or thread")
     private int viewCount;
 
     @Setter
     @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(
+            value = "The report status of the post or thread",
+            notes = "true if it has been reported" )
     private boolean beenReport;
 
     @Setter
     @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(
+            value = "The like status of the post or thread",
+            notes = "true if it has been liked" )
     private boolean beenLiked;
 
     @Setter
     @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "The name of the author of the post or thread")
     private String authorName;
 
     @Setter
     @Transient
-    private byte[] authorAvatar;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "The id of the author of the post or thread")
+    private String authorId;
 
-    public ForumUnit(String name, LocalDateTime creationDateTime) {
-        this.name = name;
+
+    @Setter
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @ApiModelProperty(value = "The encoded avatar of the author of the post or thread")
+    private String authorAvatar;
+
+    public ForumUnit(LocalDateTime creationDateTime) {
         this.creationDateTime = creationDateTime;
 
     }
