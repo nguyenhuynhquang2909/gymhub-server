@@ -1,8 +1,10 @@
 package com.gymhub.gymhub.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,59 +17,67 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "Member")
-@ApiModel(value = "Normal users of the forum")
+@Schema(description = "Normal users of the forum")
 public class Member extends ForumAccount {
     @Setter
     @Column(name = "title", nullable = true, length = 20, unique = false)
-    @ApiModelProperty(value = "Title (or Batch) of the user")
+    @Schema(description = "Title (or Batch) of the user")
     private String title;
 
     @Setter
     @Column(name = "bio", nullable = true, length = 200, unique = false)
-    @ApiModelProperty(value = "A short description of the user")
+    @Schema(description = "A short description of the user")
     private String bio;
 
     @Setter
     @Lob
-    @Transient
+    @JsonIgnore
     @Column(name = "avatar", nullable = true, updatable = false)
     private byte[] avatar;
 
     @Setter
+    @Transient
+    @Schema(description = "Avatar of the user encoded as String by base64")
+    private String stringAvatar;
+
+    @Setter
     @Column(name = "join_date", nullable = false, updatable = false, unique = false)
-    @ApiModelProperty(value = "The date whe the user sign up")
+    @Schema(description = "The date whe the user sign up")
     private Date joinDate;
 
     @Setter
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @ApiModelProperty(
-            value = "The last time he user is online",
-            notes = "It contains both date and time"
+    @Schema(
+            description = "The last time he user is online, both date and time",
+            accessMode = Schema.AccessMode.READ_ONLY
     )
     private LocalDateTime lastSeen;
 
     @Setter
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @ApiModelProperty(
-            value = "The number of likes the user's threads and posts have received"
+    @Schema(
+            description = "The number of likes the user's threads and posts have received",
+            accessMode = Schema.AccessMode.READ_ONLY
     )
     private int likeCount;
 
     @Setter
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @ApiModelProperty(
-            value = "The number of posts the user has created"
+    @Schema(
+            description = "The number of posts the user has created",
+            accessMode = Schema.AccessMode.READ_ONLY
     )
     private int postCount;
 
     @Setter
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @ApiModelProperty(
-            value = "The number of followers the user has"
+    @Schema(
+            description = "The number of followers the user has",
+            accessMode = Schema.AccessMode.READ_ONLY
     )
     private int followerCount;
 

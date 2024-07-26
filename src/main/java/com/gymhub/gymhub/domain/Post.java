@@ -1,6 +1,8 @@
 package com.gymhub.gymhub.domain;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Setter;
 import net.minidev.json.annotate.JsonIgnore;
@@ -8,33 +10,34 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Details unique to posts")
+@Schema(description = "Details unique to posts")
 @Entity
 @Table(name = "Post")
 public class Post extends ForumUnit {
 
-    @ApiModelProperty(value = "Content of the Post")
+    @Schema(description = "Content of the Post")
     @Column(name = "content", nullable = true, updatable = true)
     private String content;
 
     @ManyToOne
     @JsonIgnore
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "thread_id")
     private Thread thread;
 
     @ElementCollection
-    @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "id"))
-    @JsonIgnore
+    @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "post_id"))
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Image> images;
 
     @Transient
     @Setter
-    @ApiModelProperty(value = "List of images of the post", notes = "encoded as a string in base64")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(description = "List of images included in the post content encoded as Strings", accessMode = Schema.AccessMode.READ_ONLY)
     private List<String> encodedImages = new ArrayList<>();
 
     @Transient
     @Setter
-    @ApiModelProperty(value = "Id of the thread the post belongs to")
+    @Schema(description = "Id of the thread the post belongs to", accessMode = Schema.AccessMode.READ_ONLY)
     private String threadId;
 
     public Post() {

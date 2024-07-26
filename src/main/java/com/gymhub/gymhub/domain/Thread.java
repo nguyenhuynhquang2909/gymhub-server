@@ -3,6 +3,7 @@ package com.gymhub.gymhub.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "Thread")
-@ApiModel(value = "Details unique to threads")
+@Schema(description = "Details unique to threads")
 public class Thread extends ForumUnit {
     @Column(name = "title", nullable = false, updatable = true)
     @ApiModelProperty(value = "The title of the thread")
