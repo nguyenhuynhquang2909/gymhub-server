@@ -1,21 +1,33 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.domain.Member;
-import io.swagger.annotations.Api;
+import com.gymhub.gymhub.dto.MemberRequestDTO;
+import com.gymhub.gymhub.dto.MemberResponseDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
 @Tag(name = "User Request Handler", description = "Handlers for members related requests")
 public class UserController {
 
+    @Operation(description = "This operation returns user information")
     @GetMapping("/{id}")
-    public Member getMember(@PathVariable Long id) {
-        return new Member();
+    public MemberResponseDTO getMember(@PathVariable Long id) {
+        return new MemberResponseDTO();
+    }
+
+    @Operation(description = "This operation changes the information of users")
+    @PostMapping("/update/user-{id}")
+    public ResponseEntity<Void> updateMember(
+            @Parameter(description = "The id of the user to be updated")
+            @PathVariable long id,
+            @RequestBody MemberRequestDTO memberRequestDTO
+    )
+    {
+        return ResponseEntity.ok().build();
     }
 
 

@@ -1,8 +1,9 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.domain.Post;
-import com.gymhub.gymhub.domain.miscellaneous.IncreDecre;
-import com.gymhub.gymhub.domain.miscellaneous.UpdateContent;
+import com.gymhub.gymhub.dto.IncreDecreDTO;
+import com.gymhub.gymhub.dto.UpdateContentDTO;
+import com.gymhub.gymhub.dto.PostRequestDTO;
+import com.gymhub.gymhub.dto.PostResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +24,7 @@ public class PostController {
             tags = "Post Pages"
     )
     @GetMapping("/thread-{id}")
-    public List<Post> getPosts(
+    public List<PostResponseDTO> getPosts(
             @PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
@@ -32,12 +33,12 @@ public class PostController {
 
             )
     {
-       Post post1 = new Post();
-       Post post2 = new Post();
-       List<Post> posts = new ArrayList<>();
-       posts.add(post1);
-       posts.add(post2);
-       return posts;
+        PostResponseDTO post1 = new PostResponseDTO();
+        PostResponseDTO post2 = new PostResponseDTO();
+        List<PostResponseDTO> posts = new ArrayList<>();
+        posts.add(post1);
+        posts.add(post2);
+        return posts;
     }
 
     @Operation(
@@ -45,16 +46,18 @@ public class PostController {
             tags = "User Profile Page"
     )
     @GetMapping("/user-{id}")
-    public List<Post> getUserPosts(
+    public List<PostResponseDTO> getUserPosts(
             @PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page)
     {
-        Post post1 = new Post();
-        Post post2 = new Post();
-        List<Post> posts = new ArrayList<>();
+        PostResponseDTO post1 = new PostResponseDTO();
+        PostResponseDTO post2 = new PostResponseDTO();
+        List<PostResponseDTO> posts = new ArrayList<>();
+        posts.add(post1);
+        posts.add(post2);
 
         return posts;
 
@@ -70,7 +73,7 @@ public class PostController {
             @PathVariable Long userId,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
             @PathVariable Long threadId,
-            @RequestBody Post post)
+            @RequestBody PostRequestDTO post)
     {
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -85,7 +88,7 @@ public class PostController {
             @PathVariable Long postId,
             @Parameter(description = "The user who likes or undoes their like", required = true)
             @PathVariable Long userId,
-            @RequestBody IncreDecre body)
+            @RequestBody IncreDecreDTO body)
     {
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -98,7 +101,7 @@ public class PostController {
     public ResponseEntity<Void> updatePost(
             @Parameter(description = "The id of the post whose content is to be changed", required = true)
             @PathVariable Long id,
-            @RequestBody UpdateContent body) {
+            @RequestBody UpdateContentDTO body) {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Schema(description = "This defines all post-related fields that clients need to send in request body")
 public class PostRequestDTO {
 
     @Setter
