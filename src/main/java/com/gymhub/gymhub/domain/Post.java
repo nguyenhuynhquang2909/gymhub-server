@@ -26,14 +26,8 @@ public class Post extends ForumUnit {
 
     @ElementCollection
     @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "post_id"))
-    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Image> images;
 
-    @Transient
-    @Setter
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "List of images included in the post content encoded as Strings", accessMode = Schema.AccessMode.READ_ONLY)
-    private List<String> encodedImages = new ArrayList<>();
 
     @Transient
     @Setter
