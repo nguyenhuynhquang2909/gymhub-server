@@ -21,17 +21,17 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         return authService.registerUser(registerRequest);
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<AuthRespone> authenticateUser(@RequestBody LoginRequest loginRequest) {
         return authService.authenticateUser(loginRequest);
     }
 
-    @GetMapping("/profile")
+    @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(userDetails);
     }

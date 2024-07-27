@@ -23,7 +23,7 @@ public class CustomerDetailsService implements UserDetailsService{
                 .username(forumAccount.getUserName())
                 .password(forumAccount.getPassword())
                 .roles("USER")
-                .build()
+                .build();
     }
 
     
