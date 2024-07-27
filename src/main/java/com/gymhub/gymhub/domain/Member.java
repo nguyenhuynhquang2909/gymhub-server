@@ -39,34 +39,6 @@ public class Member extends ForumAccount {
     @Column(name = "join_date", nullable = false, updatable = false, unique = false)
     private Date joinDate;
 
-    @Setter
-    @Transient
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(
-            description = "The number of likes the user's threads and posts have received",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private int likeCount;
-
-    @Setter
-    @Transient
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(
-            description = "The number of posts the user has created",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private int postCount;
-
-    @Setter
-    @Transient
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(
-            description = "The number of followers the user has",
-            accessMode = Schema.AccessMode.READ_ONLY
-    )
-    private int followerCount;
-
-
     public Member(String userName, String password, String email, Date joinDate) {
         super(userName, password, email);
         this.joinDate = joinDate;
