@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @SpringBootApplication
 @RestController
-@EnableJpaRepositories(basePackages = "com.gymhub.gymhub.repo")
+@EnableJpaRepositories(basePackages = "com.gymhub.gymhub.repository")
 @EntityScan(basePackages = "com.gymhub.gymhub.domain")
 
 public class GymhubApplication {
