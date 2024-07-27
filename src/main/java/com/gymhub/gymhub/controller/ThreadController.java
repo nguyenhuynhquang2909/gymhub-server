@@ -22,7 +22,7 @@ public class ThreadController {
             tags = "Homepage"
 
     )
-    @GetMapping("/{trending}")
+    @GetMapping("/trending")
     public List<Thread> getTrendingThread(){
         List<Thread> threads = new ArrayList<>();
         Thread thread1 = new Thread();
