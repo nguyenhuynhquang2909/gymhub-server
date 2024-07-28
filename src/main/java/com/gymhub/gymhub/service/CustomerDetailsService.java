@@ -1,5 +1,7 @@
 package com.gymhub.gymhub.service;
 
+
+import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,16 +10,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.gymhub.gymhub.domain.ForumAccount;
-import com.gymhub.gymhub.repository.ForumAccountRepository;
+
 
 @Service
 public class CustomerDetailsService implements UserDetailsService{
     @Autowired
-    private ForumAccountRepository forumAccountRepository;
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        ForumAccount forumAccount = forumAccountRepository.findByUserName(username)
+        ForumAccount forumAccount = userRepository.findByUserName(username)
             .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
         return User.builder()
                 .username(forumAccount.getUserName())
