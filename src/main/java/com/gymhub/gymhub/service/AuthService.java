@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.service;
 
+
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
