@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.AuthRespone;
 import com.gymhub.gymhub.dto.LoginRequest;
 import com.gymhub.gymhub.dto.RegisterRequest;
+import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.AuthService;
 
 @RestController
@@ -21,6 +23,9 @@ import com.gymhub.gymhub.service.AuthService;
 public class AuthController {
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
@@ -34,6 +39,15 @@ public class AuthController {
 
     @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(userDetails);
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        // Fetch the user from the database using the username from UserDetails
+        String username = userDetails.getUsername();
+        Member member = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Create a response with the user's information
+        return ResponseEntity.ok(member);
     }
 }
