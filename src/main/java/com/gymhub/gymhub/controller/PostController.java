@@ -16,7 +16,7 @@ import java.util.List;
 
 @Tag(name = "Post Request Handlers", description = "Handlers for Posts related requests")
 @RestController
-@RequestMapping("/api/post")
+@RequestMapping("/post")
 public class PostController {
 
     @Operation(

@@ -15,7 +15,7 @@ import java.util.List;
 
 @Tag(name = "Thread Handlers", description = "Handlers for thread-related requests")
 @RestController
-@RequestMapping("/api/thread")
+@RequestMapping("/thread")
 public class ThreadController {
 
     @Operation(

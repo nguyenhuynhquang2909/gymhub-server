@@ -1,5 +1,8 @@
 package com.gymhub.gymhub.service;
 
+
+import com.gymhub.gymhub.domain.Member;
+import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +16,9 @@ import com.gymhub.gymhub.domain.ForumAccount;
 import com.gymhub.gymhub.dto.AuthRespone;
 import com.gymhub.gymhub.dto.LoginRequest;
 import com.gymhub.gymhub.dto.RegisterRequest;
-import com.gymhub.gymhub.repository.ForumAccountRepository;
+
+import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
@@ -27,17 +32,17 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private ForumAccountRepository forumAccountRepository;
+    private UserRepository memberAccountRepository;
 
     public ResponseEntity<?> registerUser(RegisterRequest registerRequest) {
-        if (forumAccountRepository.existsByUserName(registerRequest.getUserName())) {
+        if (memberAccountRepository.existsByUserName(registerRequest.getUserName())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
-        if (forumAccountRepository.existsByEmail(registerRequest.getEmail())) {
+        if (memberAccountRepository.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         } 
-        ForumAccount forumAccount = new ForumAccount(registerRequest.getUserName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail());
-        forumAccountRepository.save(forumAccount);
+        Member member = new Member(registerRequest.getUserName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail(), new Date(System.currentTimeMillis()));
+        memberAccountRepository.save(member);
         return ResponseEntity.ok("User registered successfully");
     }
     public ResponseEntity<AuthRespone> authenticateUser(LoginRequest loginRequest) {

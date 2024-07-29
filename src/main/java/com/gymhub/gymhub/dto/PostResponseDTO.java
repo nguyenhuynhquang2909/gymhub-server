@@ -28,19 +28,19 @@ public class PostResponseDTO {
     @Setter
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "like count of the thread")
+    @Schema(description = "like count of the post")
     private int likeCount;
 
     @Setter
-    @Schema(description = "View count of the thread")
+    @Schema(description = "View count of the post")
     private int viewCount;
 
     @Setter
-    @Schema(description = "True if the thread has been reported")
+    @Schema(description = "True if the post has been reported")
     private boolean beenReport;
 
     @Setter
-    @Schema(description = "true if the thread has been liked by the user")
+    @Schema(description = "true if the post has been liked by the user")
     private boolean beenLiked;
 
     @Setter

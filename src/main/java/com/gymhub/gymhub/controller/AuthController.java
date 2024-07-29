@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.controller;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,7 +17,7 @@ import com.gymhub.gymhub.dto.RegisterRequest;
 import com.gymhub.gymhub.service.AuthService;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;

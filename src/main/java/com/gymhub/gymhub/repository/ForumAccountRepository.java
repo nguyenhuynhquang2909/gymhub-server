@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.repository;
 
+/**
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,3 +14,4 @@ public interface ForumAccountRepository extends JpaRepository<ForumAccount, Long
     Boolean existsByUserName(String userName);
     Boolean existsByEmail(String email);
 }
+**/
