@@ -1,6 +1,6 @@
 package com.gymhub.gymhub.dto;
 
-public enum ActionDTO {
+public enum ActionEnum {
     INCREMENT,
     DECREMENT
 }

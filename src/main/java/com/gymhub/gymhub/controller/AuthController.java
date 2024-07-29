@@ -17,7 +17,7 @@ import com.gymhub.gymhub.dto.RegisterRequest;
 import com.gymhub.gymhub.service.AuthService;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;
