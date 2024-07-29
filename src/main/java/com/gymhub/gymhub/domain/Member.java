@@ -1,19 +1,17 @@
 package com.gymhub.gymhub.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.sql.Date;
 
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "Member")
+@Table(name = "member")
 @Schema(description = "Normal users of the forum")
 public class Member extends ForumAccount {
     @Setter
@@ -25,7 +23,6 @@ public class Member extends ForumAccount {
     private String bio;
 
     @Setter
-    @Lob
     @JsonIgnore
     @Column(name = "avatar", nullable = true, updatable = false)
     private byte[] avatar;

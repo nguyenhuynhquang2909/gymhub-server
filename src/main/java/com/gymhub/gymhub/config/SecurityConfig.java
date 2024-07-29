@@ -31,6 +31,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
+            .requestMatchers("/auth/login").permitAll()
                 .requestMatchers(
                         "/post/new/**",
                         "/post/update/**",
