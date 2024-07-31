@@ -29,8 +29,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/auth/login", "/auth/register").permitAll()
-                .anyRequest().authenticated()
+                    .requestMatchers(
+                            "/post/new/**",
+                            "/post/update/**",
+                            "/post/like/**",
+                            "/post/report/**",
+                            "/thread/new/**",
+                            "/thread/like/**",
+                            "/thread/report/**").authenticated()
+                    .anyRequest().permitAll()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
