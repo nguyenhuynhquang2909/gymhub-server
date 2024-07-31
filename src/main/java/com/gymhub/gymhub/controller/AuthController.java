@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gymhub.gymhub.config.JwtTokenProvider;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.RefreshToken;
 import com.gymhub.gymhub.dto.AuthRespone;
 import com.gymhub.gymhub.dto.LoginRequest;
 import com.gymhub.gymhub.dto.RegisterRequest;
+import com.gymhub.gymhub.dto.TokenRefreshRequest;
+import com.gymhub.gymhub.dto.TokenRefreshResponse;
 import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.AuthService;
 import com.gymhub.gymhub.service.RefreshTokenService;
@@ -32,6 +35,9 @@ public class AuthController {
     private RefreshTokenService refreshTokenService;
 
     @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
     private UserRepository userRepository;
 
     @PostMapping(value = "/refresh-token", consumes = "application/json", produces = "application/json")
@@ -41,10 +47,10 @@ public class AuthController {
             .map(refreshTokenService::verifyExpiration)
             .map(RefreshToken::getUser)
             .map(user -> {
-                String token = jwtTokenProvider.generateTokenFromUsername(user.getUsername());
-                return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+                String token = jwtTokenProvider.generateTokenFromUsername(user.getUserName())
+                return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken))
             })
-            .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+            .orElseThrow(() -> new RuntimeException("Refresh token is not in the database"));
     }
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")

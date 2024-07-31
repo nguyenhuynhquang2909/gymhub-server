@@ -1,10 +1,14 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.RefreshToken;
 import com.gymhub.gymhub.repository.RefreshTokenRepository;
 import com.gymhub.gymhub.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,6 +23,9 @@ public class RefreshTokenService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Value("${jwt.refreshExpiration}")
+    private Long jwtRefreshExpiration;
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
@@ -40,8 +47,13 @@ public class RefreshTokenService {
         }
         return token;
     }
-
+    @Transactional 
     public void deleteByUserId(Long userId) {
         refreshTokenRepository.deleteByUserId(userId);
+    }
+
+    @Transactional
+    public void deleteByUser(Member user) {
+        refreshTokenRepository.deleteByUser(user);
     }
 }
