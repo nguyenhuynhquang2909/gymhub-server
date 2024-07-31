@@ -18,38 +18,35 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity(debug = true)
 public class SecurityConfig {
 
-
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private UserDetailsService customUserDetailsService;
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers(
-                        "/post/new/**",
-                        "/post/update/**",
-                        "/post/like/**",
-                        "/post/report/**",
-                        "/thread/new/**",
-                        "/thread/like/**",
-                        "/thread/report/**").authenticated()
-                .anyRequest().permitAll()
-            ).sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
-
+                    .requestMatchers(
+                            "/post/new/**",
+                            "/post/update/**",
+                            "/post/like/**",
+                            "/post/report/**",
+                            "/thread/new/**",
+                            "/thread/like/**",
+                            "/thread/report/**").authenticated()
+                    .anyRequest().permitAll()
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
