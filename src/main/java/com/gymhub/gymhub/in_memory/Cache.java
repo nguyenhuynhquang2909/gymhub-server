@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
+import java.util.concurrent.SubmissionPublisher;
 
 /**
  * The type Cache.
@@ -54,7 +55,7 @@ public class Cache {
         return true;
     }
 
-    public boolean returnThreadByCategory(String category, Long userId, int limit, int offset, Flow.Publisher<Long> publisher){
+    public boolean returnThreadByCategory(String category, Long userId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher){
         LinkedList<Long> nonToxicThreadsList  = threadListByCategoryAndStatus.get(category).get(1);
         Iterator<Long> iterator = nonToxicThreadsList.listIterator(offset);
         int count = 1;
@@ -62,9 +63,11 @@ public class Cache {
             Long threadId = iterator.next();
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
             HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, userId, threadId);
-            publisher.p
+            publisher.submit(returnedMap);
+            count++Ad
 
         }
+        return true;
     }
 
     private HashMap<String, Number> returnThreadMapBuilder(ConcurrentHashMap<String, Number> cachedMap, Long userId, long threadId ){
