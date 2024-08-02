@@ -437,8 +437,6 @@ public class Cache {
         return returnedPostMap;
     }
 
-
-
     /**
      * Builds and returns a map containing thread details and user-specific information.
      * This method creates a new map with details about a thread, such as its ID, like count, post count,
