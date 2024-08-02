@@ -92,6 +92,13 @@ public class Cache {
     Set<Long> reportedPosts = new HashSet<>();
 
     /**
+     * A map containing the ids of banned user and the date (in millisecond) their bans are lifted
+     */
+    HashMap<Long, Long> bannedList = new HashMap<>();
+
+
+
+    /**
      * Adds a user to the system by initializing their associated data structures.
      * This method updates various internal data structures to keep track of the user's
      * information, such as their ID, and initializes lists to store their liked posts,
@@ -369,6 +376,28 @@ public class Cache {
         return true;
 
 
+    }
+
+    /**
+     * Checks if a user is banned and whether their ban period has expired.
+     * This method verifies if the specified user is in the banned list. If the user is not banned,
+     * it returns true. If the user is banned, it checks whether the current time is greater than
+     * or equal to the ban expiry time. If the ban period has expired, it returns true; otherwise, it returns false.
+     * @param userId the unique identifier of the user to check
+     * @return true if the user is not banned or if the ban period has expired; false otherwise
+     */
+    public boolean checkBan(Long userId){
+        if (!bannedList.containsKey(userId)){
+            return true;
+        }
+        else {
+            if (System.currentTimeMillis() >= bannedList.get(userId)){
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
     }
 
 
