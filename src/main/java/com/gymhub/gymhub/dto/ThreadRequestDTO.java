@@ -13,7 +13,7 @@ public class ThreadRequestDTO {
     private String title;
 
     @Schema(description = "The id of the author of the thread")
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "The category the thread belongs to (FLEXING, ADVISE, SUPPLEMENT ")
     private ThreadCategoryEnum category;

@@ -50,7 +50,7 @@ public class ThreadResponseDTO {
 
     @Setter
     @Schema(description = "Id of the author of the thread")
-    private String authorId;
+    private Long authorId;
 
     @Setter
     @Schema(description = "Encoded avatar (Base64) of the author of the thread")

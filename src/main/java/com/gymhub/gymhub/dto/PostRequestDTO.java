@@ -16,7 +16,7 @@ public class PostRequestDTO {
 
     @Setter
     @Schema(description = "id of the author of the post")
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "Content of the post")
     private String content;

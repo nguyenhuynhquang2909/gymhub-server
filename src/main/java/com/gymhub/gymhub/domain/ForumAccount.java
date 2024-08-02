@@ -13,7 +13,7 @@ public class ForumAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_name", unique = true, nullable = false, updatable = true)
+    @Column(name = "username", unique = true, nullable = false, updatable = true)
     private String userName;
 
     @Column(name = "password", nullable = false, updatable = true)

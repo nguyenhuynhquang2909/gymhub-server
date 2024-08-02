@@ -62,12 +62,11 @@ public class GymhubApplication {
 				cache.addThreadToCache(thread.getId(), "flexing", 1, thread.getAuthor().getId());
 			}
 			else if (rand == 2){
-				cache.addThreadToCache(thread.getId(), "advises", 2, thread.getAuthor().getId());
+				cache.addThreadToCache(thread.getId(), "advises", 1, thread.getAuthor().getId());
 			}
 			else {
-				cache.addThreadToCache(thread.getId(), "advises", 2, thread.getAuthor().getId());
+				cache.addThreadToCache(thread.getId(), "advises", 1, thread.getAuthor().getId());
 			}
-
 		}
 
 		List<Post> posts = postRepository.findAll();
@@ -76,6 +75,8 @@ public class GymhubApplication {
 			Post post = iterator3.next();
 			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), 1);
 		}
+
+		System.out.println(cache.getAllThreadID());
 
 
 

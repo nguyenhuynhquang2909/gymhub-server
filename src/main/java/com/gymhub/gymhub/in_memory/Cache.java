@@ -1,6 +1,8 @@
 package com.gymhub.gymhub.in_memory;
 
 import io.swagger.v3.oas.models.links.Link;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.catalina.User;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,8 @@ import java.util.concurrent.SubmissionPublisher;
  * The type Cache.
  */
 
+@Getter
+@NoArgsConstructor
 @Component
 public class Cache {
 
@@ -137,6 +141,12 @@ public class Cache {
         threadParaMap.put("CreationDate", System.currentTimeMillis());
         threadParaMap.put("Status", status);
         parametersForAllThreads.put(threadId, threadParaMap);
+        if (!threadListByCategoryAndStatus.containsKey(category)){
+            HashMap<Integer, LinkedList<Long>> threadsByStatus = new HashMap<>();
+            threadsByStatus.put(0, new LinkedList<>());
+            threadsByStatus.put(1, new LinkedList<>());
+            threadListByCategoryAndStatus.put(category, threadsByStatus);
+        }
         threadListByCategoryAndStatus.get(category).get(status).add(threadId);
         threadListByUser.get(userId).add(threadId);
         LinkedList<Long> nonToxicPosts = new LinkedList<>();
