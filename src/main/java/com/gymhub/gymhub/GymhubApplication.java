@@ -65,7 +65,7 @@ public class GymhubApplication {
 				cache.addThreadToCache(thread.getId(), "advises", 1, thread.getAuthor().getId());
 			}
 			else {
-				cache.addThreadToCache(thread.getId(), "advises", 1, thread.getAuthor().getId());
+				cache.addThreadToCache(thread.getId(), "supplement", 1, thread.getAuthor().getId());
 			}
 		}
 
@@ -76,7 +76,7 @@ public class GymhubApplication {
 			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), 1);
 		}
 
-		System.out.println(cache.getAllThreadID());
+		System.out.println("Cache Initialization: Done");
 
 
 
