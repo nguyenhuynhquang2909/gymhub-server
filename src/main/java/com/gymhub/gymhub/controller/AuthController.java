@@ -47,8 +47,8 @@ public class AuthController {
             .map(refreshTokenService::verifyExpiration)
             .map(RefreshToken::getUser)
             .map(user -> {
-                String token = jwtTokenProvider.generateTokenFromUsername(user.getUserName())
-                return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken))
+                String token = jwtTokenProvider.generateTokenFromUsername(user.getUserName());
+                return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
             })
             .orElseThrow(() -> new RuntimeException("Refresh token is not in the database"));
     }
