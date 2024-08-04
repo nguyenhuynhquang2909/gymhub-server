@@ -25,6 +25,12 @@ import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.AuthService;
 import com.gymhub.gymhub.service.RefreshTokenService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name =  "Authentication Request Handlers", description="Handlers for Authentication related requests")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -39,7 +45,16 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Operation(
+        summary = "Refresh Token", description = "Refresh the access token using a valid refresh token"
+    )
+    @ApiResponses( value = {
+        @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+        @ApiResponse(responseCode =  "400", description = "Invalid refresh token"),
+        @ApiResponse(responseCode =  "404", description = "Refresh token not found")
+    }
+    )
+    
     @PostMapping(value = "/refresh-token", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
@@ -52,17 +67,27 @@ public class AuthController {
             })
             .orElseThrow(() -> new RuntimeException("Refresh token is not in the database"));
     }
-
+    @Operation(summary = "Register User", description = "Register a new user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "User registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid registration details")
+    })
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         return authService.registerUser(registerRequest);
     }
 
+    @Operation(summary = "Login User", description = "Authenticate a user and returns a JWT Token")
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<AuthRespone> authenticateUser(@RequestBody LoginRequest loginRequest) {
         return authService.authenticateUser(loginRequest);
     }
 
+    @Operation(summary = "Get User Profile", description = "Get the profile of the authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User profile fetched successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
