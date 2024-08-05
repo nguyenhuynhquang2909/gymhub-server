@@ -3,9 +3,11 @@ package com.gymhub.gymhub.controller;
 import com.gymhub.gymhub.dto.IncreDecreDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,19 +19,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/thread")
 public class ThreadController {
+    @Autowired
+    private ThreadService threadService;
 
     @Operation(
-            description = "This method returns the top 10 threads ordered by post recency",
+            description = "This method returns the top 10 threads ordered by relevant/trending score",
             tags = "Homepage"
 
     )
-    @GetMapping("/trending")
+    @GetMapping("/suggested")
     public List<ThreadResponseDTO> getTrendingThread(){
         List<ThreadResponseDTO> threads = new ArrayList<>();
         ThreadResponseDTO thread1 = new ThreadResponseDTO();
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.get10SuggestedThreads(); // API this line
+        return threads;
+    }
+
+    @Operation(
+            description = "This method returns the  top 10 threads ordered by post recency",
+            tags = "Homepage"
+    )
+
+    @GetMapping("/latest-discussion")
+    public List<ThreadResponseDTO> getLatestDiscussionThread(){
+        List<ThreadResponseDTO> threads = new ArrayList<>();
+        ThreadResponseDTO thread1 = new ThreadResponseDTO();
+        ThreadResponseDTO thread2 = new ThreadResponseDTO();
+        threads.add(thread1);
+        threads.add(thread2);
+threadService.get10LatestDicussionThreads(); //API this line (currently null)
         return threads;
     }
 
@@ -81,6 +102,8 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+      threadService.getAllThreadsByCategory("flexing"); //API this line
+
         return threads;
     }
 
@@ -100,6 +123,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadsByCategory("advices");
         return threads;
     }
 
@@ -119,6 +143,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadsByCategory("supplement");
         return threads;
     }
     @Operation(
@@ -140,6 +165,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadByOwnerId(id); //API line here
         return threads;
     }
 
@@ -152,6 +178,7 @@ public class ThreadController {
             @RequestBody ThreadRequestDTO threadRequest,
             @Parameter(description = "Id of the user who is creating the new thread", required = true)
             @PathVariable Long id){
+        threadService.createThread(threadRequest);        //New API this line
         return  new ResponseEntity<>(HttpStatus.OK);
     }
 
