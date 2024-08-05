@@ -3,9 +3,11 @@ package com.gymhub.gymhub.controller;
 import com.gymhub.gymhub.dto.IncreDecreDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/thread")
 public class ThreadController {
+    @Autowired
+    private ThreadService threadService;
 
     @Operation(
             description = "This method returns the top 10 threads ordered by post recency",
@@ -30,6 +34,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.get10SuggestedThreads();
         return threads;
     }
 
