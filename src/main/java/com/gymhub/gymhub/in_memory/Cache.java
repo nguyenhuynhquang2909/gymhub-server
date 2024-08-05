@@ -323,7 +323,6 @@ public class Cache {
      * @return a TreeMap where the keys are the relevancy scores and the values are maps containing
      *         thread details and user-specific information
      */
-
     public TreeMap<Double, HashMap<String, Number>> getMostTrendingThreads(long userId){
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
         TreeMap<Double, HashMap<String, Number>> returnCollection = new TreeMap<>();
