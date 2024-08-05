@@ -52,7 +52,6 @@ public class GymhubApplication {
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 	@PostConstruct
 	private void cacheFill(){
-		/**
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		java.lang.Thread javaThread = new java.lang.Thread(new Runnable() {
 			@Override
@@ -102,8 +101,7 @@ public class GymhubApplication {
 			}
 
 		});
-		 **/
-		threadRepository.findAll();
+
 	}
 
 	private Future<List<Thread>> getAllThreadsFromDb(ExecutorService executorService){
