@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.actions;
 
 public class LikeThreadAction extends MustLogAction {
+    private static final long serialVersionUID = 1L;
     private long threadId;
     private long userId;
     private int mode;

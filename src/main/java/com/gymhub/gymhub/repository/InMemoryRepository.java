@@ -1,15 +1,22 @@
 package com.gymhub.gymhub.repository;
 
+import com.gymhub.gymhub.actions.AddPostAction;
 import com.gymhub.gymhub.actions.AddThreadAction;
 import com.gymhub.gymhub.actions.AddUserAction;
+import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.actions.ChangeThreadStatusAction;
+import com.gymhub.gymhub.actions.LikePostAction;
 import com.gymhub.gymhub.actions.LikeThreadAction;
 import com.gymhub.gymhub.actions.MustLogAction;
+import com.gymhub.gymhub.actions.ReturnPostByThreadIdAction;
+import com.gymhub.gymhub.actions.ReturnThreadByCategoryAction;
 import com.gymhub.gymhub.actions.ViewThreadAction;
 import com.gymhub.gymhub.in_memory.Cache;
 
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.concurrent.SubmissionPublisher;
 
 import org.glassfish.jaxb.core.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,13 +72,41 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean ChangeThreadStatus(long threadId, String category, int from, int to) {
+    public boolean changeThreadStatus(long threadId, String category, int from, int to) {
         boolean result = cache.changeThreadStatus(threadId, category, from, to);
         ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, threadId, category, from, to);
         logAction(action);
         return result;
     }
-    
+    public boolean changePostStatus(long postId, long threadId, String category, int from, int to) {
+        boolean result = cache.changePostStatus(postId, threadId, category, from, to);
+        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, postId, threadId, category, from, to);
+        logAction(action);
+        return result;
+    }
+    public boolean addPostToCache(long postId, long threadId, long userId, int status) {
+        boolean result = cache.addPostToCache(threadId, postId, userId, status);
+        AddPostAction action = new AddPostAction(++actionIdCounter, threadId, postId, userId, status);
+        logAction(action);
+        return result;
+    }
+    public boolean likePost(long postId, long userId, long userId, int mode) {
+        boolean result = cache.likePost(postId, userId, mode);
+        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, mode)
+    }
+    public boolean ReturnThreadByCategory(String category, Long userId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
+        boolean result = cache.returnThreadByCategory(category, userId, limit, offset, publisher);
+        ReturnThreadByCategoryAction action = new ReturnThreadByCategoryAction(++actionIdCounter, category, offset, limit, offset, userId);
+        logAction(action);
+        return result;
+    }
+    public boolean ReturnPostByThreadId(long threadId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher, long userId) {
+        boolean result = cache.returnPostByThreadId(threadId, limit, offset, publisher, userId);
+        ReturnPostByThreadIdAction action = new ReturnPostByThreadIdAction(++actionIdCounter, threadId, limit, offset, userId);
+        logAction(action);
+        return result;
+    }
+
 
 
 

@@ -1,12 +1,13 @@
 package com.gymhub.gymhub.actions;
 
 public class ChangePostStatusAction extends MustLogAction {
+    private static final long serialVersionUID = 1L;
     private long postId;
     private long threadId;
     private String category;
     private int from;
     private int to;
-    public ChangePostStatusAction(Long actionId, String actionType, long postId, long threadId, String category, int from,
+    public ChangePostStatusAction(Long actionId, long postId, long threadId, String category, int from,
             int to) {
         super(actionId, "ChangePostStatus");
         this.postId = postId;

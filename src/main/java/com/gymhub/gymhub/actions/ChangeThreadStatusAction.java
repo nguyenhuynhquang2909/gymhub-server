@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.actions;
 
 public class ChangeThreadStatusAction extends MustLogAction {
+    private static final long serialVersionUID = 1L;
     private long threadId;
     private String category;
     private int from;
