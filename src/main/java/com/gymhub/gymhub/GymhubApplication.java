@@ -58,16 +58,7 @@ public class GymhubApplication {
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 			Thread thread = iterator2.next();
-			int rand = random.nextInt(1, 4);
-			if(rand == 1){
-				cache.addThreadToCache(thread.getId(), "flexing", 1, thread.getAuthor().getId());
-			}
-			else if (rand == 2){
-				cache.addThreadToCache(thread.getId(), "advises", 1, thread.getAuthor().getId());
-			}
-			else {
-				cache.addThreadToCache(thread.getId(), "supplement", 1, thread.getAuthor().getId());
-			}
+				cache.addThreadToCache(thread.getId(), thread.getCategory(), 1, thread.getAuthor().getId());
 		}
 
 		List<Post> posts = postRepository.findAll();

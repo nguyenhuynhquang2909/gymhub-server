@@ -24,6 +24,12 @@ public class Thread extends ForumUnit {
     @Column(name = "title", nullable = false, updatable = true)
     private String name;
 
+
+    @Column(name = "category", nullable = false, updatable = true)
+    private String category;
+
+
+
     public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
         this.name = name;

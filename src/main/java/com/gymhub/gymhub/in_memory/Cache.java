@@ -298,7 +298,7 @@ public class Cache {
     }
 
     /**
-     * Retrieves the most trending threads for a specified user.
+     * Retrieves the suggested thread for all user (a mechanism to calculate score based on creationDate, viewCounts, LikeCounts, numberOfPosts)
      * This method iterates through all threads, calculates their relevancy scores,
      * and collects the details of threads with a status of 1 (non-toxic). The collected
      * threads are returned in a sorted order based on their relevancy scores.
@@ -306,7 +306,7 @@ public class Cache {
      * @return a TreeMap where the keys are the relevancy scores and the values are maps containing
      *         thread details and user-specific information
      */
-    public TreeMap<Double, HashMap<String, Number>> getMostTrendingThreads() {
+    public TreeMap<Double, HashMap<String, Number>> getSuggestedThreads() {
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
         TreeMap<Double, HashMap<String, Number>> returnCollection = new TreeMap<>();
 
@@ -321,6 +321,10 @@ public class Cache {
             }
         }
         return returnCollection;
+    }
+    public TreeMap<Double, HashMap<String, Number>> getLatestDicussionThreads() {
+
+        return null;
     }
 
     private double ensureUniqueScore(TreeMap<Double, HashMap<String, Number>> collection, double score) {

@@ -23,18 +23,34 @@ public class ThreadController {
     private ThreadService threadService;
 
     @Operation(
-            description = "This method returns the top 10 threads ordered by post recency",
+            description = "This method returns the top 10 threads ordered by relevant/trending score",
             tags = "Homepage"
 
     )
-    @GetMapping("/trending")
+    @GetMapping("/suggested")
     public List<ThreadResponseDTO> getTrendingThread(){
         List<ThreadResponseDTO> threads = new ArrayList<>();
         ThreadResponseDTO thread1 = new ThreadResponseDTO();
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
-        threadService.get10SuggestedThreads();
+        threadService.get10SuggestedThreads(); // API this line
+        return threads;
+    }
+
+    @Operation(
+            description = "This method returns the  top 10 threads ordered by post recency",
+            tags = "Homepage"
+    )
+
+    @GetMapping("/latest-discussion")
+    public List<ThreadResponseDTO> getLatestDiscussionThread(){
+        List<ThreadResponseDTO> threads = new ArrayList<>();
+        ThreadResponseDTO thread1 = new ThreadResponseDTO();
+        ThreadResponseDTO thread2 = new ThreadResponseDTO();
+        threads.add(thread1);
+        threads.add(thread2);
+threadService.get10LatestDicussionThreads(); //API this line (currently null)
         return threads;
     }
 
@@ -86,6 +102,8 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+      threadService.getAllThreadsByCategory("flexing"); //API this line
+
         return threads;
     }
 
@@ -105,6 +123,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadsByCategory("advices");
         return threads;
     }
 
@@ -124,6 +143,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadsByCategory("supplement");
         return threads;
     }
     @Operation(
@@ -145,6 +165,7 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
+        threadService.getAllThreadByOwnerId(id); //API line here
         return threads;
     }
 
@@ -157,6 +178,7 @@ public class ThreadController {
             @RequestBody ThreadRequestDTO threadRequest,
             @Parameter(description = "Id of the user who is creating the new thread", required = true)
             @PathVariable Long id){
+        threadService.createThread(threadRequest);        //New API this line
         return  new ResponseEntity<>(HttpStatus.OK);
     }
 
