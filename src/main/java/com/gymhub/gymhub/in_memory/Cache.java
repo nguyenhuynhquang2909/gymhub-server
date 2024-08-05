@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.links.Link;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.catalina.User;
+import org.glassfish.jaxb.core.v2.TODO;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -110,6 +111,8 @@ public class Cache {
      * @param userId the unique identifier of the user to be added
      * @return true always, indicating that the user was successfully added to the system
      */
+
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean addUser(long userId) {
         allMemberID.put(userId, userId);
         postLikeListByUser.put(userId, new HashSet<>());
@@ -131,7 +134,7 @@ public class Cache {
      * @param userId the unique identifier of the user who created the thread
      * @return true always, indicating that the thread was successfully added to the cache
      */
-
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean addThreadToCache(long threadId, String category, int status, long userId){
         allThreadID.put(threadId, threadId);
         ConcurrentHashMap<String, Number> threadParaMap = new ConcurrentHashMap<>();
@@ -170,6 +173,7 @@ public class Cache {
      * @return true always, indicating that the like or unlike operation was successfully completed
      */
 
+  
 
 
     /**
@@ -179,7 +183,7 @@ public class Cache {
      * @param threadId the unique identifier of the thread to be viewed
      * @return true always, indicating that the view operation was successfully completed
      */
-
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean viewThread(long threadId){
         ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
         threadParaMap.put("ViewCount", (Integer) threadParaMap.get("ViewCount") + 1);
@@ -196,7 +200,7 @@ public class Cache {
      * @param to the new status of the thread (e.g., 1: non-toxic, 0: pending)
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
-
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean changeThreadStatus(long threadId, String category, int from, int to){
         Long threadID = allThreadID.get(threadId);
         if (from == 0 && to == 1){
@@ -225,6 +229,7 @@ public class Cache {
      * @param to the new status of the thread (e.g., 1: non-toxic, 0: pending)
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean changePostStatus(long postId, long threadId, String category, int from, int to){
         Long postID = allPostId.get(postId);
         if (from == 0 && to == 1){
@@ -254,7 +259,7 @@ public class Cache {
      * @param status the status of the post (1 for non-toxic, 0 for pending)
      * @return true if the post was successfully added to the cache; false if the status is invalid
      */
-
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean addPostToCache(long threadId, long postId, long userId, int status){
         allPostId.put(postId, postId);
         if (status == 1){
@@ -282,6 +287,7 @@ public class Cache {
      * @param userId the unique identifier of the user who likes the post
      * @return true always, indicating that the like operation was successfully completed
      */
+    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean likePost(long postId, long userId, int mode){
         ConcurrentHashMap<String, Number> postParaMap = parametersForAllPosts.get(postId);
         if (mode == 1){
@@ -306,7 +312,9 @@ public class Cache {
      * @return a TreeMap where the keys are the relevancy scores and the values are maps containing
      *         thread details and user-specific information
      */
+
     public TreeMap<Double, HashMap<String, Number>> getSuggestedThreads() {
+
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
         TreeMap<Double, HashMap<String, Number>> returnCollection = new TreeMap<>();
 

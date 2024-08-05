@@ -44,6 +44,7 @@ public class GymhubApplication {
 		SpringApplication.run(GymhubApplication.class, args);
 	}
 
+	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 	@PostConstruct
 	private void cacheFill(){
 		System.out.println("Duong hello test ");
