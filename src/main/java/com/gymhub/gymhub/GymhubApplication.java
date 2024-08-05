@@ -46,6 +46,7 @@ public class GymhubApplication {
 
 	@PostConstruct
 	private void cacheFill(){
+		System.out.println("Duong hello test ");
 		List<Member> members = userRepository.findAll();
 		Iterator<Member> iterator = members.iterator();
 		Random random = new Random();
