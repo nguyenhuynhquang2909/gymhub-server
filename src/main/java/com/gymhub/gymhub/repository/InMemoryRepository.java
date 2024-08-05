@@ -13,7 +13,9 @@ import com.gymhub.gymhub.actions.ReturnThreadByCategoryAction;
 import com.gymhub.gymhub.actions.ViewThreadAction;
 import com.gymhub.gymhub.in_memory.Cache;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.concurrent.SubmissionPublisher;
@@ -90,13 +92,15 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean likePost(long postId, long userId, long userId, int mode) {
+    public boolean likePost(long postId, long userId, int mode) {
         boolean result = cache.likePost(postId, userId, mode);
-        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, mode)
+        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, mode);
+        logAction(action);
+        return result;
     }
     public boolean ReturnThreadByCategory(String category, Long userId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
         boolean result = cache.returnThreadByCategory(category, userId, limit, offset, publisher);
-        ReturnThreadByCategoryAction action = new ReturnThreadByCategoryAction(++actionIdCounter, category, offset, limit, offset, userId);
+        ReturnThreadByCategoryAction action = new ReturnThreadByCategoryAction(++actionIdCounter, category, userId, limit, offset );
         logAction(action);
         return result;
     }
@@ -105,6 +109,49 @@ public class InMemoryRepository {
         ReturnPostByThreadIdAction action = new ReturnPostByThreadIdAction(++actionIdCounter, threadId, limit, offset, userId);
         logAction(action);
         return result;
+    }
+    public void restoreFromLog() {
+        try (FileInputStream fis = new FileInputStream(LOG_FILE_PATH);
+            ObjectInputStream ois = new ObjectInputStream(fis)) {
+                while (true) {
+                    try {
+                        MustLogAction action = (MustLogAction) ois.readObject();
+                    if (action instanceof AddUserAction) {
+                        cache.addUser(((AddUserAction) action).getUserId());
+                    } else if (action instanceof AddThreadAction) {
+                        AddThreadAction addThreadAction = (AddThreadAction) action;
+                        cache.addThreadToCache(addThreadAction.getThreadId(), addThreadAction.getCategory(), addThreadAction.getStatus(), addThreadAction.getUserId());
+                    } else if (action instanceof LikeThreadAction) {
+                        LikeThreadAction likeThreadAction = (LikeThreadAction) action;
+                        cache.likeThread(likeThreadAction.getThreadId(), likeThreadAction.getUserId(), likeThreadAction.getMode());
+                    } else if (action instanceof ViewThreadAction) {
+                        cache.viewThread(((ViewThreadAction) action).getThreadId());
+                    } else if (action instanceof ChangeThreadStatusAction) {
+                        ChangeThreadStatusAction changeThreadStatusAction = (ChangeThreadStatusAction) action;
+                        cache.changeThreadStatus(changeThreadStatusAction.getThreadId(), changeThreadStatusAction.getCategory(), changeThreadStatusAction.getFrom(), changeThreadStatusAction.getTo());
+                    } else if (action instanceof ChangePostStatusAction) {
+                        ChangePostStatusAction changePostStatusAction = (ChangePostStatusAction) action;
+                        cache.changePostStatus(changePostStatusAction.getPostId(), changePostStatusAction.getThreadId(), changePostStatusAction.getCategory(),changePostStatusAction.getFrom(), changePostStatusAction.getTo());
+                    } else if (action instanceof AddPostAction) {
+                        AddPostAction addPostAction = (AddPostAction) action;
+                        cache.addPostToCache(addPostAction.getThreadId(), addPostAction.getPostId(), addPostAction.getUserId(), addPostAction.getStatus());
+                    } else if (action instanceof LikePostAction) {
+                        LikePostAction likePostAction = (LikePostAction) action;
+                        cache.likePost(likePostAction.getPostId(), likePostAction.getUserId(), likePostAction.getMode());
+                    } else if (action instanceof ReturnThreadByCategoryAction) {
+                        ReturnThreadByCategoryAction returnThreadByCategoryAction = (ReturnThreadByCategoryAction) action;
+                        cache.returnThreadByCategory(returnThreadByCategoryAction.getCategory(), returnThreadByCategoryAction.getUserId(), returnThreadByCategoryAction.getLimit(), returnThreadByCategoryAction.getOffset(), new SubmissionPublisher<>());
+                    } else if (action instanceof ReturnPostByThreadIdAction) {
+                        ReturnPostByThreadIdAction returnPostByThreadIdAction = (ReturnPostByThreadIdAction) action;
+                        cache.returnPostByThreadId(returnPostByThreadIdAction.getThreadId(), returnPostByThreadIdAction.getLimit(), returnPostByThreadIdAction.getOffset(), new SubmissionPublisher<>(), returnPostByThreadIdAction.getUserId());
+                    }
+                } catch (Exception e) {
+                    break;
+                }
+             } 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -2,21 +2,26 @@ package com.gymhub.gymhub.actions;
 
 public class ReturnThreadByCategoryAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
-    private long threadId;
+    private String category;
+    private Long userId;
     private int limit;
     private int offset;
-    private Long userId;
-    public ReturnThreadByCategoryAction(Long actionId, String category, long threadId, int limit, int offset,
-            Long userId) {
+    public ReturnThreadByCategoryAction(Long actionId, String category, Long userId,int limit, int offset) {
         super(actionId, "ReturnThreadByCategory");
-        this.threadId = threadId;
+        this.category = category;
         this.limit = limit;
         this.offset = offset;
         this.userId = userId;
     }
-    public long getThreadId() {
-        return threadId;
+    
+    
+
+    public String getCategory() {
+        return category;
     }
+
+
+
     public int getLimit() {
         return limit;
     }
