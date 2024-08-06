@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Tag(name = "Thread Handlers", description = "Handlers for thread-related requests")
@@ -23,21 +24,26 @@ public class ThreadController {
     private ThreadService threadService;
 
     @Operation(
-            description = "This method returns the top 10 threads ordered by relevant/trending score",
+            description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post",
             tags = "Homepage"
 
     )
     @GetMapping("/suggested")
-    public List<ThreadResponseDTO> getTrendingThread(){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
+    public HashMap<String, List<ThreadResponseDTO>> getTrendingThread(){
+        HashMap<String, List<ThreadResponseDTO>> map = new HashMap<>();
+        List<ThreadResponseDTO> responseByAlgorithm = new ArrayList<>();
+        List<ThreadResponseDTO> responseByPostCreationDate = new ArrayList<>();
+        map.put("By Algorithm", responseByAlgorithm);
+        map.put("By PostCreationDate", responseByPostCreationDate);
         ThreadResponseDTO thread1 = new ThreadResponseDTO();
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
+        responseByAlgorithm.add(thread1);
+        responseByPostCreationDate.add(thread2);
         threadService.get10SuggestedThreads(); // API this line
-        return threads;
+        return map;
     }
 
+    /**
     @Operation(
             description = "This method returns the  top 10 threads ordered by post recency",
             tags = "Homepage"
@@ -50,41 +56,12 @@ public class ThreadController {
         ThreadResponseDTO thread2 = new ThreadResponseDTO();
         threads.add(thread1);
         threads.add(thread2);
-threadService.get10LatestDicussionThreads(); //API this line (currently null)
+        threadService.get10LatestDicussionThreads(); //API this line (currently null)
         return threads;
     }
+     **/
 
-    @Operation(
-            description = "This method returns the top 10 most viewed threads",
-            tags = "Homepage"
-    )
-    @GetMapping("/most_viewed")
-    public List<ThreadResponseDTO> getMostViewedThread(
 
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        return threads;
-    }
-
-    @Operation(
-            description = "This method returns the top 10 most liked threads",
-            tags = "Homepage"
-    )
-    @GetMapping("/most_liked")
-    public List<ThreadResponseDTO> getMostLikedThread(
-
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        return threads;
-    }
 
     @Operation(
             description = "This operation returns a number of threads that belong to the \"flexing\" category",

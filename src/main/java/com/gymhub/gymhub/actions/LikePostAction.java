@@ -4,11 +4,13 @@ public class LikePostAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private long postId;
     private long userId;
+    private long threadId;
     private int mode;
-    public LikePostAction(Long actionId, long postId, long userId, int mode) {
+    public LikePostAction(Long actionId, long postId, long userId, long threadId, int mode) {
         super(actionId, "LikePost");
         this.postId = postId;
         this.userId = userId;
+        this.threadId = threadId;
         this.mode = mode;
     }
     public long getPostId() {
@@ -19,5 +21,9 @@ public class LikePostAction extends MustLogAction {
     }
     public int getMode() {
         return mode;
+    }
+
+    public long getThreadId() {
+        return threadId;
     }
 }

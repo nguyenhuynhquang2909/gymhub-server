@@ -26,11 +26,13 @@ public class ThreadService {
         System.out.println(cache.getSuggestedThreads());
     }
 
+    /**
     public void get10LatestDicussionThreads() {
         System.out.println("10 latest Dicussion Threads");
 
         System.out.println(cache.getLatestDicussionThreads());
     }
+     **/
 
     public List<Thread> getAllThreadsByCategory(String category) {
         System.out.println("All threads by category: " + category);

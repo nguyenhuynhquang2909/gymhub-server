@@ -16,6 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "Post")
+@NamedEntityGraph(
+        name = "Post.author",
+        includeAllAttributes = true,
+        attributeNodes = @NamedAttributeNode("author")
+)
 public class Post extends ForumUnit {
 
     @Column(name = "content", nullable = true, updatable = true)
@@ -29,6 +34,10 @@ public class Post extends ForumUnit {
     @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "post_id"))
     private List<Image> images;
 
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private Member author;
 
     public Post(LocalDateTime creationDate, String content, List<Image> images) {
         super(creationDate);
