@@ -335,6 +335,7 @@ public class Cache {
 
                 //This block places threads inside the returnCollectionByPostCreation TreeMap with post creation dates being the keys
                 double postCreationDate = (double) threadParaMap.get("PostCreationDate");
+                postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
         }
