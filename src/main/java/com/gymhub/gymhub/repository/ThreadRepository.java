@@ -1,7 +1,6 @@
 package com.gymhub.gymhub.repository;
 
 import com.gymhub.gymhub.domain.Thread;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
-    @EntityGraph(value = "Thread.author", type = EntityGraph.EntityGraphType.LOAD)
-    List<Thread> findAll();
+    List<Thread> findByCategory(String category);
+
+    List<Thread> findByOwner(String ownerId);
 }
 

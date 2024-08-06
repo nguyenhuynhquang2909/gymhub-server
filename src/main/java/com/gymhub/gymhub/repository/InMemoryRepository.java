@@ -6,7 +6,6 @@ import com.gymhub.gymhub.actions.AddUserAction;
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.actions.ChangeThreadStatusAction;
 import com.gymhub.gymhub.actions.LikePostAction;
-import com.gymhub.gymhub.actions.LikeThreadAction;
 import com.gymhub.gymhub.actions.MustLogAction;
 import com.gymhub.gymhub.in_memory.Cache;
 
@@ -57,12 +56,7 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean likeThread(long threadId, long userId, int mode) {
-        boolean result = cache.likeThread(threadId, userId, mode);
-        LikeThreadAction action = new LikeThreadAction(++actionIdCounter, LOG_FILE_PATH, threadId, userId, mode);
-        logAction(action);
-        return result;
-    }
+
 
     public boolean changeThreadStatus(long threadId, String category, int from, int to) {
         boolean result = cache.changeThreadStatus(threadId, category, from, to);
@@ -82,9 +76,9 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean likePost(long postId, long userId, int mode) {
-        boolean result = cache.likePost(postId, userId, mode);
-        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, mode);
+    public boolean likePost(long postId, long userId, long threadId,  int mode) {
+        boolean result = cache.likePost(postId, userId, threadId, mode);
+        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, threadId, mode);
         logAction(action);
         return result;
     }
@@ -105,11 +99,6 @@ public class InMemoryRepository {
                         cache.addThreadToCache(addThreadAction.getThreadId(), addThreadAction.getCategory(), addThreadAction.getStatus(), addThreadAction.getUserId());
                     }
 
-                    else if (action instanceof LikeThreadAction) {
-                        LikeThreadAction likeThreadAction = (LikeThreadAction) action;
-                        cache.likeThread(likeThreadAction.getThreadId(), likeThreadAction.getUserId(), likeThreadAction.getMode());
-                    }
-
                     else if (action instanceof ChangeThreadStatusAction) {
                         ChangeThreadStatusAction changeThreadStatusAction = (ChangeThreadStatusAction) action;
                         cache.changeThreadStatus(changeThreadStatusAction.getThreadId(), changeThreadStatusAction.getCategory(), changeThreadStatusAction.getFrom(), changeThreadStatusAction.getTo());
@@ -126,7 +115,7 @@ public class InMemoryRepository {
                     }
                     else if (action instanceof LikePostAction) {
                         LikePostAction likePostAction = (LikePostAction) action;
-                        cache.likePost(likePostAction.getPostId(), likePostAction.getUserId(), likePostAction.getMode());
+                        cache.likePost(likePostAction.getPostId(), likePostAction.getUserId(), likePostAction.getThreadId(), likePostAction.getMode());
                     }
 
                 } catch (Exception e) {

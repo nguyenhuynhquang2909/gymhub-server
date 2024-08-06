@@ -44,6 +44,7 @@ public class Cache {
      * - "ViewCount" (Integer): The number of views the thread has received.
      * - "PostCount" (Integer): The number of posts in the thread.
      * - "CreationDate" (Long): The creation date of the thread (in milliseconds).
+     * - "PostCreationDate" (Long): The creation date of the latest post (in millisecond).
      * - "Status" (Integer): The status of the thread (e.g., 1 for non-toxic, 0 for pending).
      */
     LinkedHashMap<Long, ConcurrentHashMap<String, Number>> parametersForAllThreads = new LinkedHashMap<>();
@@ -162,30 +163,9 @@ public class Cache {
         return true;
     }
 
-    /**
-     * Adjusts the like count for a specified thread based on the given mode and records the user who performed the action.
-     * This method updates the like count for the thread identified by the given threadId.
-     * If the mode is 1, the like count is incremented; if the mode is 0, the like count is decremented.
-     * The threadId is also added to the list of threads liked by the specified user.
-     * @param threadId the unique identifier of the thread to be liked or unliked
-     * @param userId the unique identifier of the user who likes or unlikes the thread
-     * @param mode the mode of the operation (1 to like, 0 to unlike)
-     * @return true always, indicating that the like or unlike operation was successfully completed
-     */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean likeThread(long threadId, long userId, int mode){
-        ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
-        if (mode == 1){
-            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") + 1);
-        }
-        else {
-            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") - 1);
-        }
 
-        threadLikeListByUser.get(userId).add(threadId);
-        return true;
+  
 
-    }
 
     /**
      * Increments the view count for a specified thread.
@@ -211,6 +191,7 @@ public class Cache {
      * @param to the new status of the thread (e.g., 1: non-toxic, 0: pending)
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
+
     //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean changeThreadStatus(long threadId, String category, int from, int to){
         Long threadID = allThreadID.get(threadId);
@@ -284,7 +265,12 @@ public class Cache {
         }
         ConcurrentHashMap<String, Number> postParaMap = new ConcurrentHashMap<>();
         postParaMap.put("LikeCount", 0);
-        postParaMap.put("CreationDate", System.currentTimeMillis());
+        Long currentTime = System.currentTimeMillis();
+        postParaMap.put("CreationDate", currentTime);
+        if (status == 1){
+            ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
+            threadParaMap.put("PostCreationDate", currentTime);
+        }
         parametersForAllPosts.put(postId, postParaMap);
         postListByUser.get(userId).add(postId);
         return true;
@@ -299,13 +285,16 @@ public class Cache {
      * @return true always, indicating that the like operation was successfully completed
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean likePost(long postId, long userId, int mode){
+    public boolean likePost(long postId, long userId, long threadId, int mode){
         ConcurrentHashMap<String, Number> postParaMap = parametersForAllPosts.get(postId);
+        ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
         if (mode == 1){
             postParaMap.put("LikeCount", (Integer) postParaMap.get("LikeCount") + 1);
+            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") + 1);
         }
         else if (mode == 0){
             postParaMap.put("LikeCount", (Integer) postParaMap.get("LikeCount") - 1);
+            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") - 1);
         }
         else {
             return false;
@@ -315,24 +304,38 @@ public class Cache {
     }
 
     /**
-     * Retrieves the most trending threads for a specified user.
+     * Retrieves the suggested thread for all user (a mechanism to calculate score based on creationDate, viewCounts, LikeCounts, PostCount, PostCretionDate)
      * This method iterates through all threads, calculates their relevancy scores,
      * and collects the details of threads with a status of 1 (non-toxic). The collected
      * threads are returned in a sorted order based on their relevancy scores.
-     * @param userId the unique identifier of the user for whom the trending threads are retrieved
-     * @return a TreeMap where the keys are the relevancy scores and the values are maps containing
-     *         thread details and user-specific information
+
+     * @return a HashMap containing 2 TreeMap, which contains
+     *         thread details and user-specific information.
+     *         The keys are "By Algorithm" and "By PostCreation"
      */
-    public TreeMap<Double, HashMap<String, Number>> getMostTrendingThreads(long userId){
+
+    public HashMap<String, TreeMap<Double, HashMap<String, Number>>> getSuggestedThreads() {
+
+        HashMap<String, TreeMap<Double, HashMap<String, Number>>> returnCollection = new HashMap<>();
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
-        TreeMap<Double, HashMap<String, Number>> returnCollection = new TreeMap<>();
-        while(iterator.hasNext()){
+        TreeMap<Double, HashMap<String, Number>> returnCollectionByAlgorithm = new TreeMap<>();
+        TreeMap<Double, HashMap<String, Number>> returnCollectionByPostCreation = new TreeMap<>();
+        returnCollection.put("By Algorithm", returnCollectionByAlgorithm);
+        returnCollection.put("By PostCreation", returnCollectionByPostCreation);
+
+        while (iterator.hasNext()) {
             Long currentKey = iterator.next();
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(currentKey);
-            if (threadParaMap.get("Status").equals(1)){
+            if (threadParaMap.get("Status").equals(1)) {
+                //This block calculates threads score based on an algorithm and place them in the returnCollectionByAlgorithm TreeMap
                 double score = getThreadRelevancy(threadParaMap);
-                HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, userId, currentKey);
-                returnCollection.put(score, returnedMap);
+                score = ensureUniqueScore(returnCollectionByAlgorithm, score);
+                HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, currentKey);
+                returnCollectionByAlgorithm.put(score, returnedMap);
+
+                //This block places threads inside the returnCollectionByPostCreation TreeMap with post creation dates being the keys
+                double postCreationDate = (double) threadParaMap.get("PostCreationDate");
+                returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
         }
         return returnCollection;
@@ -357,7 +360,7 @@ public class Cache {
         while(iterator.hasNext() && count <= limit){
             Long threadId = iterator.next();
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
-            HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, userId, threadId);
+            HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
             publisher.submit(returnedMap);
             count++;
 
@@ -459,28 +462,18 @@ public class Cache {
      * indicates whether the user has liked the thread (0 - no, 1 - yes), and the report status indicates whether the thread
      * has been reported (0 - no, 1 - yes).
      * @param cachedMap a map containing various cached parameters of the thread
-     * @param userId the unique identifier of the user (can be null)
+
      * @param threadId the unique identifier of the thread
      * @return a map containing thread details and user-specific information
      */
-    private HashMap<String, Number> returnThreadMapBuilder(ConcurrentHashMap<String, Number> cachedMap, Long userId, long threadId ){
+    private HashMap<String, Number> returnThreadMapBuilder(ConcurrentHashMap<String, Number> cachedMap , long threadId ){
         HashMap<String, Number> returnedMap = new HashMap<>();
         returnedMap.put("id", threadId);
         returnedMap.put("LikeCount", cachedMap.get("LikeCount"));
         returnedMap.put("PostCount", cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", cachedMap.get("ViewCount"));
         returnedMap.put("CreationDate", cachedMap.get("CreationDate"));
-        if (userId == null){
-            returnedMap.put("LikeStatus", 0);
-        }
-        else {
-            if (threadLikeListByUser.get(userId).contains(threadId)){
-                returnedMap.put("LikeStatus", 1);
-            }
-            else {
-                returnedMap.put("LikeStatus", 0);
-            }
-        }
+
 
 
         if (reportedThreads.contains(threadId)){
@@ -504,13 +497,22 @@ public class Cache {
      * @return the calculated relevancy score of the thread
      */
     private double getThreadRelevancy(ConcurrentHashMap<String, Number> threadParaMap){
-        long primitiveThreadCreationDate = (Long) threadParaMap.get("ThreadCreationDate").longValue();
+        long primitiveThreadCreationDate = threadParaMap.get("CreationDate").longValue();
         double distanceFromToday = (double) primitiveThreadCreationDate / System.currentTimeMillis();
         int likeNum = threadParaMap.get("LikeCount").intValue();
         int postNum = threadParaMap.get("PostCount").intValue();
         int viewNum = threadParaMap.get("ViewCount").intValue();
         return (distanceFromToday) * (likeNum + viewNum + postNum);
 
+    }
+
+    private double ensureUniqueScore(TreeMap<Double, HashMap<String, Number>> collection, double score) {
+        if (collection.containsKey(score)) {
+            score += 0.000000001;
+            return ensureUniqueScore(collection, score);
+        } else {
+            return score;
+        }
     }
 
 
