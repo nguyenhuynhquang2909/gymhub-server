@@ -16,6 +16,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Thread")
 @Schema(description = "Details unique to threads")
+@NamedEntityGraph(
+        name = "Thread.owner",
+        includeAllAttributes = true,
+        attributeNodes = @NamedAttributeNode("owner")
+)
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
@@ -24,8 +29,6 @@ public class Thread extends ForumUnit {
 
     @Column(name = "category", nullable = false, updatable = true)
     private String category;
-
-
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
