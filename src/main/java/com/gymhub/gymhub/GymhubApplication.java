@@ -59,7 +59,7 @@ public class GymhubApplication {
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 			Thread thread = iterator2.next();
-				cache.addThreadToCache(thread.getId(), thread.getCategory(), 1, thread.getAuthor().getId());
+				cache.addThreadToCache(thread.getId(), thread.getCategory(), 1, thread.getOwner().getId());
 		}
 
 		List<Post> posts = postRepository.findAll();

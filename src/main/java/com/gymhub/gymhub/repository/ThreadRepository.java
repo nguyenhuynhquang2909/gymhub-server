@@ -11,6 +11,9 @@ import java.util.List;
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
     List<Thread> findByCategory(String category);
 
-    List<Thread> findByOwner(String ownerId);
+    List<Thread> findByOwnerId(Long ownerId);
+
+    @EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
+    List<Thread> findAll();
 }
 
