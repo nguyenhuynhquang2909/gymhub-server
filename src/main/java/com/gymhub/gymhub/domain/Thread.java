@@ -3,10 +3,7 @@ package com.gymhub.gymhub.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +26,10 @@ public class Thread extends ForumUnit {
     private String category;
 
 
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Member owner;
 
     public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
