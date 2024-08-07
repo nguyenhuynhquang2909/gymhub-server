@@ -40,14 +40,14 @@ public class ThreadService {
     }
     public List<Thread> getAllThreadByOwnerId(Long ownerId) {
         System.out.println("All threads by owner id: " + ownerId);
-        return threadRepository.findByOwner(String.valueOf(ownerId));
+        return threadRepository.findByOwnerId(ownerId);
     }
 
     public Thread createThread(ThreadRequestDTO threadRequestDTO) {
         Member author = userRepository.findById(threadRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Thread thread = new Thread(threadRequestDTO.getTitle(), LocalDateTime.now());
-        thread.setAuthor(author);
+        thread.setOwner(author);
         return threadRepository.save(thread);
     }
 
