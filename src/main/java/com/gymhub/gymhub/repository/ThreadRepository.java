@@ -14,6 +14,6 @@ public interface ThreadRepository extends JpaRepository<Thread, Long> {
     List<Thread> findByOwnerId(Long ownerId);
 
     @EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
-    List<Post> findAll();
+    List<Thread> findAll();
 }
 
