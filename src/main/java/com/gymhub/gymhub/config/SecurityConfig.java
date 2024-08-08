@@ -34,7 +34,7 @@ public class SecurityConfig {
                             "/post/update/",
                             "/post/like/",
                             "/post/report/",
-                            "/thread/new/",
+                            //"/thread/new/",
                             "/thread/report/").authenticated()
                     .anyRequest().permitAll()
             )

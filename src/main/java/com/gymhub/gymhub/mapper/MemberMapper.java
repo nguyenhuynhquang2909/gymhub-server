@@ -29,6 +29,7 @@ public class MemberMapper {
     public static Member toMember(MemberRequestDTO memberRequestDTO, String encodedPassword) {
         byte[] avatar = Base64.getDecoder().decode(memberRequestDTO.getStringAvatar());
         return new Member(
+                memberRequestDTO.getId(),
                 memberRequestDTO.getUserName(),
                 encodedPassword, // Encode the password before setting it
                 memberRequestDTO.getEmail(),
