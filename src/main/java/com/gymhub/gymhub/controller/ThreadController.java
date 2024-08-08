@@ -30,9 +30,7 @@ public class ThreadController {
     )
     @GetMapping("/suggested")
     public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
-        HashMap<String, List<ThreadResponseDTO>> map = new HashMap<>();
-        map.put("By Algorithm", threadService.get10SuggestedThreads());
-        map.put("By PostCreationDate", threadService.get10SuggestedThreads());
+        HashMap<String, List<ThreadResponseDTO>> map = threadService.get10SuggestedThreads();
         return ResponseEntity.ok(map);
     }
 
@@ -116,4 +114,6 @@ public class ThreadController {
         return  new ResponseEntity<>(HttpStatus.OK);
 
 }
+
 }
+

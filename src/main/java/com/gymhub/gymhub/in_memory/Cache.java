@@ -139,6 +139,7 @@ public class Cache {
     public boolean addThreadToCache(long threadId, String category, int status, long userId) {
         allThreadID.put(threadId, threadId);
         ConcurrentHashMap<String, Number> threadParaMap = new ConcurrentHashMap<>();
+        threadParaMap.put("ThreadID", threadId);
         threadParaMap.put("LikeCount", 0);
         threadParaMap.put("ViewCount", 0);
         threadParaMap.put("PostCount", 0);
@@ -534,10 +535,8 @@ public class Cache {
 
     public boolean checkIfAThreadHasBeenReportByThreadId(Long threadId) {
         // Get the map tracking threads liked by each user
-        Set<Long> reportedThreads = getReportedThreads();
-
         // Check if the map contains the memberId
-        if (reportedThreads.contains(threadId)) {
+        if (getReportedThreads().containsKey(threadId)) {
             return true;
         }
 
@@ -583,7 +582,7 @@ public Integer getPostLikeCountByPostId(Long postId) {
     }
 
     public boolean checkIfAPostHasBeenReported(Long postId) {
-        return reportedPosts.contains(postId);
+        return reportedPosts.containsKey(postId);
     }
 
     public boolean checkIfAPostHasBeenLikedByAMemberId(Long postId, Long memberId) {
