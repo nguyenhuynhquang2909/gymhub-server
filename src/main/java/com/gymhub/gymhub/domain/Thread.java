@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
         includeAllAttributes = true,
         attributeNodes = @NamedAttributeNode("owner")
 )
+// Test comment
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
@@ -31,7 +32,7 @@ public class Thread extends ForumUnit {
     private String category;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false)
     private Member owner;
 
     public Thread(Long id, String name, LocalDateTime creationDateTime) {

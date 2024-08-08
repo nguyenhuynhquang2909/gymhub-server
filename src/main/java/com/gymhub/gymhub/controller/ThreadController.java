@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,68 +20,34 @@ import java.util.List;
 @RestController
 @RequestMapping("/thread")
 public class ThreadController {
+
     @Autowired
     private ThreadService threadService;
 
     @Operation(
             description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post",
             tags = "Homepage"
-
     )
     @GetMapping("/suggested")
-    public HashMap<String, List<ThreadResponseDTO>> getTrendingThread(){
+    public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
         HashMap<String, List<ThreadResponseDTO>> map = new HashMap<>();
-        List<ThreadResponseDTO> responseByAlgorithm = new ArrayList<>();
-        List<ThreadResponseDTO> responseByPostCreationDate = new ArrayList<>();
-        map.put("By Algorithm", responseByAlgorithm);
-        map.put("By PostCreationDate", responseByPostCreationDate);
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        responseByAlgorithm.add(thread1);
-        responseByPostCreationDate.add(thread2);
-        threadService.get10SuggestedThreads(); // API this line
-        return map;
+        map.put("By Algorithm", threadService.get10SuggestedThreads());
+        map.put("By PostCreationDate", threadService.get10SuggestedThreads());
+        return ResponseEntity.ok(map);
     }
-
-    /**
-    @Operation(
-            description = "This method returns the  top 10 threads ordered by post recency",
-            tags = "Homepage"
-    )
-
-    @GetMapping("/latest-discussion")
-    public List<ThreadResponseDTO> getLatestDiscussionThread(){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        threadService.get10LatestDicussionThreads(); //API this line (currently null)
-        return threads;
-    }
-     **/
-
-
 
     @Operation(
             description = "This operation returns a number of threads that belong to the \"flexing\" category",
             tags = {"Homepage", "Flex-Thread Page"}
     )
     @GetMapping("/flexing")
-    public List<ThreadResponseDTO> getFlexingThread(
+    public ResponseEntity<List<ThreadResponseDTO>> getFlexingThread(
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-      threadService.getAllThreadsByCategory("flexing"); //API this line
-
-        return threads;
+    ) {
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("flexing"));
     }
 
     @Operation(
@@ -90,19 +55,13 @@ public class ThreadController {
             tags = {"Homepage", "Advise-Thread Page"}
     )
     @GetMapping("/advises")
-    public List<ThreadResponseDTO> getAdvisesThread(
+    public ResponseEntity<List<ThreadResponseDTO>> getAdvisesThread(
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        threadService.getAllThreadsByCategory("advices");
-        return threads;
+    ) {
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("advices"));
     }
 
     @Operation(
@@ -110,47 +69,36 @@ public class ThreadController {
             tags = {"Homepage", "Advise-Thread Page"}
     )
     @GetMapping("/supplement")
-    public List<ThreadResponseDTO> getSupplementThread(
+    public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        threadService.getAllThreadsByCategory("supplement");
-        return threads;
+    ) {
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("supplement"));
     }
+
     @Operation(
-            description = "This operation returns a number of threads that belong to the a user",
+            description = "This operation returns a number of threads that belong to a user",
             tags = {"Homepage", "Advise-Thread Page"}
     )
     @GetMapping("/user-{id}")
-    public List<ThreadResponseDTO> getUserThread(
-            @Parameter (description = "Id of the user", required = true)
+    public ResponseEntity<List<ThreadResponseDTO>> getUserThread(
+            @Parameter(description = "Id of the user", required = true)
             @PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-
-    ){
-        List<ThreadResponseDTO> threads = new ArrayList<>();
-        ThreadResponseDTO thread1 = new ThreadResponseDTO();
-        ThreadResponseDTO thread2 = new ThreadResponseDTO();
-        threads.add(thread1);
-        threads.add(thread2);
-        threadService.getAllThreadByOwnerId(id); //API line here
-        return threads;
+    ) {
+        return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id));
     }
 
     @Operation(
             description = "This operation creates a new thread",
             tags = ""
     )
+
     @PostMapping("/new")
     public ResponseEntity<Void> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest){
@@ -160,19 +108,11 @@ public class ThreadController {
 
 
     @Operation(
-            description= "This operation reports a thread to the server and return a string indicating the reason",
+            description = "This operation reports a thread to the server and return a string indicating the reason",
             tags = "Thread Containers"
     )
     @PatchMapping("/report")
     public ResponseEntity<Void> reportThread(@RequestBody ReportRequestDTO reportRequestDTO){
         return  new ResponseEntity<>(HttpStatus.OK);
-    }
-
-
-
-
-
-
-
 
 }
