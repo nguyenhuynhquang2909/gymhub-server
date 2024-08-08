@@ -35,7 +35,7 @@ public class InMemoryRepository {
     @Autowired
     Cache cache;
 
-    private static final String LOG_FILE_PATH = "logs/cache_actions.log";
+    private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
 
     private void logAction(MustLogAction action) {
