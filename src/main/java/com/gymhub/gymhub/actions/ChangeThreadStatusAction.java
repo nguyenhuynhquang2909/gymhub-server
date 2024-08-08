@@ -6,13 +6,15 @@ public class ChangeThreadStatusAction extends MustLogAction {
     private String category;
     private int from;
     private int to;
+    private String reason;
     public ChangeThreadStatusAction(Long actionId, long threadId, String category, int from,
-            int to) {
+            int to, String reason) {
         super(actionId, "ChangeThreadStatus");
         this.threadId = threadId;
         this.category = category;
         this.from = from;
         this.to = to;
+        this.reason = reason;
     }
     public long getThreadId() {
         return threadId;
@@ -25,6 +27,9 @@ public class ChangeThreadStatusAction extends MustLogAction {
     }
     public int getTo() {
         return to;
+    }
+    public String getReason() {
+        return reason;
     }
     
 

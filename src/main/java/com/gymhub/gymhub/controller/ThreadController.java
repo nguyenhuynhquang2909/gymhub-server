@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.dto.IncreDecreDTO;
+import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.service.ThreadService;
@@ -29,9 +30,7 @@ public class ThreadController {
     )
     @GetMapping("/suggested")
     public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
-        HashMap<String, List<ThreadResponseDTO>> map = new HashMap<>();
-        map.put("By Algorithm", threadService.get10SuggestedThreads());
-        map.put("By PostCreationDate", threadService.get10SuggestedThreads());
+        HashMap<String, List<ThreadResponseDTO>> map = threadService.get10SuggestedThreads();
         return ResponseEntity.ok(map);
     }
 
@@ -97,37 +96,24 @@ public class ThreadController {
             description = "This operation creates a new thread",
             tags = ""
     )
-    @PostMapping("/new/user-{id}")
-    public ResponseEntity<ThreadResponseDTO> createNewThread(
-            @RequestBody ThreadRequestDTO threadRequest,
-            @Parameter(description = "Id of the user who is creating the new thread", required = true)
-            @PathVariable Long id) {
-        ThreadResponseDTO createdThread = threadService.createThread(threadRequest);
-        return new ResponseEntity<>(createdThread, HttpStatus.CREATED);
+
+    @PostMapping("/new")
+    public ResponseEntity<Void> createNewThread(
+            @RequestBody ThreadRequestDTO threadRequest){
+        threadService.createThread(threadRequest);        //New API this line
+        return  new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(
-            description = "This operation increment or decrement the like count of a thread",
-            tags = "Thread Containers"
-    )
-    @PatchMapping("/like/thread-{threadId}/user-{userId}")
-    public ResponseEntity<Void> changingLikesForThread(
-            @Parameter(description = "Id of the thread whose like count is to be changed", required = true)
-            @PathVariable Long threadId,
-            @Parameter(description = "Id of the user who likes or undoes their like", required = true)
-            @PathVariable Long userId,
-            @RequestBody IncreDecreDTO body) {
-        // Implement logic to increment or decrement likes
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     @Operation(
             description = "This operation reports a thread to the server and return a string indicating the reason",
             tags = "Thread Containers"
     )
-    @PatchMapping("/report/thread-{id}")
-    public ResponseEntity<Void> reportThread(@RequestBody String reason, @PathVariable Long id) {
-        // Implement logic to report a thread
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+    @PatchMapping("/report")
+    public ResponseEntity<Void> reportThread(@RequestBody ReportRequestDTO reportRequestDTO){
+        return  new ResponseEntity<>(HttpStatus.OK);
+
 }
+
+}
+

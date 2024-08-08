@@ -90,12 +90,12 @@ public class Cache {
     /**
      * A set of reported thread IDs.
      */
-    Set<Long> reportedThreads = new HashSet<>();
+    HashMap<Long, String> reportedThreads = new HashMap<>();
 
     /**
      * A set of reported post IDs.
      */
-    Set<Long> reportedPosts = new HashSet<>();
+    HashMap<Long, String> reportedPosts = new HashMap<>();
 
     /**
      * A map containing the ids of banned user and the date (in millisecond) their bans are lifted
@@ -139,6 +139,7 @@ public class Cache {
     public boolean addThreadToCache(long threadId, String category, int status, long userId) {
         allThreadID.put(threadId, threadId);
         ConcurrentHashMap<String, Number> threadParaMap = new ConcurrentHashMap<>();
+        threadParaMap.put("ThreadID", threadId);
         threadParaMap.put("LikeCount", 0);
         threadParaMap.put("ViewCount", 0);
         threadParaMap.put("PostCount", 0);
@@ -191,17 +192,17 @@ public class Cache {
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
 
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changeThreadStatus(long threadId, String category, int from, int to) {
+    //TODO This action must be logged. Create a subclass extending Action class for this method<<<<<<< trung_branch
+    public boolean changeThreadStatus(long threadId, String category, int from, int to, String reason){
         Long threadID = allThreadID.get(threadId);
         if (from == 0 && to == 1) {
             threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(1).add(threadID);
-            reportedThreads.add(threadID);
             return true;
         } else if (from == 1 && to == 0) {
             threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(0).add(threadID);
+            reportedThreads.put(threadID, reason);
             return true;
         } else {
             return false;
@@ -220,16 +221,16 @@ public class Cache {
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changePostStatus(long postId, long threadId, String category, int from, int to) {
+    public boolean changePostStatus(long postId, long threadId, String category, int from, int to, String reason){
         Long postID = allPostId.get(postId);
         if (from == 0 && to == 1) {
             postListByThreadIdAndStatus.get(threadId).get(0).remove(postID);
             postListByThreadIdAndStatus.get(threadId).get(1).add(postID);
-            reportedPosts.add(postID);
             return true;
         } else if (from == 1 && to == 0) {
             postListByThreadIdAndStatus.get(threadId).get(1).remove(postID);
             postListByThreadIdAndStatus.get(threadId).get(0).add(postID);
+            reportedPosts.put(postID, reason);
             return true;
         } else {
             return false;
@@ -389,8 +390,6 @@ public class Cache {
             count++;
         }
         return true;
-
-
     }
 
     /**
@@ -441,7 +440,9 @@ public class Cache {
                 returnedPostMap.put("LikeStatus", 0);
             }
         }
-        if (reportedPosts.contains(postId)) {
+
+      
+        if (reportedPosts.containsKey(postId)){
             returnedPostMap.put("ReportStatus", 1);
         } else {
             returnedPostMap.put("ReportStatus", 0);
@@ -467,9 +468,7 @@ public class Cache {
         returnedMap.put("PostCount", cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", cachedMap.get("ViewCount"));
         returnedMap.put("CreationDate", cachedMap.get("CreationDate"));
-
-
-        if (reportedThreads.contains(threadId)) {
+        if (reportedThreads.containsKey(threadId)){
             returnedMap.put("Report Status", 1);
         } else {
             returnedMap.put("Report Status", 0);
@@ -536,10 +535,8 @@ public class Cache {
 
     public boolean checkIfAThreadHasBeenReportByThreadId(Long threadId) {
         // Get the map tracking threads liked by each user
-        Set<Long> reportedThreads = getReportedThreads();
-
         // Check if the map contains the memberId
-        if (reportedThreads.contains(threadId)) {
+        if (getReportedThreads().containsKey(threadId)) {
             return true;
         }
 
@@ -585,7 +582,7 @@ public Integer getPostLikeCountByPostId(Long postId) {
     }
 
     public boolean checkIfAPostHasBeenReported(Long postId) {
-        return reportedPosts.contains(postId);
+        return reportedPosts.containsKey(postId);
     }
 
     public boolean checkIfAPostHasBeenLikedByAMemberId(Long postId, Long memberId) {

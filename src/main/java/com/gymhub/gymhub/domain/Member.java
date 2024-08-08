@@ -35,8 +35,13 @@ public class Member extends ForumAccount {
     @Column(name = "join_date", nullable = false, updatable = false, unique = false)
     private Date joinDate;
 
+    public Member(Long id, String userName, String password, String email, Date joinDate) {
+        super(id, userName, password, email);
+        this.joinDate = joinDate;
+    }
+
     public Member(String userName, String password, String email, Date joinDate) {
-        super(userName, password, email);
+        super(null, userName, password, email);  // Pass null for the id
         this.joinDate = joinDate;
     }
 }

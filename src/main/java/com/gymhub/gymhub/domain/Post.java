@@ -38,8 +38,13 @@ public class Post extends ForumUnit {
     @JoinColumn(name = "author_id")
     private Member author;
 
+    public Post(Long id, LocalDateTime creationDate, String content, List<Image> images) {
+        super(id, creationDate);
+        this.content = content;
+        this.images = images;
+    }
     public Post(LocalDateTime creationDate, String content, List<Image> images) {
-        super(creationDate);
+        super(null, creationDate);  // Pass null for the id
         this.content = content;
         this.images = images;
     }

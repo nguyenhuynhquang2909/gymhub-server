@@ -32,11 +32,11 @@ public class Thread extends ForumUnit {
     private String category;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false)
     private Member owner;
 
-    public Thread(String name, LocalDateTime creationDateTime) {
-        super(creationDateTime);
+    public Thread(Long id, String name, LocalDateTime creationDateTime) {
+        super(id, creationDateTime);
         this.name = name;
     }
 }

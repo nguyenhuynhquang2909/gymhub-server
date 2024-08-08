@@ -10,7 +10,6 @@ import lombok.Setter;
 @MappedSuperclass
 public class ForumAccount {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "username", unique = true, nullable = false, updatable = true)
@@ -22,7 +21,8 @@ public class ForumAccount {
     @Column(name = "email", unique = true, nullable = false, updatable = true)
     private String email;
 
-    public ForumAccount(String userName, String password, String email) {
+    public ForumAccount(Long id, String userName, String password, String email) {
+        this.id = id;
         this.userName = userName;
         this.password = password;
         this.email = email;
