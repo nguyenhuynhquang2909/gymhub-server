@@ -43,4 +43,9 @@ public class Post extends ForumUnit {
         this.content = content;
         this.images = images;
     }
+    public Post(LocalDateTime creationDate, String content, List<Image> images) {
+        super(null, creationDate);  // Pass null for the id
+        this.content = content;
+        this.images = images;
+    }
 }
