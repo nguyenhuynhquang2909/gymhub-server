@@ -29,6 +29,7 @@ public class ThreadService {
     private UserRepository userRepository;
     @Autowired
     private InMemoryRepository inMemoryRepository;
+
     private Random random = new Random();
 @Autowired
     private ThreadMapper threadMapper;
@@ -89,6 +90,7 @@ public class ThreadService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         long id = random.nextLong(50);
+        System.out.println(id);
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), LocalDateTime.now());
         thread.setOwner(owner);
         int status = 1; //Call the AI here
