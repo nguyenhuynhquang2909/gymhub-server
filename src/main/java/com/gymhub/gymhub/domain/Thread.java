@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
         includeAllAttributes = true,
         attributeNodes = @NamedAttributeNode("owner")
 )
+// Test comment
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)

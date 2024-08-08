@@ -30,8 +30,7 @@ public class Post extends ForumUnit {
     @JoinColumn(name = "thread_id")
     private Thread thread;
 
-    @ElementCollection
-    @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "post_id"))
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
     @Setter

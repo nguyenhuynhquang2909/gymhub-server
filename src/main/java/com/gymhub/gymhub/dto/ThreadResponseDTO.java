@@ -33,7 +33,7 @@ public class ThreadResponseDTO {
     private int viewCount;
 
     @Setter
-    @Schema(description = "True if the thread has been reported")
+    @Schema(description = "True if the thread has been reported. Once reported, the thread cannot be show to member")
     private boolean beenReport;
 
     @Setter
