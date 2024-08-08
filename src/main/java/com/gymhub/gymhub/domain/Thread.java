@@ -34,8 +34,8 @@ public class Thread extends ForumUnit {
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
 
-    public Thread(String name, LocalDateTime creationDateTime) {
-        super(creationDateTime);
+    public Thread(Long id, String name, LocalDateTime creationDateTime) {
+        super(id, creationDateTime);
         this.name = name;
     }
 }
