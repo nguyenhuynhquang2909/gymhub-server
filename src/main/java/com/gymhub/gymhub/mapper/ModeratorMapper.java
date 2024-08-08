@@ -15,6 +15,7 @@ public class ModeratorMapper {
 
     public static Moderator toModerator(ModeratorDTO moderatorDTO) {
         return new Moderator(
+                moderatorDTO.getId(),
                 moderatorDTO.getUsername(),
                 moderatorDTO.getPassword(), // Password should be handled securely later on
                 moderatorDTO.getEmail()

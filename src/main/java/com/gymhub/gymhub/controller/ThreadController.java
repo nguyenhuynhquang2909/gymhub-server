@@ -4,6 +4,7 @@ import com.gymhub.gymhub.dto.IncreDecreDTO;
 import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,6 +24,8 @@ public class ThreadController {
 
     @Autowired
     private ThreadService threadService;
+    @Autowired
+    private ThreadRepository threadRepository;
 
     @Operation(
             description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post",
@@ -100,7 +103,9 @@ public class ThreadController {
     @PostMapping("/new")
     public ResponseEntity<Void> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest){
+        System.out.println(threadRepository.findAll().size());
         threadService.createThread(threadRequest);        //New API this line
+        System.out.println(threadRepository.findAll().size());
         return  new ResponseEntity<>(HttpStatus.OK);
     }
 

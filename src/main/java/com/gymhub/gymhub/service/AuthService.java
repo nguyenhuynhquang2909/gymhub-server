@@ -19,6 +19,7 @@ import com.gymhub.gymhub.dto.RegisterRequest;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -40,8 +41,10 @@ public class AuthService {
         }
         if (memberAccountRepository.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
-        } 
-        Member member = new Member(registerRequest.getUserName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail(), new Date(System.currentTimeMillis()));
+        }
+        Random random = new Random();
+        Long memberId = random.nextLong(50);
+        Member member = new Member(memberId, registerRequest.getUserName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail(), new Date(System.currentTimeMillis()));
         memberAccountRepository.save(member);
         return ResponseEntity.ok("User registered successfully");
     }
