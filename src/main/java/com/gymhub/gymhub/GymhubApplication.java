@@ -50,7 +50,6 @@ public class GymhubApplication {
 		System.out.println("Duong hello test ");
 		List<Member> members = userRepository.findAll();
 		Iterator<Member> iterator = members.iterator();
-		Random random = new Random();
 		while(iterator.hasNext()){
 			cache.addUser(iterator.next().getId());
 		}
