@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.SubmissionPublisher;
@@ -87,7 +88,7 @@ public class InMemoryRepository {
         return result;
     }
 
-    public HashMap<String, TreeMap<Double, HashMap<String, Number>>> getSuggestedThreads(){
+    public HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> getSuggestedThreads(){
         return cache.getSuggestedThreads();
     }
 
