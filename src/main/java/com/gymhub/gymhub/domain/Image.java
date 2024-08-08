@@ -21,7 +21,7 @@ public class Image {
     private String encodedImage;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", insertable = true, updatable = true)
     private Post post;
 
     public Image(String encodedImage) {

@@ -1,6 +1,7 @@
 package com.gymhub.gymhub;
 
 import com.gymhub.gymhub.domain.Member;
+
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.in_memory.Cache;
