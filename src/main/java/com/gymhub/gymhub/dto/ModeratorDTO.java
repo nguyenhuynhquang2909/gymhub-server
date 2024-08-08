@@ -10,6 +10,7 @@ import lombok.Setter;
 public class ModeratorDTO {
     @Schema(description = "The ID of the moderator")
     private Long id;
+
     @Schema(description = "The username of the moderator")
     private String username;
 
