@@ -1,16 +1,12 @@
 package com.gymhub.gymhub.in_memory;
 
-import io.swagger.v3.oas.models.links.Link;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.catalina.User;
-import org.glassfish.jaxb.core.v2.TODO;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
 /**
@@ -309,12 +305,11 @@ public class Cache {
      * The keys are "By Algorithm" and "By PostCreation"
      */
 
-    public HashMap<String, TreeMap<Double, HashMap<String, Number>>> getSuggestedThreads() {
-
-        HashMap<String, TreeMap<Double, HashMap<String, Number>>> returnCollection = new HashMap<>();
+    public HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> getSuggestedThreads() {
+        HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> returnCollection = new HashMap<>();
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
-        TreeMap<Double, HashMap<String, Number>> returnCollectionByAlgorithm = new TreeMap<>();
-        TreeMap<Double, HashMap<String, Number>> returnCollectionByPostCreation = new TreeMap<>();
+        TreeMap<BigDecimal, HashMap<String, Number>> returnCollectionByAlgorithm = new TreeMap<>();
+        TreeMap<BigDecimal, HashMap<String, Number>> returnCollectionByPostCreation = new TreeMap<>();
         returnCollection.put("By Algorithm", returnCollectionByAlgorithm);
         returnCollection.put("By PostCreation", returnCollectionByPostCreation);
 
@@ -322,14 +317,14 @@ public class Cache {
             Long currentKey = iterator.next();
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(currentKey);
             if (threadParaMap.get("Status").equals(1)) {
-                //This block calculates threads score based on an algorithm and place them in the returnCollectionByAlgorithm TreeMap
-                double score = getThreadRelevancy(threadParaMap);
+                // This block calculates threads score based on an algorithm and places them in the returnCollectionByAlgorithm TreeMap
+                BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, currentKey);
                 returnCollectionByAlgorithm.put(score, returnedMap);
 
-                //This block places threads inside the returnCollectionByPostCreation TreeMap with post creation dates being the keys
-                double postCreationDate = (double) threadParaMap.get("PostCreationDate");
+                // This block places threads inside the returnCollectionByPostCreation TreeMap with post creation dates being the keys
+                BigDecimal postCreationDate = BigDecimal.valueOf(threadParaMap.get("PostCreationDate").longValue());
                 postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
@@ -429,7 +424,7 @@ public class Cache {
     private HashMap<String, Number> returnPostMapBuilder(ConcurrentHashMap<String, Number> postParaMap, Long userId, long postId) {
         HashMap<String, Number> returnedPostMap = new HashMap<>();
         returnedPostMap.put("LikeCount", postParaMap.get("LikeCount"));
-        returnedPostMap.put("id", postId);
+        returnedPostMap.put("PostID", postId);
         returnedPostMap.put("CreationDate", postParaMap.get("CreationDate"));
         if (userId == null) {
             returnedPostMap.put("LikeStatus", 0);
@@ -463,15 +458,15 @@ public class Cache {
      */
     private HashMap<String, Number> returnThreadMapBuilder(ConcurrentHashMap<String, Number> cachedMap, long threadId) {
         HashMap<String, Number> returnedMap = new HashMap<>();
-        returnedMap.put("id", threadId);
+        returnedMap.put("ThreadID", threadId);
         returnedMap.put("LikeCount", cachedMap.get("LikeCount"));
         returnedMap.put("PostCount", cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", cachedMap.get("ViewCount"));
         returnedMap.put("CreationDate", cachedMap.get("CreationDate"));
         if (reportedThreads.containsKey(threadId)){
-            returnedMap.put("Report Status", 1);
+            returnedMap.put("ReportStatus", 1);
         } else {
-            returnedMap.put("Report Status", 0);
+            returnedMap.put("ReportStatus", 0);
         }
         return returnedMap;
 
@@ -498,9 +493,9 @@ public class Cache {
 
     }
 
-    private double ensureUniqueScore(TreeMap<Double, HashMap<String, Number>> collection, double score) {
+    private static BigDecimal ensureUniqueScore(TreeMap<BigDecimal, HashMap<String, Number>> collection, BigDecimal score) {
         if (collection.containsKey(score)) {
-            score += 0.000000001;
+            score = score.add(BigDecimal.valueOf(0.000000001)); // Adding a small value to the score
             return ensureUniqueScore(collection, score);
         } else {
             return score;

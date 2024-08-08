@@ -14,6 +14,8 @@ import com.gymhub.gymhub.in_memory.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,7 +31,7 @@ public class ThreadService {
     private InMemoryRepository inMemoryRepository;
 
     private Random random = new Random();
-
+@Autowired
     private ThreadMapper threadMapper;
     @Autowired
     private Cache cache;
@@ -38,12 +40,16 @@ public class ThreadService {
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Example usage of the cache to get suggested threads
         // The cache returns a HashMap with a list of thread IDs
-        HashMap<String, TreeMap<Double, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
+        HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
+        System.out.println("SuggestedThreads: " + suggestedThreads);
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
         for (String key : suggestedThreads.keySet()) {
+
             List<ThreadResponseDTO> threadList = new LinkedList<>();
             for (HashMap<String, Number> map: suggestedThreads.get(key).values()){
+                System.out.println(map);
                 Long threadId = (Long) map.get("ThreadID");
+                System.out.println("threadId: " + threadId);
                 Thread thread = threadRepository.findById(threadId)
                         .orElseThrow(() -> new RuntimeException("Thread not found"));
                 threadList.add(threadMapper.toThreadResponseDTO(thread, null));

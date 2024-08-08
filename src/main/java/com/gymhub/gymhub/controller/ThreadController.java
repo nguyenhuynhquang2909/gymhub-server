@@ -34,6 +34,7 @@ public class ThreadController {
     @GetMapping("/suggested")
     public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
         HashMap<String, List<ThreadResponseDTO>> map = threadService.get10SuggestedThreads();
+        System.out.println("Map" + map);
         return ResponseEntity.ok(map);
     }
 
