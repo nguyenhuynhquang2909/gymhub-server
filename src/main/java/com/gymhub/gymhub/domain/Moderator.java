@@ -10,7 +10,7 @@ public class Moderator extends ForumAccount {
     public Moderator() {
     }
 
-    public Moderator(String userName, String password, String email) {
-        super(userName, password, email);
+    public Moderator(Long id, String userName, String password, String email) {
+        super(id, userName, password, email);
     }
 }
