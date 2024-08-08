@@ -39,4 +39,9 @@ public class Member extends ForumAccount {
         super(id, userName, password, email);
         this.joinDate = joinDate;
     }
+
+    public Member(String userName, String password, String email, Date joinDate) {
+        super(null, userName, password, email);  // Pass null for the id
+        this.joinDate = joinDate;
+    }
 }
