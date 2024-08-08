@@ -10,8 +10,10 @@ import java.util.List;
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
     List<Thread> findByCategory(String category);
+
     List<Thread> findByOwnerId(Long ownerId);
-//    List<Thread> findByOwner(String ownerId);
-//    List<Thread> findByAuthor_Id(Long authorId);
+
+    @EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
+    List<Thread> findAll();
 }
 
