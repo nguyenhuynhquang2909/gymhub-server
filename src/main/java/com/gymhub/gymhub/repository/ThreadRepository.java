@@ -2,6 +2,7 @@ package com.gymhub.gymhub.repository;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import com.gymhub.gymhub.domain.Thread;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

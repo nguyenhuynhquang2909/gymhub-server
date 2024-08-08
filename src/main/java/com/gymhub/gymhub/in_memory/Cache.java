@@ -90,12 +90,12 @@ public class Cache {
     /**
      * A set of reported thread IDs.
      */
-    Set<Long> reportedThreads = new HashSet<>();
+    HashMap<Long, String> reportedThreads = new HashMap<>();
 
     /**
      * A set of reported post IDs.
      */
-    Set<Long> reportedPosts = new HashSet<>();
+    HashMap<Long, String> reportedPosts = new HashMap<>();
 
     /**
      * A map containing the ids of banned user and the date (in millisecond) their bans are lifted
@@ -191,17 +191,17 @@ public class Cache {
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
 
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changeThreadStatus(long threadId, String category, int from, int to) {
+    //TODO This action must be logged. Create a subclass extending Action class for this method<<<<<<< trung_branch
+    public boolean changeThreadStatus(long threadId, String category, int from, int to, String reason){
         Long threadID = allThreadID.get(threadId);
         if (from == 0 && to == 1) {
             threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(1).add(threadID);
-            reportedThreads.add(threadID);
             return true;
         } else if (from == 1 && to == 0) {
             threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(0).add(threadID);
+            reportedThreads.put(threadID, reason);
             return true;
         } else {
             return false;
@@ -220,16 +220,16 @@ public class Cache {
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changePostStatus(long postId, long threadId, String category, int from, int to) {
+    public boolean changePostStatus(long postId, long threadId, String category, int from, int to, String reason){
         Long postID = allPostId.get(postId);
         if (from == 0 && to == 1) {
             postListByThreadIdAndStatus.get(threadId).get(0).remove(postID);
             postListByThreadIdAndStatus.get(threadId).get(1).add(postID);
-            reportedPosts.add(postID);
             return true;
         } else if (from == 1 && to == 0) {
             postListByThreadIdAndStatus.get(threadId).get(1).remove(postID);
             postListByThreadIdAndStatus.get(threadId).get(0).add(postID);
+            reportedPosts.put(postID, reason);
             return true;
         } else {
             return false;
@@ -389,8 +389,6 @@ public class Cache {
             count++;
         }
         return true;
-
-
     }
 
     /**
@@ -441,7 +439,9 @@ public class Cache {
                 returnedPostMap.put("LikeStatus", 0);
             }
         }
-        if (reportedPosts.contains(postId)) {
+
+      
+        if (reportedPosts.containsKey(postId)){
             returnedPostMap.put("ReportStatus", 1);
         } else {
             returnedPostMap.put("ReportStatus", 0);
@@ -467,9 +467,7 @@ public class Cache {
         returnedMap.put("PostCount", cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", cachedMap.get("ViewCount"));
         returnedMap.put("CreationDate", cachedMap.get("CreationDate"));
-
-
-        if (reportedThreads.contains(threadId)) {
+        if (reportedThreads.containsKey(threadId)){
             returnedMap.put("Report Status", 1);
         } else {
             returnedMap.put("Report Status", 0);
