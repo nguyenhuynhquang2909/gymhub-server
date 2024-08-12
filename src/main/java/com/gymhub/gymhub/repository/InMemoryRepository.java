@@ -15,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.SubmissionPublisher;
 
@@ -148,6 +149,9 @@ public class InMemoryRepository {
         }
     }
 
+    public HashMap<Integer, LinkedList<Long>> getThreadListByCategoryAndStatus(String category) {
+        return cache.getThreadListByCategoryAndStatus().getOrDefault(category, new HashMap<>());
+    }
 
 
 
