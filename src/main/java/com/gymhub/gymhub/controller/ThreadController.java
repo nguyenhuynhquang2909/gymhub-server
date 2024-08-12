@@ -93,7 +93,8 @@ public class ThreadController {
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
-        return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id));
+      /*  return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id));*/
+        return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id, limit, page));
     }
 
     @Operation(

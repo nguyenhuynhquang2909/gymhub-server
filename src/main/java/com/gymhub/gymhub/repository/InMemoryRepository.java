@@ -56,9 +56,9 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean addThreadToCache(long threadId, String category, int status, long userId) {
-        boolean result = cache.addThreadToCache(threadId, category, status, userId);
-        AddThreadAction action = new AddThreadAction(++actionIdCounter, threadId, category, status, userId);
+    public boolean addThreadToCache(long threadId, String category, String toxicStatus, long userId) {
+        boolean result = cache.addThreadToCache(threadId, category, toxicStatus, userId);
+        AddThreadAction action = new AddThreadAction(++actionIdCounter, threadId, category, toxicStatus, userId);
         logAction(action);
         return result;
     }

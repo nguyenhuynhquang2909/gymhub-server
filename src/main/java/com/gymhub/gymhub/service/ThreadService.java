@@ -37,11 +37,11 @@ public class ThreadService {
     @Autowired
     private Cache cache;
 //helper method
-    public List<ThreadResponseDTO> findThreadFromDatabaseViaCacheThreadId(List<Long> ids) {
-        //get all thread ids from cache
-
-        //pass
-    }
+//    public List<ThreadResponseDTO> findThreadFromDatabaseViaCacheThreadId(List<Long> ids) {
+//        //get all thread ids from cache
+//
+//        //pass
+//    }
 
     //Return the following for this method HashMap<String, List<ThreadResponseDTO>>
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
@@ -130,8 +130,8 @@ public class ThreadService {
         System.out.println(id);
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), LocalDateTime.now());
         thread.setOwner(owner);
-        int status = 1; //Call the AI here
-        inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory().name(), status, owner.getId());
+        String toxicStatus = "notToxic"; //Call the AI here
+        inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
         threadRepository.save(thread);
         return true;
     }
