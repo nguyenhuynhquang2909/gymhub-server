@@ -53,9 +53,12 @@ public class ThreadService {
         for (String key : suggestedThreads.keySet()) {
 
             List<ThreadResponseDTO> threadList = new LinkedList<>();
+            List<Long> threadIds = new LinkedList<>();
             for (HashMap<String, Number> map: suggestedThreads.get(key).values()){
                 System.out.println(map);
                 Long threadId = (Long) map.get("ThreadID");
+                threadIds.add(threadId);
+                //Put all threadId into a list
                 System.out.println("threadId: " + threadId);
                 Thread thread = threadRepository.findById(threadId)
                         .orElseThrow(() -> new RuntimeException("Thread not found"));
@@ -129,6 +132,7 @@ public class ThreadService {
         thread.setOwner(owner);
         int status = 1; //Call the AI here
         inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory().name(), status, owner.getId());
+        threadRepository.save(thread);
         return true;
     }
 
