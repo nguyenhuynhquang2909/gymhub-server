@@ -13,5 +13,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(value = "Post.author", type = EntityGraph.EntityGraphType.LOAD)
     List<Post> findAll();
 
+    List<Post> findByThreadId(Long threadId);
+
+    List<Post> findByAuthorId(Long authorId);
+
+
+
+
 }
 

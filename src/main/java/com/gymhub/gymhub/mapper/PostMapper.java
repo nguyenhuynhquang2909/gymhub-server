@@ -2,6 +2,7 @@ package com.gymhub.gymhub.mapper;
 
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Image;
+import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.PostRequestDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -48,4 +49,6 @@ public class PostMapper {
         dto.setThreadId(post.getThread().getId().toString());
         return dto;
     }
+
+
 }

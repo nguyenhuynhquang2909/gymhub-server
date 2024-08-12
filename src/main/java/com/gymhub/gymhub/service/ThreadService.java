@@ -4,6 +4,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
+import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
@@ -13,6 +14,8 @@ import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.in_memory.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -128,11 +131,15 @@ public class ThreadService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         long id = random.nextLong(50);
-        System.out.println(id);
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), LocalDateTime.now());
+        System.out.println("Generated ID: " + id);
+
+        String category = threadRequestDTO.getCategory().name();
+        System.out.println(category);
+
+        Thread thread = new Thread(id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
         thread.setOwner(owner);
         String toxicStatus = "notToxic"; //Call the AI here
-        inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
         threadRepository.save(thread);
         return true;
     }
@@ -142,15 +149,26 @@ public class ThreadService {
                 reportRequestDTO.getFrom(), reportRequestDTO.getTo(), reportRequestDTO.getReason());
     }
 
-    public ThreadResponseDTO updateThread(Long threadId, ThreadRequestDTO threadRequestDTO) {
+    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
 
-        Thread thread = threadRepository.findById(threadId)
+        // Fetch the thread using the threadId from the DTO
+        Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
                 .orElseThrow(() -> new RuntimeException("Thread not found"));
 
-        thread.setName(threadRequestDTO.getTitle());
-        thread.setCategory(threadRequestDTO.getCategory().toString());
+        // Check if the author of the thread matches the user making the request
+        if (!thread.getOwner().getId().equals(updateThreadTitleDTO.getUserId())) {
+            // Return a forbidden response if the IDs do not match
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
 
+        // Update the thread title
+        thread.setTitle(updateThreadTitleDTO.getTitle());
+
+        // Save the updated thread
         thread = threadRepository.save(thread);
-        return threadMapper.toThreadResponseDTO(thread, thread.getOwner().getId());
+
+        // Convert the updated thread to a DTO and return it in the response
+        ThreadResponseDTO responseDTO = threadMapper.toThreadResponseDTO(thread, thread.getOwner().getId());
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 }

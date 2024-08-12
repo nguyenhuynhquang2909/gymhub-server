@@ -12,6 +12,8 @@ import com.gymhub.gymhub.repository.ThreadRepository;
 
 import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,29 +35,54 @@ public class PostService {
     @Autowired
     private Cache cache;
 
-//    public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
-//       List<Post> posts = postRepository.findByThreadId(threadId);
-//        return posts.stream()
-//                .map(post -> PostMapper.toPostResponseDTO(post, cache, null)) // Replace null with actual userId if needed
-//                .collect(Collectors.toList());
-//    }
-//
-//    public List<PostResponseDTO> getPostsByUserId(Long userId) {
-//        List<Post> posts = postRepository.findByAuthorId(userId);
-//        return posts.stream()
-//                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId))
-//                .collect(Collectors.toList());
-//    }
-//
-//    public void createPost(Long userId, Long threadId, PostRequestDTO postRequestDTO) {
-//        Optional<Member> author = memberRepository.findById(userId);
-//        Optional<Thread> thread = threadRepository.findById(threadId);
-//
-//        if (author.isPresent() && thread.isPresent()) {
-//            Post post = PostMapper.toPost(postRequestDTO, author.get(), thread.get());
-//            postRepository.save(post);
-//        } else {
-//            throw new IllegalArgumentException("User or Thread not found");
-//        }
-//    }
+    public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
+       List<Post> posts = postRepository.findByThreadId(threadId);
+        return posts.stream()
+                .map(post -> PostMapper.toPostResponseDTO(post, cache, null)) // Replace null with actual userId if needed
+                .collect(Collectors.toList());
+    }
+
+    public List<PostResponseDTO> getPostsByUserId(Long userId) {
+        List<Post> posts = postRepository.findByAuthorId(userId);
+        return posts.stream()
+                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId))
+                .collect(Collectors.toList());
+    }
+
+    public ResponseEntity<Void> createPost(Long userId, Long threadId, PostRequestDTO postRequestDTO) {
+        Optional<Member> author = userRepository.findById(userId);
+        Optional<Thread> thread = threadRepository.findById(threadId);
+
+        if (author.isPresent() && thread.isPresent()) {
+            Post post = PostMapper.toPost(postRequestDTO, author.get(), thread.get());
+            postRepository.save(post);
+            return new ResponseEntity<>(HttpStatus.CREATED); // Return CREATED status
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return NOT FOUND if user or thread is missing
+        }
+    }
+
+    public ResponseEntity<Void> updatePostContent(Long userId, Long threadId, Long postId, String content) {
+        Optional<Member> member = userRepository.findById(userId);
+        Optional<Thread> thread = threadRepository.findById(threadId);
+        Optional<Post> post = postRepository.findById(postId);
+        if (member.isPresent() && thread.isPresent() && post.isPresent()) {
+            Post existingPost = post.get(); //get post object from Optional<Post>
+            if (existingPost.getAuthor().getId().equals(member.get().getId())) {
+                existingPost.setContent(content);  // Set the new content
+                postRepository.save(existingPost);  // Save the updated post
+                return new ResponseEntity<>(HttpStatus.OK); // Return OK status after updating
+            } else {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN); // Return FORBIDDEN if the user is not the author
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return NOT FOUND if user, thread, or post is missing
+        }
+    }
+
+
+
+
+
+
 }

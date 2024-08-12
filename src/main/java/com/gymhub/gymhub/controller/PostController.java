@@ -1,12 +1,14 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.dto.IncreDecreDTO;
-import com.gymhub.gymhub.dto.UpdateContentDTO;
 import com.gymhub.gymhub.dto.PostRequestDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
+import com.gymhub.gymhub.dto.UpdatePostContentDTO;
+import com.gymhub.gymhub.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,27 +20,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/post")
 public class PostController {
+@Autowired
+    PostService postService;
 
     @Operation(
             description = "This operation returns a list of post belongs to the thread whose Id is included in the URL",
             tags = "Post Pages"
     )
     @GetMapping("/thread-{id}")
-    public List<PostResponseDTO> getPosts(
+    public List<PostResponseDTO> getPostsInsideAThread(
             @PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-
-            )
-    {
-        PostResponseDTO post1 = new PostResponseDTO();
-        PostResponseDTO post2 = new PostResponseDTO();
-        List<PostResponseDTO> posts = new ArrayList<>();
-        posts.add(post1);
-        posts.add(post2);
-        return posts;
+    ) {
+        // Call the service method to get the posts for the thread
+        return postService.getPostsByThreadId(id);
     }
 
     @Operation(
@@ -46,20 +44,14 @@ public class PostController {
             tags = "User Profile Page"
     )
     @GetMapping("/user-{id}")
-    public List<PostResponseDTO> getUserPosts(
+    public List<PostResponseDTO> getPostsOfAMember(
             @PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page)
     {
-        PostResponseDTO post1 = new PostResponseDTO();
-        PostResponseDTO post2 = new PostResponseDTO();
-        List<PostResponseDTO> posts = new ArrayList<>();
-        posts.add(post1);
-        posts.add(post2);
-
-        return posts;
+        return postService.getPostsByUserId(id);
 
     }
 
@@ -75,8 +67,9 @@ public class PostController {
             @PathVariable Long threadId,
             @RequestBody PostRequestDTO post)
     {
-        return new ResponseEntity<>(HttpStatus.OK);
+        return postService.createPost(userId, threadId, post);
     }
+
 
     @Operation(
             description = "The operation increments or decrements the like count of a post",
@@ -94,23 +87,28 @@ public class PostController {
     }
 
     @Operation(
-            description = "This operation changes the content of a post",
+            description = "This operation changes the content of a post (checks if the member is the post owner)",
             tags = "Post Container"
     )
-    @PatchMapping("/update/post-{id}")
-    public ResponseEntity<Void> updatePost(
+    @PatchMapping("/updateContentOnly/post-{id}")
+    public ResponseEntity<Void> updatePostContentOnly(
             @Parameter(description = "The id of the post whose content is to be changed", required = true)
             @PathVariable Long id,
-            @RequestBody UpdateContentDTO body) {
-        return new ResponseEntity<>(HttpStatus.OK);
+            @RequestBody UpdatePostContentDTO body) {
+        // Extract userId and threadId from the DTO or the session
+        Long userId = body.getAuthorId(); // Assuming UpdateContentDTO has a userId field
+        Long threadId = body.getThreadId(); // Assuming UpdateContentDTO has a threadId field
+        // Call the service method to update the post content
+        return postService.updatePostContent(userId, threadId, id, body.getContent());
     }
+
 
     @Operation(
             description = "This operation reports a post to the server and sends a String as the reason",
             tags = "Post Container"
     )
     @PatchMapping("/report/post-{id}")
-    public ResponseEntity<Void> reportThread(
+    public ResponseEntity<Void> reportPost(
             @RequestBody String reason,
             @Parameter(description = "The id of the post to be reported", required = true)
             @PathVariable Long id){

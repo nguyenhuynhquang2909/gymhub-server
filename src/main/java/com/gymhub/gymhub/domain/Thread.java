@@ -29,10 +29,11 @@ public class Thread extends ForumUnit {
     @Column(name = "category", nullable = false, updatable = true)
     private String category;
 
-
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private Member owner;
+
+
 
 
     public Thread(String name, LocalDateTime creationDateTime) {
@@ -40,6 +41,17 @@ public class Thread extends ForumUnit {
         this.name = name;
     }
 
-    public Thread(long id, String title, LocalDateTime now) {
+    public Thread(LocalDateTime now, String name) {
+        super(now);
+        this.name = name;
     }
+
+    public Thread(long id, String title,String category, LocalDateTime creationDateTime) {
+        super(creationDateTime);
+        this.setId(id);  // Sets the ID explicitly
+        this.name = title;
+        this.category = category;
+    }
+
+
 }
