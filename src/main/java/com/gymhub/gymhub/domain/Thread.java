@@ -39,4 +39,7 @@ public class Thread extends ForumUnit {
         super(creationDateTime);
         this.name = name;
     }
+
+    public Thread(long id, String title, LocalDateTime now) {
+    }
 }

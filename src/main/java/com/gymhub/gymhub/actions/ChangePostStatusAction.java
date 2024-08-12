@@ -7,14 +7,16 @@ public class ChangePostStatusAction extends MustLogAction {
     private String category;
     private int from;
     private int to;
+    private String reason;
     public ChangePostStatusAction(Long actionId, long postId, long threadId, String category, int from,
-            int to) {
+                                  int to, String reason) {
         super(actionId, "ChangePostStatus");
         this.postId = postId;
         this.threadId = threadId;
         this.category = category;
         this.from = from;
         this.to = to;
+        this.reason = reason;
     }
     public long getPostId() {
         return postId;
@@ -31,5 +33,8 @@ public class ChangePostStatusAction extends MustLogAction {
     public int getTo() {
         return to;
     }
-    
+    public String getReason() {
+        return reason;
+    }
+
 }

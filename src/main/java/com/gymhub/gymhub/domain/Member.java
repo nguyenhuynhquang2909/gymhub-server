@@ -39,4 +39,7 @@ public class Member extends ForumAccount {
         super(userName, password, email);
         this.joinDate = joinDate;
     }
+
+    public Member(Long memberId, String userName, String encode, String email, Date date) {
+    }
 }
