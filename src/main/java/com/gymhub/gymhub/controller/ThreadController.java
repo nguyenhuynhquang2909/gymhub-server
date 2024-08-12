@@ -57,7 +57,7 @@ public class ThreadController {
             description = "This operation returns a number of threads that belong to the 'advice' category",
             tags = {"Homepage", "Flex-Thread Page"}
     )
-    @GetMapping("/flexing")
+    @GetMapping("/advise")
     public ResponseEntity<List<ThreadResponseDTO>> getAdviseThread(
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
@@ -72,7 +72,7 @@ public class ThreadController {
             description = "This operation returns a number of threads that belong to the 'supplement' category",
             tags = {"Homepage", "Flex-Thread Page"}
     )
-    @GetMapping("/flexing")
+    @GetMapping("/supplement")
     public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
