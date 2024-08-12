@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
-    private String name;
+    private String title;
 
 
     @Column(name = "category", nullable = false, updatable = true)
@@ -35,9 +35,17 @@ public class Thread extends ForumUnit {
     private Member owner;
 
 
-    public Thread(String name, LocalDateTime creationDateTime) {
+    public Thread(String title, String category, Member owner) {
+        this.title = title;
+        this.category = category;
+        this.owner = owner;
+    }
+
+    public Thread(LocalDateTime creationDateTime, String title, String category, Member owner) {
         super(creationDateTime);
-        this.name = name;
+        this.title = title;
+        this.category = category;
+        this.owner = owner;
     }
 
     public Thread(long id, String title, LocalDateTime now) {

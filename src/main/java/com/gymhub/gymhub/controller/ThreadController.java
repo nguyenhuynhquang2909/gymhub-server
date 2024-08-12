@@ -4,6 +4,7 @@ import com.gymhub.gymhub.dto.IncreDecreDTO;
 import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,7 +58,7 @@ public class ThreadController {
             description = "This operation returns a number of threads that belong to the 'advice' category",
             tags = {"Homepage", "Flex-Thread Page"}
     )
-    @GetMapping("/flexing")
+    @GetMapping("/advise")
     public ResponseEntity<List<ThreadResponseDTO>> getAdviseThread(
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
@@ -72,7 +73,7 @@ public class ThreadController {
             description = "This operation returns a number of threads that belong to the 'supplement' category",
             tags = {"Homepage", "Flex-Thread Page"}
     )
-    @GetMapping("/flexing")
+    @GetMapping("/supplement")
     public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
@@ -121,9 +122,20 @@ public class ThreadController {
     )
     @PatchMapping("/report")
     public ResponseEntity<Void> reportThread(@RequestBody ReportRequestDTO reportRequestDTO){
-        return  new ResponseEntity<>(HttpStatus.OK);
+        return  new ResponseEntity<>(HttpStatus.OK); //not done
 
 }
+
+    @Operation(
+            description = "This operation updates the thread title (checks if the member is the thread owner)",
+            tags = "Thread Containers"
+    )
+    @PatchMapping("/update/thread-title")
+    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
+            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
+
+        return threadService.updateThread(updateThreadTitleDTO);
+    }
 
 }
 
