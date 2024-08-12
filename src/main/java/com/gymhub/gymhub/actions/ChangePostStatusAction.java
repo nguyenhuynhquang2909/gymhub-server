@@ -9,7 +9,7 @@ public class ChangePostStatusAction extends MustLogAction {
     private int to;
     private String reason;
     public ChangePostStatusAction(Long actionId, long postId, long threadId, String category, int from,
-            int to, String reason) {
+                                  int to, String reason) {
         super(actionId, "ChangePostStatus");
         this.postId = postId;
         this.threadId = threadId;
@@ -36,5 +36,5 @@ public class ChangePostStatusAction extends MustLogAction {
     public String getReason() {
         return reason;
     }
-    
+
 }

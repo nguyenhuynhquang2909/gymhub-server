@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 
 public abstract class ForumUnit {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
@@ -24,8 +25,7 @@ public abstract class ForumUnit {
 
 
 
-    public ForumUnit(Long id, LocalDateTime creationDateTime) {
-        this.id = id;
+    public ForumUnit(LocalDateTime creationDateTime) {
         this.creationDateTime = creationDateTime;
 
     }

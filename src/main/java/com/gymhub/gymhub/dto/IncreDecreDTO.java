@@ -11,10 +11,4 @@ import lombok.Setter;
 public class IncreDecreDTO {
     @Schema(description = "An enum with 2 possible values - INCREMENT and DECREMENT")
     private ActionEnum actionDTO;
-
-    @Schema(description = "The id of the user who performs the action")
-    private Long userId;
-
-    @Schema(description = "The id of the post affected by the action")
-    private Long postId;
 }

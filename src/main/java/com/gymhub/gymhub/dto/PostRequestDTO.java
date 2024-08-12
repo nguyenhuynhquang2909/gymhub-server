@@ -14,10 +14,7 @@ import java.util.List;
 @Schema(description = "This defines all post-related fields that clients need to send in request body")
 public class PostRequestDTO {
 
-
-    @Schema(description = "id of the post affected by the action")
-    private Long postId;
-
+    @Setter
     @Schema(description = "id of the author of the post")
     private Long authorId;
 

@@ -13,12 +13,8 @@ import java.util.List;
 @Schema(description = "Contains the post's new content and images")
 public class UpdateContentDTO {
 
-    @Schema(description = "Id of the post affected by the action")
-    private Long postId;
-
     @Schema(description = "New Content")
     private String content;
-
     @Schema(description = "New images encoded as Strings")
     private List<String> encodedImage;
 

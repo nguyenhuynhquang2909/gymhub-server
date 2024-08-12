@@ -23,6 +23,8 @@ public class ThreadResponseDTO {
     private LocalDateTime creationDateTime;
 
     @Setter
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(description = "like count of the thread")
     private int likeCount;
 
@@ -31,8 +33,12 @@ public class ThreadResponseDTO {
     private int viewCount;
 
     @Setter
-    @Schema(description = "True if the thread has been reported. Once reported, the thread cannot be show to member")
+    @Schema(description = "True if the thread has been reported")
     private boolean beenReport;
+
+    @Setter
+    @Schema(description = "true if the thread has been liked by the user")
+    private boolean beenLiked;
 
     @Setter
     @Schema(description = "The post count of the thread")

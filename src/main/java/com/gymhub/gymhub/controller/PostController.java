@@ -1,6 +1,9 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.dto.IncreDecreDTO;
+import com.gymhub.gymhub.dto.UpdateContentDTO;
+import com.gymhub.gymhub.dto.PostRequestDTO;
+import com.gymhub.gymhub.dto.PostResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,8 +67,12 @@ public class PostController {
             description = "This operation creates a new post",
             tags = "Post Page"
     )
-    @PostMapping("/new")
+    @PostMapping("/new/user-{userId}/thread-{threadId}")
     public ResponseEntity<Void> createPost(
+            @Parameter(description = "The id of the user this post belongs to", required = true)
+            @PathVariable Long userId,
+            @Parameter(description = "The id of the thread this post belongs to", required = true)
+            @PathVariable Long threadId,
             @RequestBody PostRequestDTO post)
     {
         return new ResponseEntity<>(HttpStatus.OK);
@@ -75,8 +82,12 @@ public class PostController {
             description = "The operation increments or decrements the like count of a post",
             tags = "Post Container"
     )
-    @PatchMapping("/like")
+    @PatchMapping("/like/post-{postId}/user-{userId}")
     public ResponseEntity<Void> changePostLike(
+            @Parameter(description = "The id of the post whose like count is to be changed", required = true)
+            @PathVariable Long postId,
+            @Parameter(description = "The user who likes or undoes their like", required = true)
+            @PathVariable Long userId,
             @RequestBody IncreDecreDTO body)
     {
         return new ResponseEntity<>(HttpStatus.OK);
@@ -86,8 +97,10 @@ public class PostController {
             description = "This operation changes the content of a post",
             tags = "Post Container"
     )
-    @PatchMapping("/update")
+    @PatchMapping("/update/post-{id}")
     public ResponseEntity<Void> updatePost(
+            @Parameter(description = "The id of the post whose content is to be changed", required = true)
+            @PathVariable Long id,
             @RequestBody UpdateContentDTO body) {
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -96,10 +109,11 @@ public class PostController {
             description = "This operation reports a post to the server and sends a String as the reason",
             tags = "Post Container"
     )
-    @PatchMapping("/report")
+    @PatchMapping("/report/post-{id}")
     public ResponseEntity<Void> reportThread(
-            @RequestBody ReportRequestDTO reportRequestDTO
-            ){
+            @RequestBody String reason,
+            @Parameter(description = "The id of the post to be reported", required = true)
+            @PathVariable Long id){
         return  new ResponseEntity<>(HttpStatus.OK);
     }
 

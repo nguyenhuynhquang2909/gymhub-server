@@ -31,21 +31,18 @@ public class Post extends ForumUnit {
     private Thread thread;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images;
+    private List<Image> images = new ArrayList<>();
 
     @Setter
     @ManyToOne
     @JoinColumn(name = "author_id")
     private Member author;
 
-    public Post(Long id, LocalDateTime creationDate, String content, List<Image> images) {
-        super(id, creationDate);
-        this.content = content;
-        this.images = images;
-    }
     public Post(LocalDateTime creationDate, String content, List<Image> images) {
-        super(null, creationDate);  // Pass null for the id
+        super(creationDate);
         this.content = content;
         this.images = images;
     }
+
+
 }

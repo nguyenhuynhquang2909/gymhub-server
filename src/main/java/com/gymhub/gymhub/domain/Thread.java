@@ -18,10 +18,8 @@ import java.time.LocalDateTime;
 @Schema(description = "Details unique to threads")
 @NamedEntityGraph(
         name = "Thread.owner",
-        includeAllAttributes = true,
         attributeNodes = @NamedAttributeNode("owner")
 )
-// Test comment
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
@@ -31,12 +29,17 @@ public class Thread extends ForumUnit {
     @Column(name = "category", nullable = false, updatable = true)
     private String category;
 
+
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private Member owner;
 
-    public Thread(Long id, String name, LocalDateTime creationDateTime) {
-        super(id, creationDateTime);
+
+    public Thread(String name, LocalDateTime creationDateTime) {
+        super(creationDateTime);
         this.name = name;
+    }
+
+    public Thread(long id, String title, LocalDateTime now) {
     }
 }

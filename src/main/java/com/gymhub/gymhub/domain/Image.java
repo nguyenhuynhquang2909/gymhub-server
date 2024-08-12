@@ -11,7 +11,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "images")
 public class Image {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
@@ -21,7 +20,7 @@ public class Image {
     private String encodedImage;
 
     @ManyToOne
-    @JoinColumn(name = "post_id", insertable = true, updatable = true)
+    @JoinColumn(name = "post_id", nullable = false) // Ensure the post_id column exists in your images table
     private Post post;
 
     public Image(String encodedImage) {

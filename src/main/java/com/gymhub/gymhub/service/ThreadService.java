@@ -78,19 +78,20 @@ public class ThreadService {
     //Generate the DTO
 
     public List<ThreadResponseDTO> getAllThreadsByCategory(String category, int limit, int offset) {
-        // Assuming threadListByCategoryAndStatus is a list of thread IDs stored in cache
+        // Retrieve thread IDs from the cache based on the category
         List<Long> threadListByCategoryAndStatus = Optional.ofNullable(
                         inMemoryRepository.getThreadListByCategoryAndStatus(category))
-                .map(statusMap -> statusMap.get(1)) // Assuming status 1
+                .map(statusMap -> statusMap.get(1)) // Assuming status 1 for non-toxic threads
                 .orElse(new LinkedList<>());
 
-        // Initialize an empty list to store the DTOs
+        // Initialize a list to store the DTOs
         List<ThreadResponseDTO> threadResponseDTOs = new ArrayList<>();
 
-        // Iterate through the threadListByCategoryAndStatus with offset and limit
+        // Iterate through the thread IDs with the given offset and limit
         int count = 0;
         for (int i = offset; i < threadListByCategoryAndStatus.size() && count < limit; i++) {
             Long threadId = threadListByCategoryAndStatus.get(i);
+
             // Retrieve thread parameters from the cache
             ConcurrentHashMap<String, Number> threadParams = cache.getParametersForAllThreads().get(threadId);
 
