@@ -13,6 +13,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.TreeMap;
+import java.util.concurrent.SubmissionPublisher;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -32,7 +37,7 @@ public class InMemoryRepository {
     @Autowired
     Cache cache;
 
-    private static final String LOG_FILE_PATH = "logs/cache_actions.log";
+    private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
 
     private void logAction(MustLogAction action) {
@@ -44,29 +49,30 @@ public class InMemoryRepository {
         }
     }
 
+
     public boolean addUser(long userId) {
         boolean result = cache.addUser(userId);
         AddUserAction action = new AddUserAction(++actionIdCounter, userId);
         logAction(action);
         return result;
     }
-    public boolean addThreadToCache(long threadId, String category, int status, long userId) {
-        boolean result = cache.addThreadToCache(threadId, category, status, userId);
-        AddThreadAction action = new AddThreadAction(++actionIdCounter, threadId, category, status, userId);
+    public boolean addThreadToCache(long threadId, String category, String toxicStatus, long userId) {
+        boolean result = cache.addThreadToCache(threadId, category, toxicStatus, userId);
+        AddThreadAction action = new AddThreadAction(++actionIdCounter, threadId, category, toxicStatus, userId);
         logAction(action);
         return result;
     }
 
 
-    public boolean changeThreadStatus(long threadId, String category, int from, int to) {
-        boolean result = cache.changeThreadStatus(threadId, category, from, to);
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, threadId, category, from, to);
+    public boolean changeThreadStatus(long threadId, String category, int from, int to, String reason) {
+        boolean result = cache.changeThreadStatus(threadId, category, from, to, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, threadId, category, from, to, reason);
         logAction(action);
         return result;
     }
-    public boolean changePostStatus(long postId, long threadId, String category, int from, int to) {
-        boolean result = cache.changePostStatus(postId, threadId, category, from, to);
-        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, postId, threadId, category, from, to);
+    public boolean changePostStatus(long postId, long threadId, String category, int from, int to, String reason) {
+        boolean result = cache.changePostStatus(postId, threadId, category, from, to, reason);
+        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, postId, threadId, category, from, to, reason);
         logAction(action);
         return result;
     }
@@ -81,6 +87,22 @@ public class InMemoryRepository {
         LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, threadId, mode);
         logAction(action);
         return result;
+    }
+
+    public HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> getSuggestedThreads(){
+        return cache.getSuggestedThreads();
+    }
+
+    public boolean returnThreadByCategory(String category, Long userId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher){
+        return cache.returnThreadByCategory(category, userId, limit, offset, publisher);
+    }
+
+    public boolean returnPostByThreadId(long threadId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher, Long userId){
+        return cache.returnPostByThreadId(threadId, limit, offset, publisher, userId);
+    }
+
+    public boolean checkBan(Long userId){
+        return cache.checkBan(userId);
     }
 
 
@@ -101,12 +123,12 @@ public class InMemoryRepository {
 
                     else if (action instanceof ChangeThreadStatusAction) {
                         ChangeThreadStatusAction changeThreadStatusAction = (ChangeThreadStatusAction) action;
-                        cache.changeThreadStatus(changeThreadStatusAction.getThreadId(), changeThreadStatusAction.getCategory(), changeThreadStatusAction.getFrom(), changeThreadStatusAction.getTo());
+                        cache.changeThreadStatus(changeThreadStatusAction.getThreadId(), changeThreadStatusAction.getCategory(), changeThreadStatusAction.getFrom(), changeThreadStatusAction.getTo(), changeThreadStatusAction.getReason());
                     }
 
                     else if (action instanceof ChangePostStatusAction) {
                         ChangePostStatusAction changePostStatusAction = (ChangePostStatusAction) action;
-                        cache.changePostStatus(changePostStatusAction.getPostId(), changePostStatusAction.getThreadId(), changePostStatusAction.getCategory(),changePostStatusAction.getFrom(), changePostStatusAction.getTo());
+                        cache.changePostStatus(changePostStatusAction.getPostId(), changePostStatusAction.getThreadId(), changePostStatusAction.getCategory(),changePostStatusAction.getFrom(), changePostStatusAction.getTo(), changePostStatusAction.getReason());
                     }
 
                     else if (action instanceof AddPostAction) {
@@ -127,6 +149,9 @@ public class InMemoryRepository {
         }
     }
 
+    public HashMap<Integer, LinkedList<Long>> getThreadListByCategoryAndStatus(String category) {
+        return cache.getThreadListByCategoryAndStatus().getOrDefault(category, new HashMap<>());
+    }
 
 
 

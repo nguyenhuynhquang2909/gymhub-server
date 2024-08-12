@@ -30,13 +30,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
                     .requestMatchers(
-                            "/post/new/**",
-                            "/post/update/**",
-                            "/post/like/**",
-                            "/post/report/**",
-                            "/thread/new/**",
-                            "/thread/like/**",
-                            "/thread/report/**").authenticated()
+                            "/post/new/",
+                            "/post/update/",
+                            "/post/like/",
+                            "/post/report/",
+                            //"/thread/new/",
+                            "/thread/report/").authenticated()
                     .anyRequest().permitAll()
             )
             .sessionManagement(session -> session

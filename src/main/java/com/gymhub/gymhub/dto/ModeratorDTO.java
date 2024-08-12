@@ -8,6 +8,9 @@ import lombok.Setter;
 @Setter
 @Schema(description = "This defines all moderator-related fields that clients need to send in request body")
 public class ModeratorDTO {
+    @Schema(description = "The ID of the moderator")
+    private Long id;
+
     @Schema(description = "The username of the moderator")
     private String username;
 

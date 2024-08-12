@@ -30,6 +30,7 @@ public class PostMapper {
 
     public static Post toPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
         return new Post(
+                postRequestDTO.getPostId(),
                 LocalDateTime.now(),
                 postRequestDTO.getContent(),
                 postRequestDTO.getEncodedImages().stream()
