@@ -58,6 +58,7 @@ public class Cache {
      */
     HashMap<String, HashMap<Integer, LinkedList<Long>>> threadListByCategoryAndStatus = new HashMap<>();
 
+
     /**
      * A map categorizing posts by thread ID and status, with lists of post IDs.
      */
@@ -84,14 +85,14 @@ public class Cache {
     HashMap<Long, Set<Long>> threadListByUser = new HashMap<>();
 
     /**
-     * A set of reported thread IDs.
+     * A set of Mod's resolved thread IDs.
      */
-    HashMap<Long, String> reportedThreads = new HashMap<>();
+    HashMap<Long, String> resolvedThreads = new HashMap<>();
 
     /**
-     * A set of reported post IDs.
+     * A set of Mod's resolved post IDs.
      */
-    HashMap<Long, String> reportedPosts = new HashMap<>();
+    HashMap<Long, String> resolvedPosts = new HashMap<>();
 
     /**
      * A map containing the ids of banned user and the date (in millisecond) their bans are lifted
@@ -127,12 +128,12 @@ public class Cache {
      *
      * @param threadId the unique identifier of the thread
      * @param category the category under which the thread is categorized
-     * @param status   the status of the thread (e.g., 1: non-toxic, 0: pending)
+     * @param toxicStatus   the status of the thread (e.g., 1: non-toxic, 0: pending)
      * @param userId   the unique identifier of the user who created the thread
      * @return true always, indicating that the thread was successfully added to the cache
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean addThreadToCache(long threadId, String category, int status, long userId) {
+    public boolean addThreadToCache(long threadId, String category, String toxicStatus, long userId) {
         allThreadID.put(threadId, threadId);
         ConcurrentHashMap<String, Number> threadParaMap = new ConcurrentHashMap<>();
         threadParaMap.put("ThreadID", threadId);
@@ -140,7 +141,19 @@ public class Cache {
         threadParaMap.put("ViewCount", 0);
         threadParaMap.put("PostCount", 0);
         threadParaMap.put("CreationDate", System.currentTimeMillis());
-        threadParaMap.put("Status", status);
+        //case for toxicStatus value: convert to boolean number
+        int toxicStatusBooleanNumber = 0;
+
+        if (toxicStatus.equals("notToxic")){
+            toxicStatusBooleanNumber = 1; //notToxic = 1
+        }
+        if (toxicStatus.equals("pending")){
+            toxicStatusBooleanNumber = 0; //pending = 0
+        }
+        threadParaMap.put("Status", toxicStatusBooleanNumber);
+
+        //no need to put thread with toxicStatus = "toxic" to thread cache. Those thread would soon be deleted
+
         parametersForAllThreads.put(threadId, threadParaMap);
         if (!threadListByCategoryAndStatus.containsKey(category)) {
             HashMap<Integer, LinkedList<Long>> threadsByStatus = new HashMap<>();
@@ -148,7 +161,7 @@ public class Cache {
             threadsByStatus.put(1, new LinkedList<>());
             threadListByCategoryAndStatus.put(category, threadsByStatus);
         }
-        threadListByCategoryAndStatus.get(category).get(status).add(threadId);
+        threadListByCategoryAndStatus.get(category).get(toxicStatusBooleanNumber).add(threadId);
         threadListByUser.get(userId).add(threadId);
         LinkedList<Long> nonToxicPosts = new LinkedList<>();
         LinkedList<Long> pendingPosts = new LinkedList<>();
@@ -198,7 +211,7 @@ public class Cache {
         } else if (from == 1 && to == 0) {
             threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(0).add(threadID);
-            reportedThreads.put(threadID, reason);
+            resolvedThreads.put(threadID, reason);
             return true;
         } else {
             return false;
@@ -226,7 +239,7 @@ public class Cache {
         } else if (from == 1 && to == 0) {
             postListByThreadIdAndStatus.get(threadId).get(1).remove(postID);
             postListByThreadIdAndStatus.get(threadId).get(0).add(postID);
-            reportedPosts.put(postID, reason);
+            resolvedPosts.put(postID, reason);
             return true;
         } else {
             return false;
@@ -437,7 +450,7 @@ public class Cache {
         }
 
       
-        if (reportedPosts.containsKey(postId)){
+        if (resolvedPosts.containsKey(postId)){
             returnedPostMap.put("ReportStatus", 1);
         } else {
             returnedPostMap.put("ReportStatus", 0);
@@ -463,7 +476,7 @@ public class Cache {
         returnedMap.put("PostCount", cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", cachedMap.get("ViewCount"));
         returnedMap.put("CreationDate", cachedMap.get("CreationDate"));
-        if (reportedThreads.containsKey(threadId)){
+        if (resolvedThreads.containsKey(threadId)){
             returnedMap.put("ReportStatus", 1);
         } else {
             returnedMap.put("ReportStatus", 0);
@@ -531,7 +544,7 @@ public class Cache {
     public boolean checkIfAThreadHasBeenReportByThreadId(Long threadId) {
         // Get the map tracking threads liked by each user
         // Check if the map contains the memberId
-        if (getReportedThreads().containsKey(threadId)) {
+        if (getResolvedThreads().containsKey(threadId)) {
             return true;
         }
 
@@ -577,7 +590,7 @@ public Integer getPostLikeCountByPostId(Long postId) {
     }
 
     public boolean checkIfAPostHasBeenReported(Long postId) {
-        return reportedPosts.containsKey(postId);
+        return resolvedPosts.containsKey(postId);
     }
 
     public boolean checkIfAPostHasBeenLikedByAMemberId(Long postId, Long memberId) {

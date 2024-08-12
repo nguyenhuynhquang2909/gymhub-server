@@ -51,7 +51,7 @@ public class GymhubApplication {
 		System.out.println("Duong hello test ");
 		List<Member> members = userRepository.findAll();
 		Iterator<Member> iterator = members.iterator();
-		Random random = new Random();
+
 		while(iterator.hasNext()){
 			cache.addUser(iterator.next().getId());
 		}
@@ -60,7 +60,7 @@ public class GymhubApplication {
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 			Thread thread = iterator2.next();
-				cache.addThreadToCache(thread.getId(), thread.getCategory(), 1, thread.getOwner().getId());
+				cache.addThreadToCache(thread.getId(), thread.getCategory(), "notToxic", thread.getOwner().getId());
 		}
 
 		List<Post> posts = postRepository.findAll();
@@ -71,6 +71,7 @@ public class GymhubApplication {
 		}
 
 		System.out.println("Cache Initialization: Done");
+		System.out.println("Swagger UI is available at ");
 
 
 
