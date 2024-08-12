@@ -4,6 +4,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.ThreadService;
@@ -135,9 +136,20 @@ public class ThreadController {
     )
     @PatchMapping("/report")
     public ResponseEntity<Void> reportThread(@RequestBody ReportRequestDTO reportRequestDTO){
-        return  new ResponseEntity<>(HttpStatus.OK);
+        return  new ResponseEntity<>(HttpStatus.OK); //not done
 
 }
+
+    @Operation(
+            description = "This operation updates the thread title (checks if the member is the thread owner)",
+            tags = "Thread Containers"
+    )
+    @PatchMapping("/update/thread-title")
+    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
+            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
+
+        return threadService.updateThread(updateThreadTitleDTO);
+    }
 
 }
 
