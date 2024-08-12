@@ -38,47 +38,50 @@ public class ThreadController {
         return ResponseEntity.ok(map);
     }
 
-//    @Operation(
-//            description = "This operation returns a number of threads that belong to the \"flexing\" category",
-//            tags = {"Homepage", "Flex-Thread Page"}
-//    )
-//    @GetMapping("/flexing")
-//    public ResponseEntity<List<ThreadResponseDTO>> getFlexingThread(
-//            @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
-//            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-//            @Parameter(description = "The next page to be fetched", required = false)
-//            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-//    ) {
-//        return ResponseEntity.ok(threadService.getAllThreadsByCategory("flexing"));
-//    }
+    @Operation(
+            description = "This operation returns a number of threads that belong to the 'flexing' category",
+            tags = {"Homepage", "Flex-Thread Page"}
+    )
+    @GetMapping("/flexing")
+    public ResponseEntity<List<ThreadResponseDTO>> getFlexingThread(
+            @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
+            @Parameter(description = "The next page to be fetched", required = false)
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        int offset = page * limit; // Calculate the offset based on page and limit
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("flexing", limit, offset));
+    }
 
-//    @Operation(
-//            description = "This operation returns a number of threads that belong to the \"advise\" category",
-//            tags = {"Homepage", "Advise-Thread Page"}
-//    )
-//    @GetMapping("/advises")
-//    public ResponseEntity<List<ThreadResponseDTO>> getAdvisesThread(
-//            @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
-//            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-//            @Parameter(description = "The next page to be fetched", required = false)
-//            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-//    ) {
-//        return ResponseEntity.ok(threadService.getAllThreadsByCategory("advices"));
-//    }
+    @Operation(
+            description = "This operation returns a number of threads that belong to the 'advice' category",
+            tags = {"Homepage", "Flex-Thread Page"}
+    )
+    @GetMapping("/flexing")
+    public ResponseEntity<List<ThreadResponseDTO>> getAdviseThread(
+            @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
+            @Parameter(description = "The next page to be fetched", required = false)
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        int offset = page * limit; // Calculate the offset based on page and limit
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("advice", limit, offset));
+    }
 
-//    @Operation(
-//            description = "This operation returns a number of threads that belong to the \"supplement\" category",
-//            tags = {"Homepage", "Advise-Thread Page"}
-//    )
-//    @GetMapping("/supplement")
-//    public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
-//            @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
-//            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-//            @Parameter(description = "The next page to be fetched", required = false)
-//            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
-//    ) {
-//        return ResponseEntity.ok(threadService.getAllThreadsByCategory("supplement"));
-//    }
+    @Operation(
+            description = "This operation returns a number of threads that belong to the 'supplement' category",
+            tags = {"Homepage", "Flex-Thread Page"}
+    )
+    @GetMapping("/flexing")
+    public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
+            @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
+            @Parameter(description = "The next page to be fetched", required = false)
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+    ) {
+        int offset = page * limit; // Calculate the offset based on page and limit
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory("supplement", limit, offset));
+    }
 
     @Operation(
             description = "This operation returns a number of threads that belong to a user",
