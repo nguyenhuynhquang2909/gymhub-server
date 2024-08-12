@@ -1,11 +1,12 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.dto.IncreDecreDTO;
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.ReportRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.repository.ThreadRepository;
+import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -27,6 +30,8 @@ public class ThreadController {
     private ThreadService threadService;
     @Autowired
     private ThreadRepository threadRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Operation(
             description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post",
@@ -107,12 +112,21 @@ public class ThreadController {
     )
 
     @PostMapping("/new")
-    public ResponseEntity<Void> createNewThread(
-            @RequestBody ThreadRequestDTO threadRequest){
+    public ResponseEntity<String> createNewThread(
+            @RequestBody ThreadRequestDTO threadRequest,
+            @AuthenticationPrincipal UserDetails userDetails
+            ){
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        String username = userDetails.getUsername();
+        Member member = userRepository.findByUserName(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+        threadRequest.setAuthorId(member.getId());
         System.out.println(threadRepository.findAll().size());
         threadService.createThread(threadRequest);        //New API this line
         System.out.println(threadRepository.findAll().size());
-        return  new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

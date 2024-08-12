@@ -29,4 +29,20 @@ public abstract class ForumUnit {
         this.creationDateTime = creationDateTime;
 
     }
+
+    public ForumUnit(Long id, LocalDateTime creationDateTime) {
+        this.id = id;
+        this.creationDateTime = creationDateTime;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.creationDateTime == null) {
+            this.creationDateTime = LocalDateTime.now();
+        }
+    }
 }

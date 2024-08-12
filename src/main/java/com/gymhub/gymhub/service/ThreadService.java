@@ -131,11 +131,15 @@ public class ThreadService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         long id = random.nextLong(50);
-        System.out.println(id);
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), LocalDateTime.now());
+        System.out.println("Generated ID: " + id);
+
+        String category = threadRequestDTO.getCategory().name();
+        System.out.println(category);
+
+        Thread thread = new Thread(id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
         thread.setOwner(owner);
         String toxicStatus = "notToxic"; //Call the AI here
-        inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
         threadRepository.save(thread);
         return true;
     }
