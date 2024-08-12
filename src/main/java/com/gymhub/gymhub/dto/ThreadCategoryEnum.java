@@ -10,8 +10,8 @@ import java.io.IOException;
 
 @JsonDeserialize(using = ThreadCategoryEnumDeserializer.class)
 public enum ThreadCategoryEnum {
-    flexing,
-    advise,
-    supplement
+    FLEXING,
+    ADVISE,
+    SUPPLEMENT
 }
 

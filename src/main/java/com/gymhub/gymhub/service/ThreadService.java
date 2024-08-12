@@ -162,7 +162,7 @@ public class ThreadService {
         }
 
         // Update the thread title
-        thread.setTitle(updateThreadTitleDTO.getTitle());
+
 
         // Save the updated thread
         thread = threadRepository.save(thread);
