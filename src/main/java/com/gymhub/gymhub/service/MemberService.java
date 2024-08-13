@@ -1,6 +1,5 @@
 package com.gymhub.gymhub.service;
 
-
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.repository.MemberRepository;
@@ -15,38 +14,30 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-
 @Service
-public class MemberService implements UserDetailsService{
+public class MemberService {
+
     @Autowired
     private MemberRepository memberRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findMemberByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-        return User.builder()
-                .username(member.getUserName())
-                .password(member.getPassword())
-                .roles("USER")
-                .build();
-    }
 
-    public ResponseEntity<Void> updateMemberInfo(MemberRequestDTO memberRequestDTO){
-        //check if member exist
+
+    public ResponseEntity<Void> updateMemberInfo(MemberRequestDTO memberRequestDTO) {
+        // Check if member exists
         Optional<Member> member = memberRepository.findById(memberRequestDTO.getId());
-        if(member.isPresent()){
+        if (member.isPresent()) {
             Member existingMember = member.get();
+            if (existingMember.getUserName().startsWith("mod")) {
+                throw new IllegalArgumentException("Member username cannot start with 'mod'");
+            }
             existingMember.setPassword(memberRequestDTO.getPassword());
             existingMember.setEmail(memberRequestDTO.getEmail());
             existingMember.setAvatar(memberRequestDTO.getStringAvatar().getBytes());
             existingMember.setBio(memberRequestDTO.getBio());
             memberRepository.save(existingMember);
             return new ResponseEntity<>(HttpStatus.OK);
-        }else {
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    
 }

@@ -55,7 +55,7 @@ public class GymhubApplication {
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 			Thread thread = iterator2.next();
-				cache.addThreadToCache(thread.getId(), thread.getCategory(), "notToxic", thread.getOwner().getId());
+				cache.addThreadToCache(thread.getId(), thread.getCategory(), "NOT-TOXIC", thread.getOwner().getId(), false);
 		}
 
 		List<Post> posts = postRepository.findAll();
@@ -63,7 +63,7 @@ public class GymhubApplication {
 		while(iterator3.hasNext()){
 			Post post = iterator3.next();
 			System.out.println();
-			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), 1);
+			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), "NOT-TOXIC", false);
 		}
 
 		System.out.println("Cache Initialization: Done");

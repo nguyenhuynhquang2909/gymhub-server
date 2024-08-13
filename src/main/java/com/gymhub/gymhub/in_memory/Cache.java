@@ -41,7 +41,8 @@ public class Cache {
      * - "PostCount" (Integer): The number of posts in the thread.
      * - "CreationDate" (Long): The creation date of the thread (in milliseconds).
      * - "PostCreationDate" (Long): The creation date of the latest post (in millisecond).
-     * - "Status" (Integer): The status of the thread (e.g., 1 for non-toxic, 0 for pending).
+     * - "toxicStatus" (Integer): The status of the thread (e.g., 1 for non-toxic, 0 for pending).
+     * - "resolveStatus" (Integer): Check if thread has been resolved by mod (e.g., 1 for true-resolved, 0 for false-notResolved).
      */
     LinkedHashMap<Long, ConcurrentHashMap<String, Number>> parametersForAllThreads = new LinkedHashMap<>();
 
@@ -54,10 +55,10 @@ public class Cache {
     HashMap<Long, ConcurrentHashMap<String, Number>> parametersForAllPosts = new LinkedHashMap<>();
 
     /**
-     * A map categorizing threads by category and status, with lists of thread IDs. (only store threads with status = boolean 1 [PENDING]
+     * A map categorizing threads by category and status, with lists of thread IDs.
+     * (Only store threads with status = 1 for non-toxic and status = 0 for pending)
      */
     HashMap<String, HashMap<Integer, LinkedList<Long>>> threadListByCategoryAndStatus = new HashMap<>();
-
 
     /**
      * A map categorizing posts by thread ID and status, with lists of post IDs.
@@ -85,20 +86,19 @@ public class Cache {
     HashMap<Long, Set<Long>> threadListByUser = new HashMap<>();
 
     /**
-     * A set of Mod's resolved thread IDs.
+     * A map storing the reason for Mod's resolved thread IDs.
      */
     HashMap<Long, String> resolvedThreads = new HashMap<>();
 
     /**
-     * A set of Mod's resolved post IDs.
+     * A map storing the reason for Mod's resolved post IDs.
      */
     HashMap<Long, String> resolvedPosts = new HashMap<>();
 
     /**
-     * A map containing the ids of banned user and the date (in millisecond) their bans are lifted
+     * A map containing the IDs of banned users and the date (in milliseconds) their bans are lifted.
      */
     HashMap<Long, Long> bannedList = new HashMap<>();
-
 
     /**
      * Adds a user to the system by initializing their associated data structures.
@@ -109,8 +109,6 @@ public class Cache {
      * @param userId the unique identifier of the user to be added
      * @return true always, indicating that the user was successfully added to the system
      */
-
-    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean addUser(long userId) {
         allMemberID.put(userId, userId);
         postLikeListByUser.put(userId, new HashSet<>());
@@ -123,46 +121,47 @@ public class Cache {
     /**
      * Adds a thread to the cache with the specified parameters.
      * This method inserts a new thread into the cache. It initializes
-     * parameters such as like count, view count, post count, and creation date for the thread,
-     * and categorizes it by content category, status and user.
+     * parameters such as like count, view count, post count, creation date, and resolve status for the thread,
+     * and categorizes it by content category, status, and user.
      *
      * @param threadId the unique identifier of the thread
      * @param category the category under which the thread is categorized
-     * @param toxicStatus   the status of the thread (e.g., 1: non-toxic, 0: pending)
+     * @param toxicStatus   the status of the thread (e.g., 1 for non-toxic, 0 for pending)
      * @param userId   the unique identifier of the user who created the thread
+     * @param resolveStatus the status of whether the thread is resolved (true for resolved, false for not resolved)
      * @return true always, indicating that the thread was successfully added to the cache
      */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean addThreadToCache(long threadId, String category, String toxicStatus, long userId) {
+    public boolean addThreadToCache(long threadId, String category, String toxicStatus, long userId, boolean resolveStatus) {
         allThreadID.put(threadId, threadId);
+
+        // Initialize the thread parameters
         ConcurrentHashMap<String, Number> threadParaMap = new ConcurrentHashMap<>();
         threadParaMap.put("ThreadID", threadId);
         threadParaMap.put("LikeCount", 0);
         threadParaMap.put("ViewCount", 0);
         threadParaMap.put("PostCount", 0);
         threadParaMap.put("CreationDate", System.currentTimeMillis());
-        //case for toxicStatus value: convert to boolean number
-        int toxicStatusBooleanNumber = 0;
+        threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0); // Set resolveStatus based on the passed parameter
 
-        if (toxicStatus.equals("NOT-TOXIC")){
-            toxicStatusBooleanNumber = 1; //notToxic = 1
-        }
-        if (toxicStatus.equals("PENDING")){
-            toxicStatusBooleanNumber = 0; //pending = 0
-        }
+        // Convert toxicStatus to a boolean number
+        int toxicStatusBooleanNumber = toxicStatus.equals("NOT-TOXIC") ? 1 : 0;
         threadParaMap.put("Status", toxicStatusBooleanNumber);
 
-        //no need to put thread with toxicStatus = "toxic" to thread cache. Those thread would soon be deleted
-
+        // Add thread parameters to the cache
         parametersForAllThreads.put(threadId, threadParaMap);
-        if (!threadListByCategoryAndStatus.containsKey(category)) {
+
+        // Manage thread list by category and status
+        threadListByCategoryAndStatus.computeIfAbsent(category, k -> {
             HashMap<Integer, LinkedList<Long>> threadsByStatus = new HashMap<>();
             threadsByStatus.put(0, new LinkedList<>());
             threadsByStatus.put(1, new LinkedList<>());
-            threadListByCategoryAndStatus.put(category, threadsByStatus);
-        }
+            return threadsByStatus;
+        });
+
         threadListByCategoryAndStatus.get(category).get(toxicStatusBooleanNumber).add(threadId);
         threadListByUser.get(userId).add(threadId);
+
+        // Initialize post lists for this thread
         LinkedList<Long> nonToxicPosts = new LinkedList<>();
         LinkedList<Long> pendingPosts = new LinkedList<>();
         HashMap<Integer, LinkedList<Long>> postListByStatus = new HashMap<>();
@@ -173,7 +172,6 @@ public class Cache {
         return true;
     }
 
-
     /**
      * Increments the view count for a specified thread.
      * This method updates the view count for the thread identified by the given threadId,
@@ -182,7 +180,6 @@ public class Cache {
      * @param threadId the unique identifier of the thread to be viewed
      * @return true always, indicating that the view operation was successfully completed
      */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean viewThread(long threadId) {
         ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
         threadParaMap.put("ViewCount", (Integer) threadParaMap.get("ViewCount") + 1);
@@ -192,17 +189,16 @@ public class Cache {
     /**
      * Changes the status of a specified thread within a given category and updates the appropriate data structures.
      * This method moves the thread identified by the given threadId from one status category to another.
-     * If the status changes from 0 (pending) to 1 (non-toxic, the thread is added to the reportedThreads list.
+     * If the status changes from 0 (pending) to 1 (non-toxic), the thread is added to the reportedThreads list.
      *
      * @param threadId the unique identifier of the thread whose status is to be changed
      * @param category the category under which the thread is categorized
-     * @param from     the current status of the thread (e.g., 1: non-toxic, 0: pending)
-     * @param to       the new status of the thread (e.g., 1: non-toxic, 0: pending)
+     * @param from     the current status of the thread (e.g., 1 for non-toxic, 0 for pending)
+     * @param to       the new status of the thread (e.g., 1 for non-toxic, 0 for pending)
+     * @param reason   the reason for the status change (used if resolving the thread)
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
-
-    //TODO This action must be logged. Create a subclass extending Action class for this method<<<<<<< trung_branch
-    public boolean changeThreadStatusForReportingAndComplaining(long threadId, String category, int from, int to, String reason){
+    public boolean changeThreadStatusFromModDashBoard(long threadId, String category, int from, int to, String reason) {
         Long threadID = allThreadID.get(threadId);
         if (from == 0 && to == 1) {
             threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
@@ -218,42 +214,49 @@ public class Cache {
         }
     }
 
-
-    public boolean changeThreadStatusForModDashBoard(long threadId, String newStatus, String reason){
-        Long threadID = allThreadID.get(threadId);
-        int toxicStatusBooleanValue = 0;
-        if(newStatus.equals("NOT-TOXIC")){ //from pending to not-toxic
-
-        }
-        if(newStatus.equals("TOXIC")){}
-
-        if (from == 0 && to == 1) {
-            threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
-            threadListByCategoryAndStatus.get(category).get(1).add(threadID);
-            return true;
-        } else if (from == 1 && to == 0) {
-            threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
-            threadListByCategoryAndStatus.get(category).get(0).add(threadID);
-            resolvedThreads.put(threadID, reason);
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     /**
-     * Changes the status of a specified post that belongs to the thread identified by a given threadId
+     * Changes the status of a specified thread within a given category and updates the appropriate data structures.
+     * This method moves the thread identified by the given threadId from one status category to another.
+     * If the status changes from 0 (pending) to 1 (non-toxic), the thread is added to the reportedThreads list.
+     *
+     * @param threadId the unique identifier of the thread whose status is to be changed
+     * @param category the category under which the thread is categorized
+     * @param from     the current status of the thread (e.g., 1 for non-toxic, 0 for pending)
+     * @param to       the new status of the thread (e.g., 1 for non-toxic, 0 for pending)
+     * @param reason   the reason for the status change (used if resolving the thread)
+     * @return true if the status change was successfully performed; false if the status change is invalid
+     */
+    public boolean changeThreadStatusForReportingAndComplaining(long threadId, String category, int from, int to, String reason) {
+        Long threadID = allThreadID.get(threadId);
+        if (from == 0 && to == 1) {
+            threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
+            threadListByCategoryAndStatus.get(category).get(1).add(threadID);
+            return true;
+        } else if (from == 1 && to == 0) {
+            threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
+            threadListByCategoryAndStatus.get(category).get(0).add(threadID);
+            resolvedThreads.put(threadID, reason);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Changes the status of a specified post that belongs to the thread identified by a given threadId.
      * This method moves the post identified by the postId from one status category to another.
-     * If the status changes from 0 (pending) to 1 (non-toxic), the thread is added to the reportedPosts list.
+     * If the status changes from 0 (pending) to 1 (non-toxic), the post is added to the reportedPosts list.
      *
      * @param postId   the unique identifier of the post in concern
      * @param threadId the unique identifier of the thread the post belongs to
-     * @param from     the current status of the thread (e.g., 1: non-toxic, 0: pending)
-     * @param to       the new status of the thread (e.g., 1: non-toxic, 0: pending)
+     * @param from     the current status of the post (e.g., 1 for non-toxic, 0 for pending)
+     * @param to       the new status of the post (e.g., 1 for non-toxic, 0 for pending)
+     * @param reason   the reason for the status change (used if resolving the post)
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changePostStatus(long postId, long threadId, int from, int to, String reason){
+    public boolean changePostStatus(long postId, long threadId, int from, int to, String reason) {
         Long postID = allPostId.get(postId);
         if (from == 0 && to == 1) {
             postListByThreadIdAndStatus.get(threadId).get(0).remove(postID);
@@ -269,28 +272,20 @@ public class Cache {
         }
     }
 
-
     /**
      * Adds a post to the cache by initializing like count and creation date
      * for the new post and categorizes it by status within the thread specified by the given thread id.
-     * The new post í then added to the list of posts by the user specified by user id.
+     * The new post is then added to the list of posts by the user specified by user id.
      *
      * @param threadId the unique identifier of the thread to which the post belongs
      * @param postId   the unique identifier of the post to be added
      * @param userId   the unique identifier of the user who created the post
-     * @param status   the status of the post (1 for non-toxic, 0 for pending)
+     * @param toxicStatus   the status of the post (1 for non-toxic, 0 for pending)
      * @return true if the post was successfully added to the cache; false if the status is invalid
      */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean addPostToCache(long threadId, long postId, long userId, String toxicStatus) {
+    public boolean addPostToCache(long threadId, long postId, long userId, String toxicStatus, boolean resolveStatus) {
         allPostId.put(postId, postId);
-        int toxicStatusBooleanNumber = 0;
-        if(toxicStatus.equals("NOT-TOXIC")){
-            toxicStatusBooleanNumber = 1;
-        }
-        if(toxicStatus.equals("PENDING")){
-             toxicStatusBooleanNumber = 0;
-        }
+        int toxicStatusBooleanNumber = toxicStatus.equals("NOT-TOXIC") ? 1 : 0;
 
         postListByThreadIdAndStatus.get(threadId).get(toxicStatusBooleanNumber).add(postId);
 
@@ -316,7 +311,6 @@ public class Cache {
      * @param userId the unique identifier of the user who likes the post
      * @return true always, indicating that the like operation was successfully completed
      */
-    //TODO This action must be logged. Create a subclass extending Action class for this method
     public boolean likePost(long postId, long userId, long threadId, int mode) {
         ConcurrentHashMap<String, Number> postParaMap = parametersForAllPosts.get(postId);
         ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
@@ -334,7 +328,7 @@ public class Cache {
     }
 
     /**
-     * Retrieves the suggested thread for all user (a mechanism to calculate score based on creationDate, viewCounts, LikeCounts, PostCount, PostCretionDate)
+     * Retrieves the suggested threads for all users (a mechanism to calculate score based on creationDate, viewCounts, LikeCounts, PostCount, PostCreationDate).
      * This method iterates through all threads, calculates their relevancy scores,
      * and collects the details of threads with a status of 1 (non-toxic). The collected
      * threads are returned in a sorted order based on their relevancy scores.
@@ -343,7 +337,6 @@ public class Cache {
      * thread details and user-specific information.
      * The keys are "By Algorithm" and "By PostCreation"
      */
-
     public HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> getSuggestedThreads() {
         HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> returnCollection = new HashMap<>();
         Iterator<Long> iterator = parametersForAllThreads.keySet().iterator();
@@ -356,7 +349,7 @@ public class Cache {
             Long currentKey = iterator.next();
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(currentKey);
             if (threadParaMap.get("Status").equals(1)) {
-                // This block calculates threads score based on an algorithm and places them in the returnCollectionByAlgorithm TreeMap
+                // This block calculates thread's score based on an algorithm and places them in the returnCollectionByAlgorithm TreeMap
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, currentKey);
@@ -378,13 +371,12 @@ public class Cache {
      * thread details are published using the provided SubmissionPublisher.
      *
      * @param category  the category from which threads are to be retrieved
-     * @param userId    the unique identifier of the user (can be null)
      * @param limit     the maximum number of threads to retrieve
      * @param offset    the starting point for retrieval within the list of threads
      * @param publisher the SubmissionPublisher used to publish the retrieved thread details
      * @return true always, indicating that the retrieval and publishing operation was successfully completed
      */
-    public boolean returnThreadByCategory(String category, Long userId, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
+    public boolean returnThreadByCategory(String category, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
         LinkedList<Long> nonToxicThreadsList = threadListByCategoryAndStatus.get(category).get(1);
         Iterator<Long> iterator = nonToxicThreadsList.listIterator(offset);
         int count = 1;
@@ -394,14 +386,13 @@ public class Cache {
             HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
             publisher.submit(returnedMap);
             count++;
-
         }
         return true;
     }
 
     /**
      * Retrieves and publishes a limited number of posts from a specified thread.
-     * This method retrieves posts from a specified thread that have a status of non-toxic (status 0).
+     * This method retrieves posts from a specified thread that have a status of non-toxic (status 1).
      * It starts from a given offset and retrieves up to the specified limit of posts. The retrieved
      * post details are published using the provided SubmissionPublisher.
      *
@@ -447,7 +438,6 @@ public class Cache {
         }
     }
 
-
     /**
      * Builds and returns a map containing post details and user-specific information.
      * This method creates a new map with details about a post, such as its ID, like count,
@@ -475,7 +465,6 @@ public class Cache {
             }
         }
 
-      
         if (resolvedPosts.containsKey(postId)){
             returnedPostMap.put("ReportStatus", 1);
         } else {
@@ -508,7 +497,6 @@ public class Cache {
             returnedMap.put("ReportStatus", 0);
         }
         return returnedMap;
-
     }
 
     /**
@@ -529,7 +517,6 @@ public class Cache {
         int postNum = threadParaMap.get("PostCount").intValue();
         int viewNum = threadParaMap.get("ViewCount").intValue();
         return (distanceFromToday) * (likeNum + viewNum + postNum);
-
     }
 
     private static BigDecimal ensureUniqueScore(TreeMap<BigDecimal, HashMap<String, Number>> collection, BigDecimal score) {
@@ -541,70 +528,52 @@ public class Cache {
         }
     }
 
-    //Duong's method over here
-
-    //method for thread mapper
+    // Additional methods for thread and post mappers...
 
     public Integer getPostCountOfAThreadByThreadId(Long threadID) {
         return getPostListByThreadIdAndStatus().size();
     }
-    //use Integer because it is safer (Integer is allowed to be null, while int is not)
 
     public boolean checkIfAThreadHasBeenLikedByAMemberId(Long threadId, Long memberId) {
-        // Get the map tracking threads liked by each user
         HashMap<Long, Set<Long>> threadLikeListByUser = getThreadLikeListByUser();
 
-        // Check if the map contains the memberId
         if (threadLikeListByUser.containsKey(memberId)) {
-            // Get the set of liked threads for the memberId
             Set<Long> likedThreads = threadLikeListByUser.get(memberId);
-
-            // Check if the threadId is present in the set
             return likedThreads.contains(threadId);
         }
-
-        // Return false if the memberId is not present in the map or the threadId is not liked by the memberId
         return false;
     }
 
-    public boolean checkIfAThreadHasBeenReportByThreadId(Long threadId) {
-        // Get the map tracking threads liked by each user
-        // Check if the map contains the memberId
-        if (getResolvedThreads().containsKey(threadId)) {
-            return true;
-        }
-
-        // Return false otherwise
-        return false;
+    public boolean checkIfAThreadHasBeenReportedByThreadId(Long threadId) {
+        return getResolvedThreads().containsKey(threadId);
     }
+
     public Integer getThreadViewCountByThreadId(Long threadId) {
         ConcurrentHashMap<String, Number> threadParameters = parametersForAllThreads.get(threadId);
         if (threadParameters != null) {
             return (Integer) threadParameters.get("ViewCount");
         } else {
-            // Handle the case where the threadId is not found in the map
-            return null; // or throw an exception, or return a default value
+            return null;
         }
     }
+
     public Integer getLikeCountByThreadId(Long threadId) {
         ConcurrentHashMap<String, Number> threadParameters = parametersForAllThreads.get(threadId);
         if (threadParameters != null) {
             return (Integer) threadParameters.get("LikeCount");
         } else {
-            // Handle the case where the threadId is not found in the map
-            return null; // or throw an exception, or return a default value
+            return null;
         }
     }
 
-//method for postMapper
-public Integer getPostLikeCountByPostId(Long postId) {
-    ConcurrentHashMap<String, Number> postParameters = parametersForAllPosts.get(postId);
-    if (postParameters != null) {
-        return (Integer) postParameters.get("LikeCount");
-    } else {
-        return null;
+    public Integer getPostLikeCountByPostId(Long postId) {
+        ConcurrentHashMap<String, Number> postParameters = parametersForAllPosts.get(postId);
+        if (postParameters != null) {
+            return (Integer) postParameters.get("LikeCount");
+        } else {
+            return null;
+        }
     }
-}
 
     public Integer getPostViewCountByPostId(Long postId) {
         ConcurrentHashMap<String, Number> postParameters = parametersForAllPosts.get(postId);
@@ -623,41 +592,28 @@ public Integer getPostLikeCountByPostId(Long postId) {
         Set<Long> likedPosts = postLikeListByUser.get(memberId);
         return likedPosts != null && likedPosts.contains(postId);
     }
-    //method for MemberMapper
 
     public Integer getMemberTotalLikeCountByMemberId(Long memberId) {
         int totalLikes = 0;
 
-        // Get all thread IDs created by the member
         Set<Long> threadIds = threadListByUser.get(memberId);
         if (threadIds != null) {
             for (Long threadId : threadIds) {
-                // Get like count for each thread and sum up
                 Integer likeCount = getLikeCountByThreadId(threadId);
                 if (likeCount != null) {
                     totalLikes += likeCount;
                 }
             }
         }
-
         return totalLikes;
     }
-
-
-//    public Integer getMemberTotalFollowerCountByMemberId(Long memberId) {
-//
-//
-//    }
-
 
     public Integer getMemberTotalPostCountByMemberId(Long memberId) {
         int totalPostCount = 0;
 
-        // Get all thread IDs created by the member
         Set<Long> threadIds = threadListByUser.get(memberId);
         if (threadIds != null) {
             for (Long threadId : threadIds) {
-                // Get post count for each thread and sum up
                 Integer postCount = getPostCountOfAThreadByThreadId(threadId);
                 if (postCount != null) {
                     totalPostCount += postCount;
@@ -665,7 +621,6 @@ public Integer getPostLikeCountByPostId(Long postId) {
             }
         }
 
-        // Get all post IDs directly created by the member
         Set<Long> postIds = postListByUser.get(memberId);
         if (postIds != null) {
             totalPostCount += postIds.size();
@@ -673,7 +628,4 @@ public Integer getPostLikeCountByPostId(Long postId) {
 
         return totalPostCount;
     }
-
-
-
 }

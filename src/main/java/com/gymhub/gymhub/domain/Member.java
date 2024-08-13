@@ -3,11 +3,11 @@ package com.gymhub.gymhub.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.sql.Date;
-
 @Getter
 @NoArgsConstructor
 @Entity
@@ -34,6 +34,8 @@ public class Member extends ForumAccount {
     @Setter
     @Column(name = "join_date", nullable = false, updatable = false, unique = false)
     private Date joinDate;
+
+
 
     public Member(String userName, String password, String email, Date joinDate) {
         super(userName, password, email);

@@ -2,6 +2,7 @@ package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
+import com.gymhub.gymhub.service.CustomUserDetailsService;
 import com.gymhub.gymhub.service.MemberService;
 import com.gymhub.gymhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,8 @@ public class MemberController {
     private MemberService memberService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Operation(description = "This operation returns member information",
             tags = "Member Profile Page")
@@ -25,7 +28,7 @@ public class MemberController {
     public MemberResponseDTO getMember(
             @RequestBody MemberRequestDTO memberRequestDTO) {
         String memberUsername = memberRequestDTO.getUserName();
-        return (MemberResponseDTO) memberService.loadUserByUsername(memberUsername);
+        return (MemberResponseDTO) customUserDetailsService.loadUserByUsername(memberUsername);
     }
 
     @Operation(description = "This operation changes the information of member",

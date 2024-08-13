@@ -20,7 +20,7 @@ public class ThreadMapper {
         dto.setCreationDateTime(thread.getCreationDateTime());
         dto.setLikeCount(cache.getLikeCountByThreadId(thread.getId()));
         dto.setViewCount(cache.getThreadViewCountByThreadId(thread.getId()));
-        dto.setBeenReport(cache.checkIfAThreadHasBeenReportByThreadId(thread.getId()));
+        dto.setBeenReport(cache.checkIfAThreadHasBeenReportedByThreadId(thread.getId()));
         dto.setPostCount(cache.getPostCountOfAThreadByThreadId(thread.getId()));
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());

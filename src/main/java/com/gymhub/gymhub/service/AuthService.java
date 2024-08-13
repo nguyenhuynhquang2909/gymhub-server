@@ -34,10 +34,10 @@ public class AuthService {
     private MemberRepository memberAccountRepository;
 
     public ResponseEntity<?> registerUser(RegisterRequest registerRequest) {
-        if (memberAccountRepository.checkIfMemberExistsByUserName(registerRequest.getUserName())) {
+        if (memberAccountRepository.existsByUserName(registerRequest.getUserName())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
-        if (memberAccountRepository.checkIfMemberExistsByEmail(registerRequest.getEmail())) {
+        if (memberAccountRepository.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
         Random random = new Random();

@@ -120,7 +120,7 @@ public class ThreadController {
             return ResponseEntity.status(401).body("Unauthorized");
         }
         String username = userDetails.getUsername();
-        Member member = memberRepository.findMemberByUsername(username)
+        Member member = memberRepository.findMemberByUserName(username)
                         .orElseThrow(() -> new RuntimeException("User not found"));
         threadRequest.setAuthorId(member.getId());
         System.out.println(threadRepository.findAll().size());

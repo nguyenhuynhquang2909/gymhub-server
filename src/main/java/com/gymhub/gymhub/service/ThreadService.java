@@ -137,7 +137,7 @@ public class ThreadService {
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
         thread.setOwner(owner);
         String toxicStatus = "notToxic"; //Call the AI here
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId(), false);
         threadRepository.save(thread);
         return true;
     }

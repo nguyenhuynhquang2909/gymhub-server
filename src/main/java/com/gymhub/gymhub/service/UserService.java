@@ -15,7 +15,7 @@ public class UserService {
 
     public void getUserInfo(String username){
         System.out.println("Info of "+username);
-        memberRepository.findMemberByUsername(username);
+        memberRepository.findMemberByUserName(username);
     }
 }
 ;

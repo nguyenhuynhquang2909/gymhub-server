@@ -93,7 +93,7 @@ public class AuthController {
         }
         // Fetch the user from the database using the username from UserDetails
         String username = userDetails.getUsername();
-        Member member = memberRepository.findMemberByUsername(username)
+        Member member = memberRepository.findMemberByUserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Create a response with the user's information
