@@ -23,31 +23,35 @@ import java.time.LocalDateTime;
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
-    private String title;
+    private String name;
 
 
     @Column(name = "category", nullable = false, updatable = true)
     private String category;
-
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private Member owner;
 
 
-    public Thread(String title, String category, Member owner) {
-        this.title = title;
-        this.category = category;
-        this.owner = owner;
-    }
 
-    public Thread(LocalDateTime creationDateTime, String title, String category, Member owner) {
+
+    public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
-        this.title = title;
-        this.category = category;
-        this.owner = owner;
+        this.name = name;
     }
 
-    public Thread(long id, String title, LocalDateTime now) {
+    public Thread(LocalDateTime now, String name) {
+        super(now);
+        this.name = name;
     }
+
+    public Thread(long id, String title,String category, LocalDateTime creationDateTime) {
+        super(creationDateTime);
+        this.setId(id);  // Sets the ID explicitly
+        this.name = title;
+        this.category = category;
+    }
+
+
 }
