@@ -53,4 +53,6 @@ public class MemberService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
     }
+
+    // test
 }
