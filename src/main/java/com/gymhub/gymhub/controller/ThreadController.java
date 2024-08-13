@@ -1,7 +1,7 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.domain.Member;
-import com.gymhub.gymhub.dto.ReportRequestDTO;
+import com.gymhub.gymhub.dto.ReportThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
@@ -131,20 +131,28 @@ public class ThreadController {
 
 
     @Operation(
-            description = "This operation reports a thread to the server and return a string indicating the reason",
+            description = "This operation reports a thread to the server and returns a boolean indicating success",
             tags = "Thread Containers"
     )
     @PatchMapping("/report")
-    public ResponseEntity<Void> reportThread(@RequestBody ReportRequestDTO reportRequestDTO){
-        return  new ResponseEntity<>(HttpStatus.OK); //not done
+    public ResponseEntity<String> reportThread(@RequestBody ReportThreadRequestDTO reportThreadRequestDTO) {
 
-}
+        // Call the service method to report the thread
+        boolean success = threadService.reportThread(reportThreadRequestDTO);
+
+        // Return appropriate response based on success or failure
+        if (success) {
+            return new ResponseEntity<>("Thread reported successfully.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Failed to report thread.", HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @Operation(
             description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)",
             tags = "Thread Containers"
     )
-    @PatchMapping("/update/thread/{threadID}")
+    @PatchMapping("/update/{threadID}")
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,

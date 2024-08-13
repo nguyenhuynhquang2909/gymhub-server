@@ -1,9 +1,6 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.dto.IncreDecreDTO;
-import com.gymhub.gymhub.dto.PostRequestDTO;
-import com.gymhub.gymhub.dto.PostResponseDTO;
-import com.gymhub.gymhub.dto.UpdatePostContentDTO;
+import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Post Request Handlers", description = "Handlers for Posts related requests")
@@ -90,7 +86,7 @@ public class PostController {
             description = "This operation changes the content and the image of a post (checks if the member is the post owner)",
             tags = "Post Container"
     )
-    @PatchMapping("/updatePost/post-{id}")
+    @PatchMapping("/update/post-{id}")
     public ResponseEntity<Void> updatePost(
             @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,
@@ -103,15 +99,30 @@ public class PostController {
 
 
     @Operation(
-            description = "This operation reports a post to the server and sends a String as the reason",
+            description = "This operation reports a post to the server and returns a boolean indicating success",
             tags = "Post Container"
     )
-    @PatchMapping("/report/post/post-{id}")
-    public ResponseEntity<Void> reportPost(
-            @RequestBody String reason,
+    @PatchMapping("/report/post-{id}")
+    public ResponseEntity<String> reportPost(
+            @RequestBody ReportPostRequestDTO reportPostRequestDTO,
             @Parameter(description = "The id of the post to be reported", required = true)
-            @PathVariable Long id){
-        return  new ResponseEntity<>(HttpStatus.OK);
+            @PathVariable Long id) {
+
+        // Set the post ID in the DTO
+        reportPostRequestDTO.setId(id);
+
+        // Assuming you have a way to get the threadId for the post, pass it to the service method
+        long threadId = postService.getThreadIdByPostId(id); // Example method to get threadId
+
+        // Call the service method to report the post
+        boolean success = postService.reportPost(reportPostRequestDTO, threadId);
+
+        // Return appropriate response based on success or failure
+        if (success) {
+            return new ResponseEntity<>("Post reported successfully.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Failed to report post.", HttpStatus.BAD_REQUEST);
+        }
     }
 
 
