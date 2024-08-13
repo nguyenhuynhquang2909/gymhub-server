@@ -54,5 +54,7 @@ public class MemberService {
 
     }
 
-    // test
+    public void test() {
+
+    }
 }
