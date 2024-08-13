@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -149,7 +150,7 @@ public class ThreadService {
                 reportRequestDTO.getFrom(), reportRequestDTO.getTo(), reportRequestDTO.getReason());
     }
 
-    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
+    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO, UserDetails userDetails) {
 
         // Fetch the thread using the threadId from the DTO
         Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
@@ -160,6 +161,7 @@ public class ThreadService {
             // Return a forbidden response if the IDs do not match
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
 
         // Update the thread title
 

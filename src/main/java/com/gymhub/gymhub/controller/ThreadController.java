@@ -140,16 +140,16 @@ public class ThreadController {
 
 }
 
-    @Operation(
-            description = "This operation updates the thread title (checks if the member is the thread owner)",
-            tags = "Thread Containers"
-    )
-    @PatchMapping("/update/thread-title")
-    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
-            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
-
-        return threadService.updateThread(updateThreadTitleDTO);
-    }
+//    @Operation(
+//            description = "This operation updates the thread title (checks if the member is the thread owner)",
+//            tags = "Thread Containers"
+//    )
+//    @PatchMapping("/update/thread-title")
+//    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
+//            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
+//
+//        return threadService.updateThread(updateThreadTitleDTO);
+//    }
 
 }
 
