@@ -19,8 +19,8 @@ public class Image {
     @Column(name = "image", nullable = false)
     private String encodedImage;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false) // Ensure the post_id column exists in your images table
+    @OneToOne
+    @JoinColumn(name = "post_id", nullable = false, unique = true) // Ensures post_id is unique
     private Post post;
 
     public Image(String encodedImage) {
@@ -28,6 +28,7 @@ public class Image {
     }
 
     public Image(byte[] bytes) {
+        this.encodedImage = new String(bytes); // Converts bytes to String
     }
 
     public String getEncodedImage() {

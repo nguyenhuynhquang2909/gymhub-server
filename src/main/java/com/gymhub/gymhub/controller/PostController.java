@@ -87,27 +87,26 @@ public class PostController {
     }
 
     @Operation(
-            description = "This operation changes the content of a post (checks if the member is the post owner)",
+            description = "This operation changes the content and the image of a post (checks if the member is the post owner)",
             tags = "Post Container"
     )
-    @PatchMapping("/updateContentOnly/post-{id}")
-    public ResponseEntity<Void> updatePostContentOnly(
-            @Parameter(description = "The id of the post whose content is to be changed", required = true)
+    @PatchMapping("/updatePost/post-{id}")
+    public ResponseEntity<Void> updatePost(
+            @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,
             @RequestBody UpdatePostContentDTO body) {
-        // Extract userId and threadId from the DTO or the session
-        Long userId = body.getAuthorId(); // Assuming UpdateContentDTO has a userId field
-        Long threadId = body.getThreadId(); // Assuming UpdateContentDTO has a threadId field
-        // Call the service method to update the post content
-        return postService.updatePostContent(userId, threadId, id, body.getContent());
+
+        // Call the service method to update the post content and image
+        return postService.updatePost(body);
     }
+
 
 
     @Operation(
             description = "This operation reports a post to the server and sends a String as the reason",
             tags = "Post Container"
     )
-    @PatchMapping("/report/post-{id}")
+    @PatchMapping("/report/post/post-{id}")
     public ResponseEntity<Void> reportPost(
             @RequestBody String reason,
             @Parameter(description = "The id of the post to be reported", required = true)

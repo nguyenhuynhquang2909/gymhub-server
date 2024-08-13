@@ -1,15 +1,17 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.PostRequestDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
+import com.gymhub.gymhub.dto.UpdatePostContentDTO;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
+import com.gymhub.gymhub.mapper.UpdatePostContentMapper;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
-
 import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,7 +38,7 @@ public class PostService {
     private Cache cache;
 
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
-       List<Post> posts = postRepository.findByThreadId(threadId);
+        List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
                 .map(post -> PostMapper.toPostResponseDTO(post, cache, null)) // Replace null with actual userId if needed
                 .collect(Collectors.toList());
@@ -62,27 +64,39 @@ public class PostService {
         }
     }
 
-    public ResponseEntity<Void> updatePostContent(Long userId, Long threadId, Long postId, String content) {
-        Optional<Member> member = userRepository.findById(userId);
-        Optional<Thread> thread = threadRepository.findById(threadId);
-        Optional<Post> post = postRepository.findById(postId);
+    public ResponseEntity<Void> updatePost(UpdatePostContentDTO updatePostContentDTO) {
+        Optional<Member> member = userRepository.findById(updatePostContentDTO.getAuthorId());
+        Optional<Thread> thread = threadRepository.findById(updatePostContentDTO.getThreadId());
+        Optional<Post> post = postRepository.findById(updatePostContentDTO.getPostId());
+
         if (member.isPresent() && thread.isPresent() && post.isPresent()) {
-            Post existingPost = post.get(); //get post object from Optional<Post>
+            Post existingPost = post.get();
+
+            // Check if the member is the author of the post
             if (existingPost.getAuthor().getId().equals(member.get().getId())) {
-                existingPost.setContent(content);  // Set the new content
-                postRepository.save(existingPost);  // Save the updated post
-                return new ResponseEntity<>(HttpStatus.OK); // Return OK status after updating
+                // Update the post content
+                existingPost.setContent(updatePostContentDTO.getContent());
+
+                // Update the post image
+                Image updatedImage = existingPost.getImage();
+                if (updatedImage == null) {
+                    updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                    updatedImage.setPost(existingPost);
+                    existingPost.setImage(updatedImage);
+                } else {
+                    updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                }
+
+                // Save the updated post
+                postRepository.save(existingPost);
+
+                return new ResponseEntity<>(HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN); // Return FORBIDDEN if the user is not the author
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return NOT FOUND if user, thread, or post is missing
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-
-
-
-
 
 }

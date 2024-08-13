@@ -127,15 +127,21 @@ public class ThreadController {
 }
 
     @Operation(
-            description = "This operation updates the thread title (checks if the member is the thread owner)",
+            description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)",
             tags = "Thread Containers"
     )
-    @PatchMapping("/update/thread-title")
+    @PatchMapping("/update/thread/{threadID}")
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
+            @Parameter(description = "The ID of the thread to be updated", required = true)
+            @PathVariable Long threadID,
             @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
+
+        // Set the threadID in the DTO or pass it directly to the service method
+        updateThreadTitleDTO.setThreadId(threadID);
 
         return threadService.updateThread(updateThreadTitleDTO);
     }
+
 
 }
 

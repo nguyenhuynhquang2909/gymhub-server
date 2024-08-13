@@ -71,7 +71,7 @@ public class GymhubApplication {
 		}
 
 		System.out.println("Cache Initialization: Done");
-		System.out.println("Swagger UI is available at ");
+		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 
 
 

@@ -12,6 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(description = "Contains the post's new content and images")
 public class UpdatePostContentDTO {
+
+    @Schema(description = "Post's  ID")
+    private Long postId;
     @Schema(description = "Post's author ID")
     private Long authorId;
     @Schema(description = "Post's thread ID")
@@ -25,7 +28,9 @@ public class UpdatePostContentDTO {
 
     //update both content and image
 
-    public UpdatePostContentDTO(Long authorId, Long threadId, String content, List<String> encodedImage) {
+
+    public UpdatePostContentDTO(Long postId, Long authorId, Long threadId, String content, List<String> encodedImage) {
+        this.postId = postId;
         this.authorId = authorId;
         this.threadId = threadId;
         this.content = content;
