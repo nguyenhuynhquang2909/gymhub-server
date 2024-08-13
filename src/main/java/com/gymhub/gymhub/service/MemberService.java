@@ -47,4 +47,10 @@ public class MemberService {
         Set<Long> following = cache.getFollowing(memberId);
         return following != null ? following.size() : 0;
     }
+    public Long getMemberIdFromUserName(String userName) {
+        return memberRepository.findByUserName(userName)
+                .map(Member::getId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+    }
 }
