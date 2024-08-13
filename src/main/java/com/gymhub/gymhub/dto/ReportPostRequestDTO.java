@@ -14,6 +14,9 @@ public class ReportPostRequestDTO {
     @Schema(description = "The id of the post being reported")
     Long id;
 
+    @Schema(description = "The id of the thread of the post")
+    Long threadId;
+
     @Schema(description = "The reason for the report")
     String reason;
 

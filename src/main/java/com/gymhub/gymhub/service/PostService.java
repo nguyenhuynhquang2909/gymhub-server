@@ -118,8 +118,6 @@ public class PostService {
         return result;
     }
 
-    public long getThreadIdByPostId(Long postId) {
-        return postRepository.findThreadIdByPostId(postId);
-    }
+
 
 }

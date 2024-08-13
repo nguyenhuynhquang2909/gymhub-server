@@ -102,17 +102,16 @@ public class PostController {
             description = "This operation reports a post to the server and returns a boolean indicating success",
             tags = "Post Container"
     )
-    @PatchMapping("/report/post-{id}")
+    @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
-            @RequestBody ReportPostRequestDTO reportPostRequestDTO,
-            @Parameter(description = "The id of the post to be reported", required = true)
-            @PathVariable Long id) {
+            @RequestBody ReportPostRequestDTO reportPostRequestDTO)
+             {
 
         // Set the post ID in the DTO
-        reportPostRequestDTO.setId(id);
+        reportPostRequestDTO.setId(reportPostRequestDTO.getId());
 
         // Assuming you have a way to get the threadId for the post, pass it to the service method
-        long threadId = postService.getThreadIdByPostId(id); // Example method to get threadId
+        long threadId = reportPostRequestDTO.getThreadId(); // Example method to get threadId
 
         // Call the service method to report the post
         boolean success = postService.reportPost(reportPostRequestDTO, threadId);

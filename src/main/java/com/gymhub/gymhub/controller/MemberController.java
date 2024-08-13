@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/user")
 @Tag(name = "User Request Handler", description = "Handlers for members related requests")
-public class UserController {
+public class MemberController {
 
     @Operation(description = "This operation returns user information")
     @GetMapping("/{id}")
@@ -29,6 +29,11 @@ public class UserController {
     {
         return ResponseEntity.ok().build();
     }
+
+    //check ban status
+
+
+    //check private conversation
 
 
 
