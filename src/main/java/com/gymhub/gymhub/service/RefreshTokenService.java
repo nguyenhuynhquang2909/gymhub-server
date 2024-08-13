@@ -3,7 +3,7 @@ package com.gymhub.gymhub.service;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.RefreshToken;
 import com.gymhub.gymhub.repository.RefreshTokenRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -22,7 +22,7 @@ public class RefreshTokenService {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
     @Value("${jwt.refreshExpiration}")
     private Long jwtRefreshExpiration;
@@ -33,7 +33,7 @@ public class RefreshTokenService {
 
     public RefreshToken createRefreshToken(Long userId) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(userRepository.findById(userId).get());
+        refreshToken.setUser(memberRepository.findById(userId).get());
         refreshToken.setExpiryDate(Instant.now().plusMillis(jwtRefreshExpiration));
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken = refreshTokenRepository.save(refreshToken);

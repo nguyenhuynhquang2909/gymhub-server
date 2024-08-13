@@ -54,7 +54,7 @@ public class Cache {
     HashMap<Long, ConcurrentHashMap<String, Number>> parametersForAllPosts = new LinkedHashMap<>();
 
     /**
-     * A map categorizing threads by category and status, with lists of thread IDs.
+     * A map categorizing threads by category and status, with lists of thread IDs. (only store threads with status = boolean 1 [PENDING]
      */
     HashMap<String, HashMap<Integer, LinkedList<Long>>> threadListByCategoryAndStatus = new HashMap<>();
 
@@ -144,10 +144,10 @@ public class Cache {
         //case for toxicStatus value: convert to boolean number
         int toxicStatusBooleanNumber = 0;
 
-        if (toxicStatus.equals("notToxic")){
+        if (toxicStatus.equals("NOT-TOXIC")){
             toxicStatusBooleanNumber = 1; //notToxic = 1
         }
-        if (toxicStatus.equals("pending")){
+        if (toxicStatus.equals("PENDING")){
             toxicStatusBooleanNumber = 0; //pending = 0
         }
         threadParaMap.put("Status", toxicStatusBooleanNumber);
@@ -202,8 +202,31 @@ public class Cache {
      */
 
     //TODO This action must be logged. Create a subclass extending Action class for this method<<<<<<< trung_branch
-    public boolean changeThreadStatus(long threadId, String category, int from, int to, String reason){
+    public boolean changeThreadStatusForReportingAndComplaining(long threadId, String category, int from, int to, String reason){
         Long threadID = allThreadID.get(threadId);
+        if (from == 0 && to == 1) {
+            threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
+            threadListByCategoryAndStatus.get(category).get(1).add(threadID);
+            return true;
+        } else if (from == 1 && to == 0) {
+            threadListByCategoryAndStatus.get(category).get(1).remove(threadID);
+            threadListByCategoryAndStatus.get(category).get(0).add(threadID);
+            resolvedThreads.put(threadID, reason);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public boolean changeThreadStatusForModDashBoard(long threadId, String newStatus, String reason){
+        Long threadID = allThreadID.get(threadId);
+        int toxicStatusBooleanValue = 0;
+        if(newStatus.equals("NOT-TOXIC")){ //from pending to not-toxic
+
+        }
+        if(newStatus.equals("TOXIC")){}
+
         if (from == 0 && to == 1) {
             threadListByCategoryAndStatus.get(category).get(0).remove(threadID);
             threadListByCategoryAndStatus.get(category).get(1).add(threadID);
@@ -259,20 +282,23 @@ public class Cache {
      * @return true if the post was successfully added to the cache; false if the status is invalid
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean addPostToCache(long threadId, long postId, long userId, int status) {
+    public boolean addPostToCache(long threadId, long postId, long userId, String toxicStatus) {
         allPostId.put(postId, postId);
-        if (status == 1) {
-            postListByThreadIdAndStatus.get(threadId).get(0).add(postId);
-        } else if (status == 0) {
-            postListByThreadIdAndStatus.get(threadId).get(1).add(postId);
-        } else {
-            return false;
+        int toxicStatusBooleanNumber = 0;
+        if(toxicStatus.equals("NOT-TOXIC")){
+            toxicStatusBooleanNumber = 1;
         }
+        if(toxicStatus.equals("PENDING")){
+             toxicStatusBooleanNumber = 0;
+        }
+
+        postListByThreadIdAndStatus.get(threadId).get(toxicStatusBooleanNumber).add(postId);
+
         ConcurrentHashMap<String, Number> postParaMap = new ConcurrentHashMap<>();
         postParaMap.put("LikeCount", 0);
         Long currentTime = System.currentTimeMillis();
         postParaMap.put("CreationDate", currentTime);
-        if (status == 1) {
+        if (toxicStatusBooleanNumber == 1) {
             ConcurrentHashMap<String, Number> threadParaMap = parametersForAllThreads.get(threadId);
             threadParaMap.put("PostCreationDate", currentTime);
         }

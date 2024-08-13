@@ -1,29 +1,24 @@
 package com.gymhub.gymhub;
 
-import com.gymhub.gymhub.domain.Member;
+import com.gymhub.gymhub.domain.ForumAccount;
 
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 
 @SpringBootApplication
@@ -35,7 +30,7 @@ public class GymhubApplication {
 	@Autowired
 	Cache cache;
 	@Autowired
-	UserRepository userRepository;
+	MemberRepository memberRepository;
 	@Autowired
 	ThreadRepository threadRepository;
 	@Autowired
@@ -49,7 +44,7 @@ public class GymhubApplication {
 	@PostConstruct
 	private void cacheFill(){
 		System.out.println("Duong hello test ");
-		List<Member> members = userRepository.findAll();
+		List<Member> members = memberRepository.findAll();
 		Iterator<Member> iterator = members.iterator();
 
 		while(iterator.hasNext()){
@@ -67,7 +62,7 @@ public class GymhubApplication {
 		Iterator<Post> iterator3 = posts.iterator();
 		while(iterator3.hasNext()){
 			Post post = iterator3.next();
-			System.out.println("Post id: " + post.getId());
+			System.out.println();
 			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), 1);
 		}
 

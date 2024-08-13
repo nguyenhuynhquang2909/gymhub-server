@@ -11,7 +11,7 @@ import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ public class PostService {
     private ThreadRepository threadRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
@@ -54,7 +54,7 @@ public class PostService {
     }
 
     public ResponseEntity<Void> createPost(Long userId, Long threadId, PostRequestDTO postRequestDTO) {
-        Optional<Member> author = userRepository.findById(userId);
+        Optional<Member> author = memberRepository.findById(userId);
         Optional<Thread> thread = threadRepository.findById(threadId);
 
         if (author.isPresent() && thread.isPresent()) {
@@ -67,7 +67,7 @@ public class PostService {
     }
 
     public ResponseEntity<Void> updatePost(UpdatePostContentDTO updatePostContentDTO) {
-        Optional<Member> member = userRepository.findById(updatePostContentDTO.getAuthorId());
+        Optional<Member> member = memberRepository.findById(updatePostContentDTO.getAuthorId());
         Optional<Thread> thread = threadRepository.findById(updatePostContentDTO.getThreadId());
         Optional<Post> post = postRepository.findById(updatePostContentDTO.getPostId());
 

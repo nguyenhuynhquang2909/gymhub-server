@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -31,8 +29,8 @@ public class PostResponseDTO {
     @Schema(description = "View count of the post")
     private int viewCount;
 
-    @Schema(description = "True if the post has been reported")
-    private boolean beenReport;
+    @Schema(description = "True if the post has been resolved by mod")
+    private boolean resolveStatus;
 
     @Schema(description = "True if the post has been liked by the user")
     private boolean beenLiked;

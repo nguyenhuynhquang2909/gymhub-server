@@ -19,7 +19,8 @@ public class MemberController {
     @Autowired
     private UserService userService;
 
-    @Operation(description = "This operation returns member information")
+    @Operation(description = "This operation returns member information",
+            tags = "Member Profile Page")
     @GetMapping("/{id}")
     public MemberResponseDTO getMember(
             @RequestBody MemberRequestDTO memberRequestDTO) {
@@ -27,7 +28,8 @@ public class MemberController {
         return (MemberResponseDTO) memberService.loadUserByUsername(memberUsername);
     }
 
-    @Operation(description = "This operation changes the information of member")
+    @Operation(description = "This operation changes the information of member",
+            tags = "Member Profile Page")
     @PostMapping("/update/member-{id}")
     public ResponseEntity<Void> updateMember(
             @RequestBody MemberRequestDTO memberRequestDTO
@@ -35,7 +37,12 @@ public class MemberController {
         return memberService.updateMemberInfo(memberRequestDTO);
     }
 
-    //show all notifications => notificationDTO
+
+    //API : Follow A member
+
+    //API: Follow a Thread
+
+    //API : show all notifications => notificationDTO
     //your post has been flagged as ..
     //your thread has been flagged
     //your have been banned until
@@ -48,7 +55,10 @@ public class MemberController {
 
     //
 
-    //create private conversation between 2 user
+
+
+
+
 
 
 }

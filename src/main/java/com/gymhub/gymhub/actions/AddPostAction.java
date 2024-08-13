@@ -6,7 +6,7 @@ public class AddPostAction extends MustLogAction {
     private long postId;
     private long userId;
     private int status;
-    public AddPostAction(Long actionId, long threadId, long postId, long userId, int status) {
+    public AddPostAction(Long actionId, long threadId, long postId, long userId, String status) {
         super(actionId, "AddPost");
         this.threadId = threadId;
         this.postId = postId;
@@ -22,7 +22,7 @@ public class AddPostAction extends MustLogAction {
     public long getUserId() {
         return userId;
     }
-    public int getStatus() {
+    public String getStatus() {
         return status;
     }
     

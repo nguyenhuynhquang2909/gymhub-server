@@ -10,7 +10,7 @@ import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.mapper.ThreadMapper;
 import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,7 @@ public class ThreadService {
     @Autowired
     private ThreadRepository threadRepository;
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
@@ -125,7 +125,7 @@ public class ThreadService {
     }
 
     public boolean createThread(ThreadRequestDTO threadRequestDTO) {
-        Member owner = userRepository.findById(threadRequestDTO.getAuthorId())
+        Member owner = memberRepository.findById(threadRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         long id = random.nextLong(50);
@@ -143,7 +143,7 @@ public class ThreadService {
     }
 
     public boolean reportThread(ReportThreadRequestDTO reportThreadRequestDTO){
-        return inMemoryRepository.changeThreadStatus(reportThreadRequestDTO.getId(), reportThreadRequestDTO.getThreadCategory().name(),
+        return inMemoryRepository.changeThreadStatusForReportingAndComplaining(reportThreadRequestDTO.getId(), reportThreadRequestDTO.getThreadCategory().name(),
                 reportThreadRequestDTO.getFrom(), reportThreadRequestDTO.getTo(), reportThreadRequestDTO.getReason());
     }
 

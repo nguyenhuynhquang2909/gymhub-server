@@ -2,7 +2,7 @@ package com.gymhub.gymhub.service;
 
 
 import com.gymhub.gymhub.domain.Member;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gymhub.gymhub.config.JwtTokenProvider;
-import com.gymhub.gymhub.domain.ForumAccount;
 import com.gymhub.gymhub.dto.AuthRespone;
 import com.gymhub.gymhub.dto.LoginRequest;
 import com.gymhub.gymhub.dto.RegisterRequest;
 
 import java.sql.Date;
-import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
@@ -33,13 +31,13 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UserRepository memberAccountRepository;
+    private MemberRepository memberAccountRepository;
 
     public ResponseEntity<?> registerUser(RegisterRequest registerRequest) {
-        if (memberAccountRepository.existsByUserName(registerRequest.getUserName())) {
+        if (memberAccountRepository.checkIfMemberExistsByUserName(registerRequest.getUserName())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
-        if (memberAccountRepository.existsByEmail(registerRequest.getEmail())) {
+        if (memberAccountRepository.checkIfMemberExistsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
         Random random = new Random();

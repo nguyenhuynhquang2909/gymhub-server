@@ -6,7 +6,7 @@ import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +31,7 @@ public class ThreadController {
     @Autowired
     private ThreadRepository threadRepository;
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
     @Operation(
             description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post",
@@ -120,7 +120,7 @@ public class ThreadController {
             return ResponseEntity.status(401).body("Unauthorized");
         }
         String username = userDetails.getUsername();
-        Member member = userRepository.findByUserName(username)
+        Member member = memberRepository.findMemberByUsername(username)
                         .orElseThrow(() -> new RuntimeException("User not found"));
         threadRequest.setAuthorId(member.getId());
         System.out.println(threadRepository.findAll().size());
@@ -163,6 +163,13 @@ public class ThreadController {
 
         return threadService.updateThread(updateThreadTitleDTO);
     }
+
+    //create private conversation (private thread) between 2 member
+
+
+
+    //view private conversation (private thread) between 2 member
+
 
 
 }
