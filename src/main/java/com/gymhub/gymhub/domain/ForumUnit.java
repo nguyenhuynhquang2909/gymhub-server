@@ -19,7 +19,7 @@ public abstract class ForumUnit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "creation_date", nullable = false, updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = true)
     private LocalDateTime creationDateTime;
 
 

@@ -16,11 +16,11 @@ public class Image {
     @Column(name = "image_id")
     private Long id;
 
-    @Column(name = "image", nullable = false)
+    @Column(name = "image", nullable = false, updatable = true)
     private String encodedImage;
 
     @OneToOne
-    @JoinColumn(name = "post_id", nullable = false, unique = true) // Ensures post_id is unique
+    @JoinColumn(name = "post_id", nullable = false, unique = true, updatable = false) // Ensures post_id is unique
     private Post post;
 
     public Image(String encodedImage) {

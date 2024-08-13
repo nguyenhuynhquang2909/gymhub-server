@@ -1,15 +1,14 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
-import com.gymhub.gymhub.dto.PostRequestDTO;
-import com.gymhub.gymhub.dto.PostResponseDTO;
-import com.gymhub.gymhub.dto.UpdatePostContentDTO;
+import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
-import com.gymhub.gymhub.mapper.UpdatePostContentMapper;
+import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.UserRepository;
@@ -33,9 +32,12 @@ public class PostService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private InMemoryRepository inMemoryRepository;
 
     @Autowired
     private Cache cache;
+    private long actionIdCounter = 0;
 
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
@@ -98,5 +100,24 @@ public class PostService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    public boolean reportPost(ReportPostRequestDTO reportPostRequestDTO, long threadId) {
+        // Extract necessary information from the DTO
+        long postId = reportPostRequestDTO.getId();
+        int from = reportPostRequestDTO.getFrom();
+        int to = reportPostRequestDTO.getTo();
+        String reason = reportPostRequestDTO.getReason();
+
+        // Call the inMemoryRepository's changePostStatus method with the extracted values
+        boolean result = inMemoryRepository.changePostStatus(postId, threadId, from, to, reason);
+
+        // Log the action using the constructor that requires threadId
+        ChangePostStatusAction action = new ChangePostStatusAction(
+                ++actionIdCounter, postId, threadId, from, to, reason);
+        inMemoryRepository.logAction(action);
+
+        return result;
+    }
+
+
 
 }

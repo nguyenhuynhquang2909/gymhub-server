@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Schema(description = "This class contains all information the reporting request has to include")
-public class ReportRequestDTO {
+public class ReportThreadRequestDTO {
     @Schema(description = "The id of the thread or post being reported")
     Long id;
     @Schema(description = "The reason for the report")

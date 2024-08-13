@@ -19,16 +19,16 @@ import java.time.LocalDateTime;
 )
 public class Post extends ForumUnit {
 
-    @Column(name = "content", nullable = true, updatable = true)
+    @Column(name = "content", nullable = false, updatable = true)
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "thread_id")
+    @JoinColumn(name = "thread_id", nullable = false, updatable = false)
     private Thread thread;
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_id", nullable = false, updatable = false)
     private Member author;
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)

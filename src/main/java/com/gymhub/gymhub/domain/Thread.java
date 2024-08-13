@@ -31,7 +31,7 @@ public class Thread extends ForumUnit {
     private String category;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false, updatable = false)
     private Member owner;
 
 
