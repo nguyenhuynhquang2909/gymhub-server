@@ -1,54 +1,84 @@
 package com.gymhub.gymhub.controller;
 
-import com.gymhub.gymhub.dto.MemberRequestDTO;
-import com.gymhub.gymhub.dto.MemberResponseDTO;
+
 import com.gymhub.gymhub.service.MemberService;
-import com.gymhub.gymhub.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
-@RequestMapping("/member")
-@Tag(name = "Member Request Handler", description = "Handlers for members related requests")
+@RequestMapping("/members")
 public class MemberController {
     @Autowired
     private MemberService memberService;
-    @Autowired
-    private UserService userService;
 
-    @Operation(description = "This operation returns member information")
-    @GetMapping("/{id}")
-    public MemberResponseDTO getMember(
-            @RequestBody MemberRequestDTO memberRequestDTO) {
-        String memberUsername = memberRequestDTO.getUserName();
-        return (MemberResponseDTO) memberService.loadUserByUsername(memberUsername);
-    }
-
-    @Operation(description = "This operation changes the information of member")
-    @PostMapping("/update/member-{id}")
-    public ResponseEntity<Void> updateMember(
-            @RequestBody MemberRequestDTO memberRequestDTO
+    @PostMapping("/follow/{followingId}")
+    public ResponseEntity<String> followMember(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long followingId
     ) {
-        return memberService.updateMemberInfo(memberRequestDTO);
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        Long followerId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        memberService.followMember(followerId, followingId);
+        return ResponseEntity.ok("Member followed successfully");
     }
 
-    //show all notifications => notificationDTO
-    //your post has been flagged as ..
-    //your thread has been flagged
-    //your have been banned until
-    //your post has a new like
-    //your thread has a new post
-    //you have a new follower
-    //you have a new private conversation
-    //a following member has created thread
-    //a following member has created a posts
+    @PostMapping("/unfollow/{followingId}")
+    public ResponseEntity<String> unfollowMember(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long followingId
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        Long followerId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        memberService.unfollowMember(followerId, followingId);
+        return ResponseEntity.ok("Member unfollowed successfully");
+    }
 
-    //
+    @GetMapping("/followers/count")
+    public ResponseEntity<Integer> getFollowersCount(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        int followerCount = memberService.getFollowersNumber(memberId);
+        return ResponseEntity.ok(followerCount);
+    }
 
-    //create private conversation between 2 user
+    @GetMapping("/following/count")
+    public ResponseEntity<Integer> getFollowingCount(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        int followingCount = memberService.getFollowingNumber(memberId);
+        return ResponseEntity.ok(followingCount);
+    }
 
+    @GetMapping("/followers")
+    public ResponseEntity<Set<Long>> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        Set<Long> followers = memberService.getFollowers(memberId);
+        return ResponseEntity.ok(followers);
+    }
 
+    @GetMapping("/following")
+    public ResponseEntity<Set<Long>> getFollowing(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        Set<Long> following = memberService.getFollowing(memberId);
+        return ResponseEntity.ok(following);
+    }
 }

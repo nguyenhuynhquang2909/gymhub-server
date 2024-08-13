@@ -1,8 +1,6 @@
 package com.gymhub.gymhub.controller;
 
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,8 +15,8 @@ import com.gymhub.gymhub.config.JwtTokenProvider;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.RefreshToken;
 import com.gymhub.gymhub.dto.AuthRespone;
-import com.gymhub.gymhub.dto.LoginRequest;
-import com.gymhub.gymhub.dto.RegisterRequest;
+import com.gymhub.gymhub.dto.LoginRequestDTO;
+import com.gymhub.gymhub.dto.RegisterRequestDTO;
 import com.gymhub.gymhub.dto.TokenRefreshRequest;
 import com.gymhub.gymhub.dto.TokenRefreshResponse;
 import com.gymhub.gymhub.repository.UserRepository;
@@ -73,14 +71,14 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid registration details")
     })
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
-        return authService.registerUser(registerRequest);
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDTO registerRequestDTO) {
+        return authService.registerUser(registerRequestDTO);
     }
 
     @Operation(summary = "Login User", description = "Authenticate a user and returns a JWT Token")
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<AuthRespone> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        return authService.authenticateUser(loginRequest);
+    public ResponseEntity<AuthRespone> authenticateUser(@RequestBody LoginRequestDTO loginRequestDTO) {
+        return authService.authenticateUser(loginRequestDTO);
     }
 
     @Operation(summary = "Get User Profile", description = "Get the profile of the authenticated user")

@@ -14,6 +14,7 @@ import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -158,6 +159,7 @@ public class ThreadService {
             // Return a forbidden response if the IDs do not match
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+
 
         // Update the thread title
 

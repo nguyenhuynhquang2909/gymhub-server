@@ -12,14 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gymhub.gymhub.config.JwtTokenProvider;
-import com.gymhub.gymhub.domain.ForumAccount;
 import com.gymhub.gymhub.dto.AuthRespone;
-import com.gymhub.gymhub.dto.LoginRequest;
-import com.gymhub.gymhub.dto.RegisterRequest;
+import com.gymhub.gymhub.dto.LoginRequestDTO;
+import com.gymhub.gymhub.dto.RegisterRequestDTO;
 
 import java.sql.Date;
-import java.time.LocalDateTime;
-import java.util.Random;
 
 @Service
 public class AuthService {
@@ -35,22 +32,26 @@ public class AuthService {
     @Autowired
     private UserRepository memberAccountRepository;
 
-    public ResponseEntity<?> registerUser(RegisterRequest registerRequest) {
-        if (memberAccountRepository.existsByUserName(registerRequest.getUserName())) {
+
+    public ResponseEntity<?> registerUser(RegisterRequestDTO registerRequestDTO) {
+        if (memberAccountRepository.existsByUserName(registerRequestDTO.getUsername())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
-        if (memberAccountRepository.existsByEmail(registerRequest.getEmail())) {
+        if (memberAccountRepository.existsByEmail(registerRequestDTO.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
-        Random random = new Random();
-        Long memberId = random.nextLong(50);
-        Member member = new Member(memberId, registerRequest.getUserName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail(), new Date(System.currentTimeMillis()));
+        String encodedPassword = passwordEncoder.encode(registerRequestDTO.getPassword());
+        Member member = new Member(registerRequestDTO.getUsername(), encodedPassword, registerRequestDTO.getEmail(), new Date(System.currentTimeMillis()));
+        System.out.println(registerRequestDTO.getUsername());
+
         memberAccountRepository.save(member);
         return ResponseEntity.ok("User registered successfully");
     }
-    public ResponseEntity<AuthRespone> authenticateUser(LoginRequest loginRequest) {
+    public ResponseEntity<AuthRespone> authenticateUser(LoginRequestDTO loginRequestDTO) {
+        System.out.println("Username: " + memberAccountRepository.findByUserName(loginRequestDTO.getUsername()));
+        System.out.println("ID: " + memberAccountRepository.findById(12L));
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword())
+            new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword())
         );
         String jwt = tokenProvider.generateToken(authentication);
         return ResponseEntity.ok(new AuthRespone(jwt));

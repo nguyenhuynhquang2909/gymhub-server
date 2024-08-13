@@ -99,6 +99,79 @@ public class Cache {
      */
     HashMap<Long, Long> bannedList = new HashMap<>();
 
+    ConcurrentHashMap<Long, Set<Long>> followingCache = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Set<Long>> followersCache = new ConcurrentHashMap<>();
+
+    /**
+     * Follow another member.
+     *
+     * @param followerId The ID of the member who wants to follow.
+     * @param followingId The ID of the member to be followed.
+     */
+    public void follow(Long followerId, Long followingId) {
+        followingCache.computeIfAbsent(followerId, k -> ConcurrentHashMap.newKeySet()).add(followingId);
+        followersCache.computeIfAbsent(followingId, k -> ConcurrentHashMap.newKeySet()).add(followerId);
+    }
+
+    /**
+     * Unfollow another member.
+     *
+     * @param followerId The ID of the member who wants to unfollow.
+     * @param followingId The ID of the member to be unfollowed.
+     */
+    public void unfollow(Long followerId, Long followingId) {
+        Set<Long> follwingSet = followingCache.get(followerId);
+        if (follwingSet != null) {
+            follwingSet.remove(followerId);
+        }
+        Set<Long> followersSet = followersCache.get(followingId);
+        if (followersSet != null) {
+            followersSet.remove(followerId);
+        }
+    }
+
+    /**
+     * Get the list of followers for a member.
+     *
+     * @param memberId The ID of the member.
+     * @return A set of member IDs who follow the given member.
+     */
+    public Set<Long> getFollowers(Long memberId) {
+        return followersCache.getOrDefault(memberId, ConcurrentHashMap.newKeySet());
+    }
+
+    /**
+     * Get the list of members a user is following.
+     *
+     * @param memberId The ID of the member.
+     * @return A set of member IDs the given member is following.
+     */
+    public Set<Long> getFollowing(Long memberId) {
+        return followingCache.getOrDefault(memberId, ConcurrentHashMap.newKeySet());
+    }
+
+    /**
+     * Get the number of followers for a member.
+     *
+     * @param memberId The ID of the member.
+     * @return The number of followers.
+     */
+    public int getFollowersNumber(Long memberId) {
+        Set<Long> followers = followersCache.get(memberId);
+        return followers != null ? followers.size() : 0;
+    }
+
+    /**
+     * Get the number of members a user is following.
+     *
+     * @param memberId The ID of the member.
+     * @return The number of members the user is following.
+     */
+    public int getFollowingNumber(Long memberId) {
+        Set<Long> following = followingCache.get(memberId);
+        return following != null ? following.size() : 0;
+    }
+
 
     /**
      * Adds a user to the system by initializing their associated data structures.
