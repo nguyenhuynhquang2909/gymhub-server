@@ -19,9 +19,11 @@ public class PostController {
 @Autowired
     PostService postService;
 
+//
+
     @Operation(
-            description = "This operation returns a list of post belongs to the thread whose Id is included in the URL",
-            tags = "Post Pages"
+            description = "This operation returns a list of post inside a thread",
+            tags = "Thread Page"
     )
     @GetMapping("/thread-{id}")
     public List<PostResponseDTO> getPostsInsideAThread(
@@ -32,12 +34,13 @@ public class PostController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
         // Call the service method to get the posts for the thread
+        //fixed: has not show posts content inside a thread
         return postService.getPostsByThreadId(id);
     }
 
     @Operation(
-            description = "This operation returns a list of post belongs to the user whose Id is included in the URL",
-            tags = "User Profile Page"
+            description = "This operation returns a list of post belongs to a member whose Id is included in the URL",
+            tags = "Member Profile Page"
     )
     @GetMapping("/user-{id}")
     public List<PostResponseDTO> getPostsOfAMember(
@@ -53,7 +56,7 @@ public class PostController {
 
     @Operation(
             description = "This operation creates a new post",
-            tags = "Post Page"
+            tags = "Thread Page"
     )
     @PostMapping("/new/user-{userId}/thread-{threadId}")
     public ResponseEntity<Void> createPost(
@@ -69,7 +72,7 @@ public class PostController {
 
     @Operation(
             description = "The operation increments or decrements the like count of a post",
-            tags = "Post Container"
+            tags = "Thread Page"
     )
     @PatchMapping("/like/post-{postId}/user-{userId}")
     public ResponseEntity<Void> changePostLike(
@@ -84,7 +87,7 @@ public class PostController {
 
     @Operation(
             description = "This operation changes the content and the image of a post (checks if the member is the post owner)",
-            tags = "Post Container"
+            tags = "Thread Page"
     )
     @PatchMapping("/update/post-{id}")
     public ResponseEntity<Void> updatePost(
@@ -100,13 +103,12 @@ public class PostController {
 
     @Operation(
             description = "This operation reports a post to the server and returns a boolean indicating success",
-            tags = "Post Container"
+            tags = "Thread Page"
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
             @RequestBody ReportPostRequestDTO reportPostRequestDTO)
              {
-
         // Set the post ID in the DTO
         reportPostRequestDTO.setId(reportPostRequestDTO.getId());
 

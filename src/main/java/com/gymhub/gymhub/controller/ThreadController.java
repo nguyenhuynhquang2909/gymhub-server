@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 
-@Tag(name = "Thread Handlers", description = "Handlers for thread-related requests")
+@Tag(name = "Thread Request Handlers", description = "Handlers for thread-related requests")
 @RestController
 @RequestMapping("/thread")
 public class ThreadController {
@@ -46,7 +46,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation returns a number of threads that belong to the 'flexing' category",
-            tags = {"Homepage", "Flex-Thread Page"}
+            tags = {"Homepage", "Flexing Category"}
     )
     @GetMapping("/flexing")
     public ResponseEntity<List<ThreadResponseDTO>> getFlexingThread(
@@ -61,7 +61,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation returns a number of threads that belong to the 'advice' category",
-            tags = {"Homepage", "Flex-Thread Page"}
+            tags = {"Homepage", "Advice Category"}
     )
     @GetMapping("/advise")
     public ResponseEntity<List<ThreadResponseDTO>> getAdviseThread(
@@ -76,7 +76,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation returns a number of threads that belong to the 'supplement' category",
-            tags = {"Homepage", "Flex-Thread Page"}
+            tags = {"Homepage", "Supplement Category"}
     )
     @GetMapping("/supplement")
     public ResponseEntity<List<ThreadResponseDTO>> getSupplementThread(
@@ -90,8 +90,8 @@ public class ThreadController {
     }
 
     @Operation(
-            description = "This operation returns a number of threads that belong to a user",
-            tags = {"Homepage", "Advise-Thread Page"}
+            description = "This operation returns a number of threads that belong to a member",
+            tags = {"Member Profile Page"}
     )
     @GetMapping("/user-{id}")
     public ResponseEntity<List<ThreadResponseDTO>> getUserThread(
@@ -108,7 +108,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation creates a new thread",
-            tags = ""
+            tags = "Homepage"
     )
 
     @PostMapping("/new")
@@ -132,7 +132,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation reports a thread to the server and returns a boolean indicating success",
-            tags = "Thread Containers"
+            tags = "Thread Page"
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportThread(@RequestBody ReportThreadRequestDTO reportThreadRequestDTO) {
@@ -150,7 +150,7 @@ public class ThreadController {
 
     @Operation(
             description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)",
-            tags = "Thread Containers"
+            tags = "Thread Page"
     )
     @PatchMapping("/update/{threadID}")
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
