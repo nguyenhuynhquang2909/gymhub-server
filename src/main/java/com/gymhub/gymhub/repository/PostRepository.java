@@ -4,6 +4,8 @@ import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,7 +19,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(Long authorId);
 
-
+    @Query("SELECT p.thread.id FROM Post p WHERE p.id = :postId")
+    Long findThreadIdByPostId(@Param("postId") Long postId);
 
 
 }

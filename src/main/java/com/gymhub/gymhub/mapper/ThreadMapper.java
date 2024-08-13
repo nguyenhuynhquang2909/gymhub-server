@@ -25,13 +25,13 @@ public class ThreadMapper {
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());
         dto.setAuthorAvatar(thread.getOwner().getStringAvatar());
-        dto.setName(thread.getName());
+        dto.setName(thread.getTitle());
         return dto;
     }
 
     public Thread toThread(ThreadRequestDTO threadRequestDTO) {
         Thread thread = new Thread();
-        thread.setName(threadRequestDTO.getTitle());
+        thread.setTitle(threadRequestDTO.getTitle());
         thread.setCategory(threadRequestDTO.getCategory().toString());
         // Assuming Thread has a method to set owner ID directly, otherwise adjust accordingly
         // thread.setOwnerId(threadRequestDTO.getAuthorId());
@@ -40,7 +40,7 @@ public class ThreadMapper {
 
     public ThreadRequestDTO toThreadRequestDTO(Thread thread) {
         ThreadRequestDTO dto = new ThreadRequestDTO();
-        dto.setTitle(thread.getName());
+        dto.setTitle(thread.getTitle());
         dto.setAuthorId(thread.getOwner().getId());
         dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
         return dto;

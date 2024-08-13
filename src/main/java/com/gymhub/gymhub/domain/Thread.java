@@ -20,17 +20,18 @@ import java.time.LocalDateTime;
         name = "Thread.owner",
         attributeNodes = @NamedAttributeNode("owner")
 )
+
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
-    private String name;
+    private String title;
 
 
     @Column(name = "category", nullable = false, updatable = true)
     private String category;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false, updatable = false)
     private Member owner;
 
 
@@ -38,18 +39,18 @@ public class Thread extends ForumUnit {
 
     public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
-        this.name = name;
+        this.title = name;
     }
 
-    public Thread(LocalDateTime now, String name) {
+    public Thread(LocalDateTime now, String title) {
         super(now);
-        this.name = name;
+        this.title = title;
     }
 
     public Thread(long id, String title,String category, LocalDateTime creationDateTime) {
         super(creationDateTime);
         this.setId(id);  // Sets the ID explicitly
-        this.name = title;
+        this.title = title;
         this.category = category;
     }
 

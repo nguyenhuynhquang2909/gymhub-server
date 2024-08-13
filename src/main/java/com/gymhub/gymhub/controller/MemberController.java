@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.controller;
 
+
 import com.gymhub.gymhub.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class MemberController {
     public ResponseEntity<String> followMember(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long followingId
-            ) {
+    ) {
         if (userDetails == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
@@ -60,6 +61,7 @@ public class MemberController {
         int followingCount = memberService.getFollowingNumber(memberId);
         return ResponseEntity.ok(followingCount);
     }
+
     @GetMapping("/followers")
     public ResponseEntity<Set<Long>> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
@@ -69,6 +71,7 @@ public class MemberController {
         Set<Long> followers = memberService.getFollowers(memberId);
         return ResponseEntity.ok(followers);
     }
+
     @GetMapping("/following")
     public ResponseEntity<Set<Long>> getFollowing(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {

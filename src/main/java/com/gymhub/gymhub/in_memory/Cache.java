@@ -303,7 +303,7 @@ public class Cache {
      * @return true if the status change was successfully performed; false if the status change is invalid
      */
     //TODO This action must be logged. Create a subclass extending Action class for this method
-    public boolean changePostStatus(long postId, long threadId, String category, int from, int to, String reason){
+    public boolean changePostStatus(long postId, long threadId, int from, int to, String reason){
         Long postID = allPostId.get(postId);
         if (from == 0 && to == 1) {
             postListByThreadIdAndStatus.get(threadId).get(0).remove(postID);

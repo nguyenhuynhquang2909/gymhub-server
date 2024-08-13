@@ -2,7 +2,7 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
-import com.gymhub.gymhub.dto.ReportRequestDTO;
+import com.gymhub.gymhub.dto.ReportThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -11,9 +11,7 @@ import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.mapper.ThreadMapper;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.UserRepository;
-import com.gymhub.gymhub.in_memory.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -145,12 +143,12 @@ public class ThreadService {
         return true;
     }
 
-    public boolean reportThread(ReportRequestDTO reportRequestDTO){
-        return inMemoryRepository.changeThreadStatus(reportRequestDTO.getId(), reportRequestDTO.getThreadCategory().name(),
-                reportRequestDTO.getFrom(), reportRequestDTO.getTo(), reportRequestDTO.getReason());
+    public boolean reportThread(ReportThreadRequestDTO reportThreadRequestDTO){
+        return inMemoryRepository.changeThreadStatus(reportThreadRequestDTO.getId(), reportThreadRequestDTO.getThreadCategory().name(),
+                reportThreadRequestDTO.getFrom(), reportThreadRequestDTO.getTo(), reportThreadRequestDTO.getReason());
     }
 
-    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO, UserDetails userDetails) {
+    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
 
         // Fetch the thread using the threadId from the DTO
         Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
@@ -173,4 +171,6 @@ public class ThreadService {
         ThreadResponseDTO responseDTO = threadMapper.toThreadResponseDTO(thread, thread.getOwner().getId());
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
+
+    //report thread
 }

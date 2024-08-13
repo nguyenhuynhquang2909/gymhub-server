@@ -9,7 +9,6 @@ import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.domain.Member;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 public class PostMapper {
 
@@ -26,29 +25,29 @@ public class PostMapper {
         dto.setAuthorId(post.getAuthor().getId().toString());
         dto.setAuthorAvatar(post.getAuthor().getStringAvatar());
         dto.setName(post.getContent());
+        dto.setEncodedImage(post.getImage().getEncodedImage()); // Assuming post has a single image
         return dto;
     }
 
     public static Post toPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
-        return new Post(
-
+        Image image = new Image(postRequestDTO. getEncodedImage().getBytes());
+        Post post = new Post(
                 LocalDateTime.now(),
                 postRequestDTO.getContent(),
-                postRequestDTO.getEncodedImages().stream()
-                        .map(encodedImage -> new Image(encodedImage.getBytes()))
-                        .collect(Collectors.toList())
+                image,
+                author,
+                thread
         );
+        image.setPost(post); // Set the post reference in the image
+        return post;
     }
+
     public static PostRequestDTO toPostRequestDTO(Post post) {
         PostRequestDTO dto = new PostRequestDTO();
         dto.setAuthorId(post.getAuthor().getId());
         dto.setContent(post.getContent());
-        dto.setEncodedImages(post.getImages().stream()
-                .map(Image::getEncodedImage)
-                .collect(Collectors.toList()));
+        dto.setEncodedImage(post.getImage().getEncodedImage()); // Assuming post has a single image
         dto.setThreadId(post.getThread().getId().toString());
         return dto;
     }
-
-
 }

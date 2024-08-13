@@ -67,11 +67,12 @@ public class GymhubApplication {
 		Iterator<Post> iterator3 = posts.iterator();
 		while(iterator3.hasNext()){
 			Post post = iterator3.next();
+			System.out.println("Post id: " + post.getId());
 			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), 1);
 		}
 
 		System.out.println("Cache Initialization: Done");
-		System.out.println("Swagger UI is available at ");
+		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 
 
 

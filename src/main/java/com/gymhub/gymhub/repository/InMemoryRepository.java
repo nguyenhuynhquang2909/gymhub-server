@@ -40,7 +40,7 @@ public class InMemoryRepository {
     private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
 
-    private void logAction(MustLogAction action) {
+    public void logAction(MustLogAction action) {
         try (FileOutputStream fos = new FileOutputStream(LOG_FILE_PATH, true);
             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
                 oos.writeObject(action);
@@ -70,12 +70,13 @@ public class InMemoryRepository {
         logAction(action);
         return result;
     }
-    public boolean changePostStatus(long postId, long threadId, String category, int from, int to, String reason) {
-        boolean result = cache.changePostStatus(postId, threadId, category, from, to, reason);
-        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, postId, threadId, category, from, to, reason);
+    public boolean changePostStatus(long postId, long threadId, int from, int to, String reason) {
+        boolean result = cache.changePostStatus(postId, threadId, from, to, reason);
+        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, postId, threadId, from, to, reason);
         logAction(action);
         return result;
     }
+
     public boolean addPostToCache(long postId, long threadId, long userId, int status) {
         boolean result = cache.addPostToCache(threadId, postId, userId, status);
         AddPostAction action = new AddPostAction(++actionIdCounter, threadId, postId, userId, status);
@@ -128,7 +129,7 @@ public class InMemoryRepository {
 
                     else if (action instanceof ChangePostStatusAction) {
                         ChangePostStatusAction changePostStatusAction = (ChangePostStatusAction) action;
-                        cache.changePostStatus(changePostStatusAction.getPostId(), changePostStatusAction.getThreadId(), changePostStatusAction.getCategory(),changePostStatusAction.getFrom(), changePostStatusAction.getTo(), changePostStatusAction.getReason());
+                        cache.changePostStatus(changePostStatusAction.getPostId(), changePostStatusAction.getThreadId(),changePostStatusAction.getFrom(), changePostStatusAction.getTo(), changePostStatusAction.getReason());
                     }
 
                     else if (action instanceof AddPostAction) {

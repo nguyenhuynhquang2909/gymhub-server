@@ -15,3 +15,4 @@ public class ThreadCategoryEnumDeserializer extends JsonDeserializer<ThreadCateg
         return ThreadCategoryEnum.valueOf(value);
     }
 }
+

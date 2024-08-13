@@ -17,16 +17,16 @@ import java.util.Set;
 @Schema(description = "Normal users of the forum")
 public class Member extends ForumAccount {
     @Setter
-    @Column(name = "title", nullable = true, length = 20, unique = false)
+    @Column(name = "title", nullable = false, length = 20, unique = false, updatable = true)
     private String title;
 
     @Setter
-    @Column(name = "bio", nullable = true, length = 200, unique = false)
+    @Column(name = "bio", nullable = true, length = 200, unique = false, updatable = true)
     private String bio;
 
     @Setter
     @JsonIgnore
-    @Column(name = "avatar", nullable = true, updatable = false)
+    @Column(name = "avatar", nullable = true, updatable = true)
     private byte[] avatar;
 
     @Setter

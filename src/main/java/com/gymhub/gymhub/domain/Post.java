@@ -1,15 +1,11 @@
 package com.gymhub.gymhub.domain;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.minidev.json.annotate.JsonIgnore;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -23,26 +19,27 @@ import java.util.List;
 )
 public class Post extends ForumUnit {
 
-    @Column(name = "content", nullable = true, updatable = true)
+    @Column(name = "content", nullable = false, updatable = true)
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "thread_id")
+    @JoinColumn(name = "thread_id", nullable = false, updatable = false)
     private Thread thread;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images = new ArrayList<>();
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_id", nullable = false, updatable = false)
     private Member author;
 
-    public Post(LocalDateTime creationDate, String content, List<Image> images) {
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Image image;
+
+    public Post(LocalDateTime creationDate, String content, Image image) {
         super(creationDate);
         this.content = content;
-        this.images = images;
+        this.image = image;
     }
 
-
+    public Post(LocalDateTime now, String content, Image image, Member author, Thread thread) {
+    }
 }

@@ -14,4 +14,3 @@ public enum ThreadCategoryEnum {
     ADVISE,
     SUPPLEMENT
 }
-
