@@ -49,8 +49,6 @@ public class Member extends ForumAccount {
         this.joinDate = joinDate;
     }
 
-    public Member(Long memberId, String userName, String encode, String email, Date date) {
-    }
     public void follow(Long memeberId) {
         following.add(memeberId);
     }
