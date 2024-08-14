@@ -112,22 +112,27 @@ public class ThreadController {
     )
 
     @PostMapping("/new")
-    public ResponseEntity<String> createNewThread(
+    public ResponseEntity<ThreadResponseDTO> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
             @AuthenticationPrincipal UserDetails userDetails
-            ){
+    ) {
         if (userDetails == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+            return ResponseEntity.status(401).build(); // Unauthorized response
         }
+
         String username = userDetails.getUsername();
         Member member = userRepository.findByUserName(username)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         threadRequest.setAuthorId(member.getId());
-        System.out.println(threadRepository.findAll().size());
-        threadService.createThread(threadRequest);        //New API this line
-        System.out.println(threadRepository.findAll().size());
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        // Create the new thread and retrieve the information of the created thread
+        ThreadResponseDTO createdThread = threadService.createThread(threadRequest);
+
+        // Return the created thread information
+        return new ResponseEntity<>(createdThread, HttpStatus.CREATED);
     }
+
 
 
     @Operation(
@@ -156,12 +161,19 @@ public class ThreadController {
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
-            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
-
+            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Member member = userRepository.findByUserName(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        updateThreadTitleDTO.setUserId(member.getId());
         // Set the threadID in the DTO or pass it directly to the service method
         updateThreadTitleDTO.setThreadId(threadID);
 
-        return threadService.updateThread(updateThreadTitleDTO);
+        return threadService.updateThread(updateThreadTitleDTO, userDetails);
     }
 
 

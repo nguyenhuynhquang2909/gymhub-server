@@ -125,7 +125,7 @@ public class ThreadService {
 
     }
 
-    public boolean createThread(ThreadRequestDTO threadRequestDTO) {
+    public ThreadResponseDTO createThread(ThreadRequestDTO threadRequestDTO) {
         Member owner = userRepository.findById(threadRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -140,7 +140,22 @@ public class ThreadService {
         String toxicStatus = "notToxic"; //Call the AI here
         inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId());
         threadRepository.save(thread);
-        return true;
+
+        ThreadResponseDTO threadResponse = new ThreadResponseDTO();
+        threadResponse.setId(thread.getId());
+        threadResponse.setCreationDateTime(thread.getCreationDateTime());
+        threadResponse.setLikeCount(0);  // Assuming new threads start with 0 likes
+        threadResponse.setViewCount(0);  // Assuming new threads start with 0 views
+        threadResponse.setBeenReport(false);
+        threadResponse.setBeenLiked(false);
+        threadResponse.setPostCount(0);  // Assuming new threads start with 0 posts
+        threadResponse.setAuthorName(owner.getUserName());
+        threadResponse.setAuthorId(owner.getId());
+        threadResponse.setAuthorAvatar(owner.getStringAvatar());  // Assuming Member entity has an avatar field
+        threadResponse.setName(thread.getTitle());
+
+        // Return the response DTO
+        return threadResponse;
     }
 
     public boolean reportThread(ReportThreadRequestDTO reportThreadRequestDTO){
@@ -148,7 +163,7 @@ public class ThreadService {
                 reportThreadRequestDTO.getFrom(), reportThreadRequestDTO.getTo(), reportThreadRequestDTO.getReason());
     }
 
-    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
+    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO, UserDetails userDetails) {
 
         // Fetch the thread using the threadId from the DTO
         Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
@@ -162,7 +177,7 @@ public class ThreadService {
 
 
         // Update the thread title
-
+        thread.setTitle(updateThreadTitleDTO.getTitle());
 
         // Save the updated thread
         thread = threadRepository.save(thread);
