@@ -103,6 +103,13 @@ public class Cache {
     ConcurrentHashMap<Long, Set<Long>> followersCache = new ConcurrentHashMap<>();
 
     /**
+     * A Map containing session id and all the threads the user views in the session
+     */
+    HashMap<String, ConcurrentHashMap<Long, Long>> sessions = new HashMap<>();
+
+
+
+    /**
      * Follow another member.
      *
      * @param followerId The ID of the member who wants to follow.
