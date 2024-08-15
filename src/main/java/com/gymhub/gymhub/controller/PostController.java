@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,12 +62,17 @@ public class PostController {
     )
     @PostMapping("/new/user-{userId}/thread-{threadId}")
     public ResponseEntity<Void> createPost(
-            @Parameter(description = "The id of the user this post belongs to", required = true)
-            @PathVariable Long userId,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
             @PathVariable Long threadId,
-            @RequestBody PostRequestDTO post)
+            @RequestBody PostRequestDTO post,
+            @AuthenticationPrincipal UserDetails userDetails)
     {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String userName = userDetails.getUsername();
+        Long userId = postService.getUserIdByUserName(userName);
+
         return postService.createPost(userId, threadId, post);
     }
 
@@ -93,10 +100,16 @@ public class PostController {
     public ResponseEntity<Void> updatePost(
             @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,
-            @RequestBody UpdatePostContentDTO body) {
-
+            @RequestBody UpdatePostContentDTO body,
+            @AuthenticationPrincipal UserDetails userDetails
+            ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = userDetails.getUsername();
+        Long userId = postService.getUserIdByUserName(username);
         // Call the service method to update the post content and image
-        return postService.updatePost(body);
+        return postService.updatePost(body, userId);
     }
 
 
@@ -107,7 +120,8 @@ public class PostController {
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
-            @RequestBody ReportPostRequestDTO reportPostRequestDTO)
+            @RequestBody ReportPostRequestDTO reportPostRequestDTO,
+            )
              {
         // Set the post ID in the DTO
         reportPostRequestDTO.setId(reportPostRequestDTO.getId());

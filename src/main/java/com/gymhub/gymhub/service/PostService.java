@@ -38,7 +38,11 @@ public class PostService {
     @Autowired
     private Cache cache;
     private long actionIdCounter = 0;
-
+    public Long getUserIdByUserName(String userName) {
+        Member user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getId();
+    }
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
@@ -66,7 +70,7 @@ public class PostService {
         }
     }
 
-    public ResponseEntity<Void> updatePost(UpdatePostContentDTO updatePostContentDTO) {
+    public ResponseEntity<Void> updatePost(UpdatePostContentDTO updatePostContentDTO, Long userId) {
         Optional<Member> member = userRepository.findById(updatePostContentDTO.getAuthorId());
         Optional<Thread> thread = threadRepository.findById(updatePostContentDTO.getThreadId());
         Optional<Post> post = postRepository.findById(updatePostContentDTO.getPostId());
@@ -75,7 +79,7 @@ public class PostService {
             Post existingPost = post.get();
 
             // Check if the member is the author of the post
-            if (existingPost.getAuthor().getId().equals(member.get().getId())) {
+            if (existingPost.getAuthor().getId().equals(userId)) {
                 // Update the post content
                 existingPost.setContent(updatePostContentDTO.getContent());
 
