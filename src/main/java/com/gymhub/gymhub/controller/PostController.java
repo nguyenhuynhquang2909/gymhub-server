@@ -4,6 +4,7 @@ import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,7 +59,8 @@ public class PostController {
 
     @Operation(
             description = "This operation creates a new post",
-            tags = "Thread Page"
+            tags = "Thread Page",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @PostMapping("/new/user-{userId}/thread-{threadId}")
     public ResponseEntity<Void> createPost(
@@ -94,7 +96,8 @@ public class PostController {
 
     @Operation(
             description = "This operation changes the content and the image of a post (checks if the member is the post owner)",
-            tags = "Thread Page"
+            tags = "Thread Page",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @PatchMapping("/update/post-{id}")
     public ResponseEntity<Void> updatePost(
@@ -120,7 +123,7 @@ public class PostController {
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
-            @RequestBody ReportPostRequestDTO reportPostRequestDTO,
+            @RequestBody ReportPostRequestDTO reportPostRequestDTO
             )
              {
         // Set the post ID in the DTO

@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.controller;
 
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,13 +47,6 @@ public class AuthController {
     @Operation(
         summary = "Refresh Token", description = "Refresh the access token using a valid refresh token"
     )
-    @ApiResponses( value = {
-        @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
-        @ApiResponse(responseCode =  "400", description = "Invalid refresh token"),
-        @ApiResponse(responseCode =  "404", description = "Refresh token not found")
-    }
-    )
-    
     @PostMapping(value = "/refresh-token", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
@@ -66,10 +60,6 @@ public class AuthController {
             .orElseThrow(() -> new RuntimeException("Refresh token is not in the database"));
     }
     @Operation(summary = "Register User", description = "Register a new user")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "User registered successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid registration details")
-    })
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDTO registerRequestDTO) {
         return authService.registerUser(registerRequestDTO);
@@ -81,11 +71,8 @@ public class AuthController {
         return authService.authenticateUser(loginRequestDTO);
     }
 
-    @Operation(summary = "Get User Profile", description = "Get the profile of the authenticated user")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User profile fetched successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
+    @Operation(summary = "Get User Profile",
+            description = "Get the profile of the authenticated user", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {

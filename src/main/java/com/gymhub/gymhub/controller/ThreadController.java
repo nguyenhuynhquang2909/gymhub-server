@@ -10,6 +10,7 @@ import com.gymhub.gymhub.repository.UserRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -108,7 +109,8 @@ public class ThreadController {
 
     @Operation(
             description = "This operation creates a new thread",
-            tags = "Homepage"
+            tags = "Homepage",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
 
     @PostMapping("/new")

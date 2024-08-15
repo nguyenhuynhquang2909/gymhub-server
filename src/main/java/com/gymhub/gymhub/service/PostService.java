@@ -86,11 +86,11 @@ public class PostService {
                 // Update the post image
                 Image updatedImage = existingPost.getImage();
                 if (updatedImage == null) {
-                    updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                    updatedImage = new Image(updatePostContentDTO.getEncodedImage().get(0)); // Assuming only one image
                     updatedImage.setPost(existingPost);
                     existingPost.setImage(updatedImage);
                 } else {
-                    updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                    updatedImage.setEncodedImage(updatePostContentDTO.getEncodedImage().get(0));
                 }
 
                 // Save the updated post
@@ -104,6 +104,7 @@ public class PostService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     public boolean reportPost(ReportPostRequestDTO reportPostRequestDTO, long threadId) {
         // Extract necessary information from the DTO
         long postId = reportPostRequestDTO.getId();
@@ -121,7 +122,6 @@ public class PostService {
 
         return result;
     }
-
 
 
 }

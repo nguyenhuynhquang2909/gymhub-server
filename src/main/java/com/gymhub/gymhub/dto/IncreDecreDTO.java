@@ -10,5 +10,5 @@ import lombok.Setter;
 @Schema(description = "Containing 2 possible actions - INCREMENT and DECREMENT")
 public class IncreDecreDTO {
     @Schema(description = "An enum with 2 possible values - INCREMENT and DECREMENT")
-    private ActionEnum actionDTO;
+    public ActionEnum actionDTO;
 }

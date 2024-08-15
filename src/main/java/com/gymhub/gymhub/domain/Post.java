@@ -34,10 +34,12 @@ public class Post extends ForumUnit {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Image image;
 
+
     public Post(LocalDateTime creationDate, String content, Image image) {
         super(creationDate);
         this.content = content;
         this.image = image;
+
     }
 
     public Post(LocalDateTime now, String content, Image image, Member author, Thread thread) {

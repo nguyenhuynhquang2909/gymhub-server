@@ -7,8 +7,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Getter
-@Setter
+
 @NoArgsConstructor
 @Schema(description = "Contains the post's new content and images")
 public class UpdatePostContentDTO {
@@ -34,6 +33,46 @@ public class UpdatePostContentDTO {
         this.authorId = authorId;
         this.threadId = threadId;
         this.content = content;
+        this.encodedImage = encodedImage;
+    }
+
+    public Long getPostId() {
+        return postId;
+    }
+
+    public void setPostId(Long postId) {
+        this.postId = postId;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public Long getThreadId() {
+        return threadId;
+    }
+
+    public void setThreadId(Long threadId) {
+        this.threadId = threadId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public List<String> getEncodedImage() {
+        return encodedImage;
+    }
+
+    public void setEncodedImage(List<String> encodedImage) {
         this.encodedImage = encodedImage;
     }
 }
