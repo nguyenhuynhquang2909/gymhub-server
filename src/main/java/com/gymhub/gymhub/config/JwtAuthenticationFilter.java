@@ -3,6 +3,8 @@ package com.gymhub.gymhub.config;
 import java.io.IOException;
 import java.util.List;
 
+import com.gymhub.gymhub.components.CookieManager;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +29,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    CookieManager cookieManager;
+
     private List<AntPathRequestMatcher> protectedUrls = List.of(
             new AntPathRequestMatcher("/post/new/**"),
             new AntPathRequestMatcher("/post/update/**"),
@@ -40,7 +45,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String jwt = getJwtFromRequest(request);
+        //String jwt = getJwtFromRequest(request);
+        Cookie[] cookies = request.getCookies();
+        String jwt = cookieManager.getCookieValue("AuthenticationToken");
         if (jwt != null && tokenProvider.validateToken(jwt)) {
             String username = tokenProvider.getUserNameFromJWT(jwt);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);

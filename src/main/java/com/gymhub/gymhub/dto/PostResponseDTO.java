@@ -28,8 +28,10 @@ public class PostResponseDTO {
     @Schema(description = "like count of the post")
     private int likeCount;
 
+    /**
     @Schema(description = "View count of the post")
     private int viewCount;
+     **/
 
     @Schema(description = "True if the post has been reported")
     private boolean beenReport;

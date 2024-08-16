@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -8,17 +9,21 @@ import com.gymhub.gymhub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class MemberService implements UserDetailsService {
+public class MemberService{
 
     @Autowired
     private Cache cache;
@@ -73,17 +78,6 @@ public class MemberService implements UserDetailsService {
         return memberRepository.findByUserName(userName)
                 .map(Member::getId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = userRepository.findByUserName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-        return User.builder()
-                .username(member.getUserName())
-                .password(member.getPassword())
-                .roles("USER")
-                .build();
     }
 
     public ResponseEntity<Void> updateMemberInfo(MemberRequestDTO memberRequestDTO) {

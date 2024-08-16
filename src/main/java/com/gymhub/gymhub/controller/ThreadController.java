@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.controller;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.ReportThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
@@ -14,7 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,17 +96,19 @@ public class ThreadController {
             description = "This operation returns a number of threads that belong to a member",
             tags = {"Member Profile Page"}
     )
-    @GetMapping("/user-{id}")
+    @GetMapping("/user")
     public ResponseEntity<List<ThreadResponseDTO>> getUserThread(
-            @Parameter(description = "Id of the user", required = true)
-            @PathVariable Long id,
+            //@Parameter(description = "Id of the user", required = true)
+            //@PathVariable Long id,
             @Parameter(description = "the number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
+
       /*  return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id));*/
-        return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id, limit, page));
+        return ResponseEntity.ok(threadService.getAllThreadByOwnerId(customUserDetails.getId(), limit, page));
     }
 
     @Operation(
@@ -114,17 +119,20 @@ public class ThreadController {
     @PostMapping("/new")
     public ResponseEntity<String> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails
             ){
+
+        //This URL has been blocked from access unless the user is logged in
+        /**
         if (userDetails == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
         String username = userDetails.getUsername();
         Member member = userRepository.findByUserName(username)
                         .orElseThrow(() -> new RuntimeException("User not found"));
-        threadRequest.setAuthorId(member.getId());
+         **/
         System.out.println(threadRepository.findAll().size());
-        threadService.createThread(threadRequest);        //New API this line
+        threadService.createThread(userDetails.getId(), threadRequest);        //New API this line
         System.out.println(threadRepository.findAll().size());
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -156,12 +164,13 @@ public class ThreadController {
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
-            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
+            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         // Set the threadID in the DTO or pass it directly to the service method
         updateThreadTitleDTO.setThreadId(threadID);
 
-        return threadService.updateThread(updateThreadTitleDTO);
+        return threadService.updateThread(userDetails.getId(), updateThreadTitleDTO);
     }
 
 

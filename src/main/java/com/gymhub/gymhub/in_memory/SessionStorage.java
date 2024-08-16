@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +23,7 @@ public class SessionStorage {
      * This Map tracks the session ID of each User Id. Everytime the user logs in
      * a new session id will be created to replace the old one
      */
-    private ConcurrentHashMap<Long, UUID> usersSessions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, LinkedList<UUID>> usersSessions = new ConcurrentHashMap<>();
     /**
      * This Map tracks session ID and all the threads that have been viewed in the session.
      * Everytime the user logs in, the corresponding key value pair will get replaced by new ones
@@ -34,17 +35,42 @@ public class SessionStorage {
      * It receives the id of the user as a parameter, which will be used as a key for which the session ID
      * will be the value. The Session ID will be the key in the sessionThreadViews map and the
      * thread viewing concurrent map will be the value. Old key-value pairs will get replaced everytime
-     * users logs in
+     * users logs in. Call this method during log in if the session key of the request header is empty
+     * This method is also called when the session expires while users are still logged in
      * @param userId
-     * @return a boolean value indicating the success of the operation
+     * @return the identifier of the newly created session
      */
-    public boolean createNewSession(Long userId){
+    public UUID createNewSession(Long userId){
         UUID sessionId = UUID.randomUUID();
         ConcurrentHashMap<Long, Long> threadViews = new ConcurrentHashMap<>();
-        usersSessions.put(userId, sessionId);
-        sessionThreadViews.put(sessionId, threadViews);
-        return true;
+
+        //check if this is the first time the user logs in
+        if (!usersSessions.containsKey(userId)) {
+            //Initiate a list to contain Ids of all sessions belonging to the user
+            LinkedList<UUID> sessions = new LinkedList<>();
+            //Put the newly created session ID in the list
+            sessions.add(sessionId);
+            usersSessions.put(userId, sessions);
+        }
+        else {
+            usersSessions.get(userId).add(sessionId);
+        }
+        return sessionId;
     }
+
+
+    /**
+     * Call this method to create a new session when the session key in the header is empty
+     * @return the identifier of the newly created session
+     */
+    public UUID createNewSessionWhenViewThread(){
+        UUID sessionId = UUID.randomUUID();
+        ConcurrentHashMap<Long, Long> threadViews = new ConcurrentHashMap<>();
+        sessionThreadViews.put(sessionId, threadViews);
+        return sessionId;
+    }
+
+
 
     /**
      * This method will be called when the user clicks on a thread.
