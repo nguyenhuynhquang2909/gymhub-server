@@ -41,7 +41,6 @@ public class ThreadMapper {
     public ThreadRequestDTO toThreadRequestDTO(Thread thread) {
         ThreadRequestDTO dto = new ThreadRequestDTO();
         dto.setTitle(thread.getTitle());
-        dto.setAuthorId(thread.getOwner().getId());
         dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
         return dto;
     }

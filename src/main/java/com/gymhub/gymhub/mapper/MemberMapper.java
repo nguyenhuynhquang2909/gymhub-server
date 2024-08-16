@@ -9,7 +9,6 @@ import java.util.Base64;
 import java.util.Date;
 
 public class MemberMapper {
-
     public static MemberResponseDTO toMemberResponseDTO(Member member, Cache cache) {
         MemberResponseDTO dto = new MemberResponseDTO();
         dto.setId(member.getId());

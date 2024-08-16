@@ -103,6 +103,13 @@ public class Cache {
     ConcurrentHashMap<Long, Set<Long>> followersCache = new ConcurrentHashMap<>();
 
     /**
+     * A Map containing session id and all the threads the user views in the session
+     */
+    HashMap<String, ConcurrentHashMap<Long, Long>> sessions = new HashMap<>();
+
+
+
+    /**
      * Follow another member.
      *
      * @param followerId The ID of the member who wants to follow.
@@ -652,7 +659,7 @@ public Integer getPostLikeCountByPostId(Long postId) {
         return null;
     }
 }
-
+    /**
     public Integer getPostViewCountByPostId(Long postId) {
         ConcurrentHashMap<String, Number> postParameters = parametersForAllPosts.get(postId);
         if (postParameters != null) {
@@ -661,6 +668,7 @@ public Integer getPostLikeCountByPostId(Long postId) {
             return null;
         }
     }
+     **/
 
     public boolean checkIfAPostHasBeenReported(Long postId) {
         return resolvedPosts.containsKey(postId);

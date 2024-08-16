@@ -39,10 +39,10 @@ public class PostService {
     private Cache cache;
     private long actionIdCounter = 0;
 
-    public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
+    public List<PostResponseDTO> getPostsByThreadId(Long threadId, Long userId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
-                .map(post -> PostMapper.toPostResponseDTO(post, cache, null)) // Replace null with actual userId if needed
+                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId)) // Replace null with actual userId if needed
                 .collect(Collectors.toList());
     }
 
@@ -66,8 +66,8 @@ public class PostService {
         }
     }
 
-    public ResponseEntity<Void> updatePost(UpdatePostContentDTO updatePostContentDTO) {
-        Optional<Member> member = userRepository.findById(updatePostContentDTO.getAuthorId());
+    public ResponseEntity<Void> updatePost(Long authorId, UpdatePostContentDTO updatePostContentDTO) {
+        Optional<Member> member = userRepository.findById(authorId);
         Optional<Thread> thread = threadRepository.findById(updatePostContentDTO.getThreadId());
         Optional<Post> post = postRepository.findById(updatePostContentDTO.getPostId());
 

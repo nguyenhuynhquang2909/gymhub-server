@@ -17,7 +17,6 @@ public class PostMapper {
         dto.setId(post.getId());
         dto.setCreationDateTime(post.getCreationDateTime());
         dto.setLikeCount(cache.getPostLikeCountByPostId(post.getId()));
-        dto.setViewCount(cache.getPostViewCountByPostId(post.getId()));
         dto.setBeenReport(cache.checkIfAPostHasBeenReported(post.getId()));
         dto.setBeenLiked(cache.checkIfAPostHasBeenLikedByAMemberId(post.getId(), userId));
         dto.setPostCount(cache.getPostCountOfAThreadByThreadId(post.getThread().getId()));

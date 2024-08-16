@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.config;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
@@ -24,9 +27,14 @@ public class JwtTokenProvider {
     public String generateToken(Authentication authentication) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
-
+        Map<String, Object> claims = new HashMap<>();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        claims.put("userId", userDetails.getId());
+        claims.put("username", userDetails.getUsername());
+        claims.put("roles", userDetails.getAuthorities());
         return Jwts.builder()
                 .setSubject(authentication.getName())
+                .addClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key)
@@ -35,7 +43,6 @@ public class JwtTokenProvider {
     public String generateTokenFromUsername(String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
-
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(now)
@@ -60,5 +67,13 @@ public class JwtTokenProvider {
         } catch (Exception ex) {
             return false;
         }
+    }
+
+    public Claims getClaimsFromJwt(String token) {
+        return Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
+
     }
 }

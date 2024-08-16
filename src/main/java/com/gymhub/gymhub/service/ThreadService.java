@@ -53,7 +53,6 @@ public class ThreadService {
         System.out.println("SuggestedThreads: " + suggestedThreads);
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
         for (String key : suggestedThreads.keySet()) {
-
             List<ThreadResponseDTO> threadList = new LinkedList<>();
             List<Long> threadIds = new LinkedList<>();
             for (HashMap<String, Number> map: suggestedThreads.get(key).values()){
@@ -125,16 +124,13 @@ public class ThreadService {
 
     }
 
-    public boolean createThread(ThreadRequestDTO threadRequestDTO) {
-        Member owner = userRepository.findById(threadRequestDTO.getAuthorId())
+    public boolean createThread(Long userId, ThreadRequestDTO threadRequestDTO) {
+        Member owner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         long id = random.nextLong(50);
         System.out.println("Generated ID: " + id);
-
         String category = threadRequestDTO.getCategory().name();
         System.out.println(category);
-
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
         thread.setOwner(owner);
         String toxicStatus = "notToxic"; //Call the AI here
@@ -148,14 +144,14 @@ public class ThreadService {
                 reportThreadRequestDTO.getFrom(), reportThreadRequestDTO.getTo(), reportThreadRequestDTO.getReason());
     }
 
-    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
+    public ResponseEntity<ThreadResponseDTO> updateThread(Long userId, UpdateThreadTitleDTO updateThreadTitleDTO) {
 
         // Fetch the thread using the threadId from the DTO
         Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
                 .orElseThrow(() -> new RuntimeException("Thread not found"));
 
         // Check if the author of the thread matches the user making the request
-        if (!thread.getOwner().getId().equals(updateThreadTitleDTO.getUserId())) {
+        if (!thread.getOwner().getId().equals(userId)) {
             // Return a forbidden response if the IDs do not match
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
