@@ -5,12 +5,18 @@ import com.gymhub.gymhub.dto.BannedMemberDTO;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
 import com.gymhub.gymhub.in_memory.Cache;
+import com.gymhub.gymhub.repository.InMemoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 import java.util.Date;
 
+@Component
 public class MemberMapper {
-    private static Cache cache;
+
+    @Autowired
+    private static InMemoryRepository inMemoryRepository;
 
     public static MemberResponseDTO memberToMemberResponseDTO(Member member) {
 
@@ -22,13 +28,13 @@ public class MemberMapper {
         dto.setBio(member.getBio());
         dto.setStringAvatar(Base64.getEncoder().encodeToString(member.getAvatar()));
         dto.setJoinDate(member.getJoinDate());
-        dto.setLikeCount(cache.getMemberTotalLikeCountByMemberId(member.getId()));
-        dto.setPostCount(cache.getMemberTotalPostCountByMemberId(member.getId()));
-        dto.setFollowerIds(cache.getFollowers(member.getId()));
-        dto.setFollowingIds(cache.getFollowing(member.getId()));
+        dto.setLikeCount(inMemoryRepository.getMemberTotalLikeCountByMemberId(member.getId()));
+        dto.setPostCount(inMemoryRepository.getMemberTotalPostCountByMemberId(member.getId()));
+        dto.setFollowerIds(inMemoryRepository.getFollowers(member.getId()));
+        dto.setFollowingIds(inMemoryRepository.getFollowing(member.getId()));
         dto.setFollowerCount(dto.getFollowerIds().size());
         dto.setFollowingCount(dto.getFollowingIds().size());
-        dto.setBanUntilDate(cache.getBanUntilDateByMemberId(member.getId()));
+        dto.setBanUntilDate(inMemoryRepository.getBanUntilDateByMemberId(member.getId()));
 
         return dto;
     }

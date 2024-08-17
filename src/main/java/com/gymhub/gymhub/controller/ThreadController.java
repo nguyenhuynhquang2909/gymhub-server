@@ -1,10 +1,7 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.domain.Member;
-import com.gymhub.gymhub.dto.ThreadToxicFlowDTO;
-import com.gymhub.gymhub.dto.ThreadRequestDTO;
-import com.gymhub.gymhub.dto.ThreadResponseDTO;
-import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
+import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.service.ThreadService;
@@ -56,7 +53,7 @@ public class ThreadController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
         int offset = page * limit; // Calculate the offset based on page and limit
-        return ResponseEntity.ok(threadService.getAllThreadsByCategory("flexing", limit, offset));
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.FLEXING, limit, offset));
     }
 
     @Operation(
@@ -71,7 +68,7 @@ public class ThreadController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
         int offset = page * limit; // Calculate the offset based on page and limit
-        return ResponseEntity.ok(threadService.getAllThreadsByCategory("advice", limit, offset));
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.ADVISE, limit, offset));
     }
 
     @Operation(
@@ -86,7 +83,7 @@ public class ThreadController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page
     ) {
         int offset = page * limit; // Calculate the offset based on page and limit
-        return ResponseEntity.ok(threadService.getAllThreadsByCategory("supplement", limit, offset));
+        return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.SUPPLEMENT, limit, offset));
     }
 
     @Operation(

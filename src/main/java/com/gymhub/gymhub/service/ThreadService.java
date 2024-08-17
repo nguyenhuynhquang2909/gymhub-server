@@ -31,8 +31,7 @@ public class ThreadService {
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
-    private Random random = new Random();
-@Autowired
+    @Autowired
     private ThreadMapper threadMapper;
     @Autowired
     private Cache cache;
@@ -70,11 +69,16 @@ public class ThreadService {
     //Retrieve the thread parameters from the cache's parametersForAllThreads
     //Retrieve the rest of the detail from the database
     //Generate the DTO
+    //Add limit and offset to the parameter
+    //Loop through the threadListByCategoryAndStatus in cache starting from the offset
+    //Retrieve the thread parameters from the cache's parametersForAllThreads
+    //Retrieve the rest of the detail from the database
+    //Generate the DTO
 
-    public List<ThreadResponseDTO> getAllThreadsByCategory(String category, int limit, int offset) {
+    public List<ThreadResponseDTO> getAllThreadsByCategory(ThreadCategoryEnum category, int limit, int offset) {
         // Retrieve thread IDs from the cache based on the category
         List<Long> threadListByCategoryAndStatus = Optional.ofNullable(
-                        inMemoryRepository.getThreadListByCategoryAndStatus(category))
+                        inMemoryRepository.getAllThreadIdsByCategory(category))
                 .map(statusMap -> statusMap.get(1)) // Assuming status 1 for non-toxic threads
                 .orElse(new LinkedList<>());
 
@@ -104,6 +108,8 @@ public class ThreadService {
 
         return threadResponseDTOs;
     }
+
+
 
     //Add limit and offset to the parameter list
     //Loop through the threadListByUser in the cache

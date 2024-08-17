@@ -10,8 +10,7 @@ public class UserService {
 
     @Autowired
     private MemberRepository memberRepository;
-    @Autowired
-    private Cache cache;
+
 
     public void getUserInfo(String username){
         System.out.println("Info of "+username);

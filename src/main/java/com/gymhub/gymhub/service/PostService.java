@@ -65,9 +65,11 @@ public class PostService {
             Post post = PostMapper.postRequestToPost(postRequestDTO, author.get(), thread.get());
             //ADD POST TO CACHE
             ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;  //temporary set ToxicStatus = NOT-TOXIC
+            boolean tempResolveStatus = false;
+            String tempReason = "";
             //Then Call the AI here to generate the toxicStatus
 
-            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(),postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, resolveStatus, reason );
+            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(),postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, tempResolveStatus, tempReason );
             postRepository.save(post);
             return new ResponseEntity<>(HttpStatus.CREATED); // Return CREATED status
         } else {

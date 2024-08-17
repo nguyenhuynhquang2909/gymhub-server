@@ -61,12 +61,17 @@ public class PostController {
     @PostMapping("/new/user-{userId}/thread-{threadId}")
     public ResponseEntity<Void> createPost(
             @Parameter(description = "The id of the user this post belongs to", required = true)
-            @PathVariable Long userId,
+            @PathVariable Long authorId,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
             @PathVariable Long threadId,
             @RequestBody PostRequestDTO post)
     {
-        return postService.createPost(userId, threadId, post);
+        // Set the userId and threadId in the PostRequestDTO object
+        post.setAuthorId(authorId);
+        post.setThreadId(threadId);
+
+        // Call the service method and return the response
+        return postService.createPost(post);
     }
 
 
@@ -107,16 +112,11 @@ public class PostController {
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
-            @RequestBody PostToxicFlowDTO postToxicFlowDTO)
-             {
-        // Set the post ID in the DTO
-        postToxicFlowDTO.setId(postToxicFlowDTO.getId());
-
-        // Assuming you have a way to get the threadId for the post, pass it to the service method
-        long threadId = postToxicFlowDTO.getThreadId(); // Example method to get threadId
-
-        // Call the service method to report the post
-        boolean success = postService.reportPost(postToxicFlowDTO, threadId);
+            @RequestBody PostRequestDTO postRequestDTO,
+            @RequestParam String reason)
+    {
+        // Call the service method to report the post with the provided PostRequestDTO and reason
+        boolean success = postService.reportPost(postRequestDTO, reason);
 
         // Return appropriate response based on success or failure
         if (success) {
@@ -125,6 +125,8 @@ public class PostController {
             return new ResponseEntity<>("Failed to report post.", HttpStatus.BAD_REQUEST);
         }
     }
+
+
 
 
 

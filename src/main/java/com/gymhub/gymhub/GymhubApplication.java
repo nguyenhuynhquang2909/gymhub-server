@@ -5,7 +5,9 @@ import com.gymhub.gymhub.domain.ForumAccount;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.in_memory.Cache;
+import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
@@ -30,6 +32,8 @@ public class GymhubApplication {
 	@Autowired
 	Cache cache;
 	@Autowired
+	InMemoryRepository inMemoryRepository;
+	@Autowired
 	MemberRepository memberRepository;
 	@Autowired
 	ThreadRepository threadRepository;
@@ -48,14 +52,14 @@ public class GymhubApplication {
 		Iterator<Member> iterator = members.iterator();
 
 		while(iterator.hasNext()){
-			cache.addUser(iterator.next().getId());
+			inMemoryRepository.addUserToCache (iterator.next().getId());
 		}
 
 		List<Thread> threads = threadRepository.findAll();
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 			Thread thread = iterator2.next();
-				cache.addThreadToCache(thread.getId(), thread.getCategory(), "NOT-TOXIC", thread.getOwner().getId(), false);
+				inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
 		}
 
 		List<Post> posts = postRepository.findAll();
@@ -63,7 +67,7 @@ public class GymhubApplication {
 		while(iterator3.hasNext()){
 			Post post = iterator3.next();
 			System.out.println();
-			cache.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(), "NOT-TOXIC", false);
+			inMemoryRepository.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(),  ToxicStatusEnum.NOT_TOXIC, false, "");
 		}
 
 		System.out.println("Cache Initialization: Done");

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * The type Mod controller.
+ */
 @RestController
 @RequestMapping("/mod")
 @Tag(name = "Mod Request Handler", description = "Handlers for mod's related requests")
@@ -25,7 +28,13 @@ public class ModController {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    //mod view profile
+    /**
+     * Gets mod.
+     *
+     * @param modDTO the mod dto
+     * @return the mod
+     */
+//mod view profile
     @Operation(description = "This operation returns mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
@@ -35,7 +44,13 @@ public class ModController {
         return (ModeratorRequestAndResponseDTO) customUserDetailsService.loadUserByUsername(modUsername);
     }
 
-    //mod update profile
+    /**
+     * Update mod response entity.
+     *
+     * @param modDTO the mod dto
+     * @return the response entity
+     */
+//mod update profile
     @Operation(description = "This operation update mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/update/mod-{id}")
@@ -47,6 +62,11 @@ public class ModController {
 
     //get all post and threads with toxicStatus = pending => show in mod dashboard
 
+    /**
+     * Fill mod dashboard response entity.
+     *
+     * @return the response entity
+     */
     @Operation(description = "This operation fills the mod dashboard's with 3 tables: pending posts, pending threads, and banned members",
             tags = "Mod Dashboard Page")
     @GetMapping("/dashboard/mod-{id}")
@@ -61,28 +81,27 @@ public class ModController {
     //decide if a pending post is toxic or not toxic
 
 
-    //delete all toxic post from database
+
 
 
 
 //    //decide if a pending thread  is toxic or not toxic
+
+
 //    @Operation(description = "This operation help mod to change toxicStatus of a pending thread",
 //            tags = "Mod Dashboard Page")
 //    @GetMapping("/dashboard/mod-{id}/thread-{id}/decide{NEW-STATUS}")
 //    public List<PostResponseDTO> changeToxicStatusOfAPendingThread() {
 //        return modService.changeToxicStatusOfAThread();
 //    }
-    //delete group of toxic thread
 
-
-    //ban a member
 
     /**
      * Bans a member for a specified duration with a given reason.
      *
-     * @param userId The ID of the member to be banned.
+     * @param userId         The ID of the member to be banned.
      * @param durationMillis The duration of the ban in milliseconds.
-     * @param reason The reason for banning the member.
+     * @param reason         The reason for banning the member.
      * @return A response indicating the outcome of the ban operation.
      */
     @Operation(description = "This operation helps mod to ban a member with a duration in milliseconds", tags = "Mod Dashboard Page")
@@ -96,6 +115,12 @@ public class ModController {
     }
     //unban a member
 
+    /**
+     * Un ban a member response entity.
+     *
+     * @param userId the user id
+     * @return the response entity
+     */
     @Operation(description = "This operation helps mod to remove a member from a ban list", tags = "Mod Dashboard Page")
     @GetMapping("/dashboard/mod-{modId}/unBan/member-{memberId}")
     public ResponseEntity<Void> unBanAMember(@PathVariable("memberId") Long userId) {
@@ -103,23 +128,60 @@ public class ModController {
         return ResponseEntity.ok().build();
     }
 
-    //ban a post immediately
 
-    @Operation(description = "This operation helps mod to immediately ban a post while surfing the forum ", tags = "Mod Surfing Forum")
-    @GetMapping("/dashboard/mod-{modId}/Ban/post-{postId}")
-    public ResponseEntity<Void> banAPost(@PathVariable("postId") Long postId) {
-        modService.banAPostWhileSurfing(postId);
-        return ResponseEntity.ok().build();
+    /**
+     * Ban a post response entity.
+     *
+     * @param modId          the mod id
+     * @param postId         the post id
+     * @param threadId       the thread id
+     * @param newToxicStatus the new toxic status
+     * @param reason         the reason
+     * @param modDTO         the mod dto
+     * @return the response entity
+     */
+    @Operation(description = "This operation helps mod to immediately ban a post while surfing the forum", tags = "Mod Surfing Forum")
+    @GetMapping("/dashboard/mod-{modId}/ban/post-{postId}/thread-{threadId}/status-{status}")
+    public ResponseEntity<Void> banAPost(
+            @PathVariable("modId") Long modId,
+            @PathVariable("postId") Long postId,
+            @PathVariable("threadId") Long threadId,
+            @PathVariable("status") ToxicStatusEnum newToxicStatus,
+            @RequestParam("reason") String reason,
+            @RequestBody ModeratorRequestAndResponseDTO modDTO)
+    {
+        // Call the service to ban the post while surfing
+        return modService.banAPostWhileSurfing(modDTO, postId, threadId, newToxicStatus, reason);
     }
+
 
 
     //ban a thread  immediately
 
-    @Operation(description = "This operation helps mod to immediately ban a thread while surfing the forum ", tags = "Mod Surfing Forum")
-    @GetMapping("/dashboard/mod-{modId}/Ban/thread-{threadId}")
-    public ResponseEntity<Void> banAThread(@PathVariable("threadId") Long threadId) {
-        modService.banAThreadWhileSurfing(threadId);
-        return ResponseEntity.ok().build();
+    /**
+     * Ban a thread response entity.
+     *
+     * @param modId          the mod id
+     * @param threadId       the thread id
+     * @param category       the category
+     * @param newToxicStatus the new toxic status
+     * @param reason         the reason
+     * @param modDTO         the mod dto
+     * @return the response entity
+     */
+    @Operation(description = "This operation helps mod to immediately ban a thread while surfing the forum", tags = "Mod Surfing Forum")
+    @GetMapping("/dashboard/mod-{modId}/ban/thread-{threadId}/category-{category}/status-{status}")
+    public ResponseEntity<Void> banAThread(
+            @PathVariable("modId") Long modId,
+            @PathVariable("threadId") Long threadId,
+            @PathVariable("category") String category,
+            @PathVariable("status") ToxicStatusEnum newToxicStatus,
+            @RequestParam("reason") String reason,
+            @RequestBody ModeratorRequestAndResponseDTO modDTO)
+    {
+        // Call the service to ban the thread while surfing
+        return modService.banAThreadWhileSurfing(modDTO, threadId, category, newToxicStatus, reason);
     }
+
 
 }

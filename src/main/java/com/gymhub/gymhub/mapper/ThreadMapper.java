@@ -3,6 +3,7 @@ package com.gymhub.gymhub.mapper;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.Cache;
+import com.gymhub.gymhub.repository.InMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.time.ZoneOffset;
 public class ThreadMapper {
 
     @Autowired
-    private Cache cache;
+    private InMemoryRepository inMemoryRepository;
 
 
 
@@ -23,13 +24,13 @@ public class ThreadMapper {
         // Convert LocalDateTime to Long (epoch seconds)
         dto.setCreationDateTime(thread.getCreationDateTime().toEpochSecond(ZoneOffset.UTC));
         // Set ThreadResponseDTO fields from cache
-        dto.setPostCount(cache.getPostCountOfAThreadByThreadId(thread.getId()));
-        dto.setLikeCount(cache.getLikeCountByThreadId(thread.getId()));
-        dto.setViewCount(cache.getThreadViewCountByThreadId(thread.getId()));
-        dto.setReason(cache.getReasonByThreadId(thread.getId()));
-        dto.setBeenLiked(cache.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), memberId));
-        dto.setResolveStatus(cache.getResolveStatusByThreadId(thread.getId()));
-        dto.setToxicStatus(cache.getToxicStatusByThreadId(thread.getId()));
+        dto.setPostCount(inMemoryRepository. getPostCountOfAThreadByThreadId(thread.getId()));
+        dto.setLikeCount(inMemoryRepository.getLikeCountByThreadId(thread.getId()));
+        dto.setViewCount(inMemoryRepository.getThreadViewCountByThreadId(thread.getId()));
+        dto.setReason(inMemoryRepository.getReasonByThreadId(thread.getId()));
+        dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), memberId));
+        dto.setResolveStatus(inMemoryRepository.getResolveStatusByThreadId(thread.getId()));
+        dto.setToxicStatus(inMemoryRepository.getToxicStatusByThreadId(thread.getId()));
 
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());
