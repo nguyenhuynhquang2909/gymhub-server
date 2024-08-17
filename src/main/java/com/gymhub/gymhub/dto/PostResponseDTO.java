@@ -29,6 +29,9 @@ public class PostResponseDTO {
     @Schema(description = "View count of the post")
     private int viewCount;
 
+    @Schema(description = "The current toxicStatus of the post")
+    private ToxicStatusEnum toxicStatus;
+
     @Schema(description = "True if the post has been resolved by mod")
     private boolean resolveStatus;
 
@@ -51,5 +54,26 @@ public class PostResponseDTO {
     private String name;
 
     @Schema(description = "Encoded image (Base64) associated with the post")
-    private String encodedImage; // New field for the encoded image
+    private String encodedImage;
+
+    @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC" )
+    private String reason;
+
+
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, String authorName, String authorId, String authorAvatar, String name, String encodedImage, String reason) {
+        this.id = id;
+        this.creationDateTime = creationDateTime;
+        this.likeCount = likeCount;
+        this.viewCount = viewCount;
+        this.toxicStatus = toxicStatus;
+        this.resolveStatus = resolveStatus;
+        this.beenLiked = beenLiked;
+        this.postCount = postCount;
+        this.authorName = authorName;
+        this.authorId = authorId;
+        this.authorAvatar = authorAvatar;
+        this.name = name;
+        this.encodedImage = encodedImage;
+        this.reason = reason;
+    }
 }

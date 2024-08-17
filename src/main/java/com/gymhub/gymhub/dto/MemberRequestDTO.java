@@ -25,4 +25,16 @@ public class MemberRequestDTO {
 
     @Schema(description = "The password of an account")
     private String password;
+
+    public MemberRequestDTO(Long id, String userName, String email, String bio, String stringAvatar, String password) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.bio = bio;
+        this.stringAvatar = stringAvatar;
+        this.password = password;
+    }
+
+    public MemberRequestDTO() {
+    }
 }

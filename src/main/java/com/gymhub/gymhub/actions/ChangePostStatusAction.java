@@ -1,39 +1,26 @@
 package com.gymhub.gymhub.actions;
 
+import com.gymhub.gymhub.dto.ToxicStatusEnum;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ChangePostStatusAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private long postId;
     private long threadId;
-    private String category;
-    private int from;
-    private int to;
+    private ToxicStatusEnum toxicStatus;
+    private boolean resolveStatus;
     private String reason;
-    public ChangePostStatusAction(Long actionId, long postId, long threadId, int from,
-                                  int to, String reason) {
-        super(actionId, "ChangePostStatus");
+
+
+    public ChangePostStatusAction(Long actionId, String actionType, long postId, long threadId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+        super(actionId, actionType);
         this.postId = postId;
         this.threadId = threadId;
-        this.from = from;
-        this.to = to;
+        this.toxicStatus = toxicStatus;
+        this.resolveStatus = resolveStatus;
         this.reason = reason;
     }
-    public long getPostId() {
-        return postId;
-    }
-    public long getThreadId() {
-        return threadId;
-    }
-    public String getCategory() {
-        return category;
-    }
-    public int getFrom() {
-        return from;
-    }
-    public int getTo() {
-        return to;
-    }
-    public String getReason() {
-        return reason;
-    }
-
 }

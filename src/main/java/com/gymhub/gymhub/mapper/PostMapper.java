@@ -11,25 +11,44 @@ import com.gymhub.gymhub.domain.Member;
 import java.time.LocalDateTime;
 
 public class PostMapper {
+    private static  Cache cache ;
 
-    public static PostResponseDTO toPostResponseDTO(Post post, Cache cache, Long userId) {
+
+
+
+
+    public static PostResponseDTO postToPostResponseDTO(Post post) {
         PostResponseDTO dto = new PostResponseDTO();
+
+        // Set basic fields
         dto.setId(post.getId());
         dto.setCreationDateTime(post.getCreationDateTime());
+
+        // Set counts from cache (assuming cache methods are available)
         dto.setLikeCount(cache.getPostLikeCountByPostId(post.getId()));
         dto.setViewCount(cache.getPostViewCountByPostId(post.getId()));
-        dto.setResolveStatus(cache.checkIfAPostHasBeenReported(post.getId()));
-        dto.setBeenLiked(cache.checkIfAPostHasBeenLikedByAMemberId(post.getId(), userId));
+
+        // Set status fields from cache
+        dto.setResolveStatus(cache.getResolveStatusByPostId(post.getId()));
+        dto.setToxicStatus(cache.getToxicStatusByPostId(post.getId()));
+        dto.setBeenLiked(cache.checkIfAPostHasBeenLikedByAMemberId(post.getId(), post.getAuthor().getId()));
+        dto.setReason(cache.getReasonByPostId(post.getId()));
+        // Set additional post-related fields
         dto.setPostCount(cache.getPostCountOfAThreadByThreadId(post.getThread().getId()));
+
+        // Set author information
         dto.setAuthorName(post.getAuthor().getUserName());
         dto.setAuthorId(post.getAuthor().getId().toString());
         dto.setAuthorAvatar(post.getAuthor().getStringAvatar());
+
+        // Set content and image fields
         dto.setName(post.getContent());
-        dto.setEncodedImage(post.getImage().getEncodedImage()); // Assuming post has a single image
+        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Handle possible null image
+
         return dto;
     }
 
-    public static Post toPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
+    public static Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
         Image image = new Image(postRequestDTO. getEncodedImage().getBytes());
         Post post = new Post(
                 LocalDateTime.now(),
@@ -42,12 +61,15 @@ public class PostMapper {
         return post;
     }
 
-    public static PostRequestDTO toPostRequestDTO(Post post) {
+    public static PostRequestDTO postToPostRequestDTO(Post post) {
         PostRequestDTO dto = new PostRequestDTO();
-        dto.setAuthorId(post.getAuthor().getId());
-        dto.setContent(post.getContent());
-        dto.setEncodedImage(post.getImage().getEncodedImage()); // Assuming post has a single image
-        dto.setThreadId(post.getThread().getId().toString());
+        dto.setPostId(post.getId()); // Set the post ID
+        dto.setAuthorId(post.getAuthor().getId()); // Set the author ID
+        dto.setContent(post.getContent()); // Set the content
+        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Set the encoded image if it exists
+        dto.setThreadId(post.getThread().getId()); // Set the thread ID
         return dto;
     }
+
+
 }

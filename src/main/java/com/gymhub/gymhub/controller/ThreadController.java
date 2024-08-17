@@ -1,7 +1,7 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.domain.Member;
-import com.gymhub.gymhub.dto.ReportThreadRequestDTO;
+import com.gymhub.gymhub.dto.ThreadToxicFlowDTO;
 import com.gymhub.gymhub.dto.ThreadRequestDTO;
 import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
@@ -135,10 +135,10 @@ public class ThreadController {
             tags = "Thread Page"
     )
     @PatchMapping("/report")
-    public ResponseEntity<String> reportThread(@RequestBody ReportThreadRequestDTO reportThreadRequestDTO) {
+    public ResponseEntity<String> reportThread(@RequestBody ThreadToxicFlowDTO threadToxicFlowDTO) {
 
         // Call the service method to report the thread
-        boolean success = threadService.reportThread(reportThreadRequestDTO);
+        boolean success = threadService.reportThread(threadToxicFlowDTO);
 
         // Return appropriate response based on success or failure
         if (success) {
@@ -161,7 +161,7 @@ public class ThreadController {
         // Set the threadID in the DTO or pass it directly to the service method
         updateThreadTitleDTO.setThreadId(threadID);
 
-        return threadService.updateThread(updateThreadTitleDTO);
+        return threadService.updateThreadTitle(updateThreadTitleDTO);
     }
 
     //create private conversation (private thread) between 2 member

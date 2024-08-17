@@ -1,4 +1,5 @@
 package com.gymhub.gymhub.actions;
+import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,16 +10,18 @@ public class AddPostAction extends MustLogAction {
     private long threadId;
     private long postId;
     private long userId;
-    private String toxicStatus;
-//    @Getter(value = AccessLevel.PUBLIC, onMethod_ = @__({@Override}))
-    public boolean resolveStatus;
-    public AddPostAction(Long actionId, long threadId, long postId, long userId, String toxicStatus, boolean resolveStatus) {
+    private ToxicStatusEnum toxicStatus;
+    private boolean resolveStatus;
+    private String reason;
+
+    public AddPostAction(Long actionId, long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         super(actionId, "AddPost");
         this.threadId = threadId;
         this.postId = postId;
         this.userId = userId;
         this.toxicStatus = toxicStatus;
         this.resolveStatus = resolveStatus;
+        this.reason = reason;
     }
 
     

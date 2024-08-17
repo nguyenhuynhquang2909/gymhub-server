@@ -1,12 +1,12 @@
 package com.gymhub.gymhub.mapper;
 
 import com.gymhub.gymhub.domain.Thread;
-import com.gymhub.gymhub.dto.ThreadRequestDTO;
-import com.gymhub.gymhub.dto.ThreadResponseDTO;
-import com.gymhub.gymhub.dto.ThreadCategoryEnum;
+import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.ZoneOffset;
 
 @Component
 public class ThreadMapper {
@@ -14,20 +14,33 @@ public class ThreadMapper {
     @Autowired
     private Cache cache;
 
-    public ThreadResponseDTO toThreadResponseDTO(Thread thread, Long memberId ) {
+
+
+    public ThreadResponseDTO toThreadResponseDTO(Thread thread, Long memberId) {
         ThreadResponseDTO dto = new ThreadResponseDTO();
         dto.setId(thread.getId());
-        dto.setCreationDateTime(thread.getCreationDateTime());
+
+        // Convert LocalDateTime to Long (epoch seconds)
+        dto.setCreationDateTime(thread.getCreationDateTime().toEpochSecond(ZoneOffset.UTC));
+        // Set ThreadResponseDTO fields from cache
+        dto.setPostCount(cache.getPostCountOfAThreadByThreadId(thread.getId()));
         dto.setLikeCount(cache.getLikeCountByThreadId(thread.getId()));
         dto.setViewCount(cache.getThreadViewCountByThreadId(thread.getId()));
-        dto.setBeenReport(cache.checkIfAThreadHasBeenReportedByThreadId(thread.getId()));
-        dto.setPostCount(cache.getPostCountOfAThreadByThreadId(thread.getId()));
+        dto.setReason(cache.getReasonByThreadId(thread.getId()));
+        dto.setBeenLiked(cache.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), memberId));
+        dto.setResolveStatus(cache.getResolveStatusByThreadId(thread.getId()));
+        dto.setToxicStatus(cache.getToxicStatusByThreadId(thread.getId()));
+
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());
         dto.setAuthorAvatar(thread.getOwner().getStringAvatar());
-        dto.setName(thread.getTitle());
+        dto.setTitle(thread.getTitle());
+
+
+
         return dto;
     }
+
 
     public Thread toThread(ThreadRequestDTO threadRequestDTO) {
         Thread thread = new Thread();
@@ -43,6 +56,12 @@ public class ThreadMapper {
         dto.setTitle(thread.getTitle());
         dto.setAuthorId(thread.getOwner().getId());
         dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
+        return dto;
+    }
+    public ThreadToxicFlowDTO toThreadToxicFlowDTO(Thread thread) {
+        ThreadToxicFlowDTO dto = new ThreadToxicFlowDTO();
+        dto.setId(thread.getId());
+        dto.setThreadCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
         return dto;
     }
 }

@@ -1,4 +1,5 @@
 package com.gymhub.gymhub.actions;
+import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import lombok.Getter;
 
 @Getter
@@ -6,17 +7,22 @@ public class AddThreadAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private long threadId;
     private String category;
-    private String toxicStatus;
+    private ToxicStatusEnum toxicStatus;
+    private long authorId;
     private boolean resolveStatus;
-    private long userId;
-    public AddThreadAction(Long actionId, long threadId, String category, String toxicStatus, long userId, boolean resolveStatus) {
+    private String reason;
+
+
+
+
+    public AddThreadAction(Long actionId, String actionType, long threadId, String category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         super(actionId, "AddThread");
         this.threadId = threadId;
         this.category = category;
         this.toxicStatus = toxicStatus;
-        this.userId = userId;
+        this.authorId = authorId;
         this.resolveStatus = resolveStatus;
+        this.reason = reason;
+
     }
-
-
 }

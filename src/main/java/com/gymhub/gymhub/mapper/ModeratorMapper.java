@@ -5,7 +5,7 @@ import com.gymhub.gymhub.dto.ModeratorRequestAndResponseDTO;
 
 public class ModeratorMapper {
 
-    public static ModeratorRequestAndResponseDTO toModeratorDTO(Moderator moderator) {
+    public static ModeratorRequestAndResponseDTO modToModDTO(Moderator moderator) {
         ModeratorRequestAndResponseDTO dto = new ModeratorRequestAndResponseDTO();
         dto.setUsername(moderator.getUserName());
         dto.setEmail(moderator.getEmail());
@@ -13,7 +13,7 @@ public class ModeratorMapper {
         return dto;
     }
 
-    public static Moderator toModerator(ModeratorRequestAndResponseDTO moderatorRequestAndResponseDTO) {
+    public static Moderator modDTOToMod(ModeratorRequestAndResponseDTO moderatorRequestAndResponseDTO) {
         return new Moderator(
                 moderatorRequestAndResponseDTO.getId(),
                 moderatorRequestAndResponseDTO.getUsername(),

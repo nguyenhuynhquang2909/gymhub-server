@@ -2,12 +2,10 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
-import com.gymhub.gymhub.dto.ReportThreadRequestDTO;
-import com.gymhub.gymhub.dto.ThreadRequestDTO;
-import com.gymhub.gymhub.dto.UpdateThreadTitleDTO;
+import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
-import com.gymhub.gymhub.dto.ThreadResponseDTO;
 import com.gymhub.gymhub.mapper.ThreadMapper;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
@@ -21,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 
 
 @Service
@@ -37,12 +36,6 @@ public class ThreadService {
     private ThreadMapper threadMapper;
     @Autowired
     private Cache cache;
-//helper method
-//    public List<ThreadResponseDTO> findThreadFromDatabaseViaCacheThreadId(List<Long> ids) {
-//        //get all thread ids from cache
-//
-//        //pass
-//    }
 
     //Return the following for this method HashMap<String, List<ThreadResponseDTO>>
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
@@ -94,7 +87,7 @@ public class ThreadService {
             Long threadId = threadListByCategoryAndStatus.get(i);
 
             // Retrieve thread parameters from the cache
-            ConcurrentHashMap<String, Number> threadParams = cache.getParametersForAllThreads().get(threadId);
+            ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
 
             // Retrieve the rest of the details from the database
             Thread thread = threadRepository.findById(threadId).orElse(null);
@@ -117,37 +110,72 @@ public class ThreadService {
     //For each of the thread id, find the corresponding parameters from the parametersForAllThreads
     //Then find the rest of the information from the  database
 
-    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long ownerId, int limit, int offset) {
-        return threadRepository.findByOwnerId(ownerId).stream()
-                .map(thread -> threadMapper.toThreadResponseDTO(thread, ownerId))
+    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
+        // Get the set of thread IDs for the given owner from the cache
+        Set<Long> threadsCreatedByUser = cache.getThreadListByUser().get(authorId);
+
+        // Convert the set of thread IDs to a list and apply offset and limit for pagination
+        List<Long> paginatedThreadIds = threadsCreatedByUser.stream()
+                .skip(offset)
+                .limit(limit)
                 .collect(Collectors.toList());
 
+        List<ThreadResponseDTO> threadResponseDTOList = new ArrayList<>();
+
+        for (Long threadId : paginatedThreadIds) {
+            // Get the thread parameters from the cache
+            ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
+
+            if (threadParams != null) {
+                // Retrieve additional information from the database
+                Thread thread = threadRepository.findById(threadId).orElse(null);
+
+                if (thread != null) {
+                    // Map the thread and parameters to ThreadResponseDTO
+                    ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread, authorId);
+
+                    // Populate additional fields from cache (optional based on your needs)
+                    threadResponseDTO.setLikeCount((Integer) threadParams.get("LikeCount"));
+                    threadResponseDTO.setViewCount((Integer) threadParams.get("ViewCount"));
+                    threadResponseDTO.setPostCount((Integer) threadParams.get("PostCount"));
+                    threadResponseDTO.setCreationDateTime((Long) threadParams.get("CreationDate"));
+                    ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.get("toxicStatus"));
+                    threadResponseDTO.setToxicStatus(toxicStatus);
+                    threadResponseDTO.setResolveStatus((Boolean) threadParams.get("resolveStatus"));
+                    threadResponseDTO.setReason((String) threadParams.get("reason"));
+
+                    // Add the DTO to the list
+                    threadResponseDTOList.add(threadResponseDTO);
+                }
+            }
+        }
+
+        return threadResponseDTOList;
     }
+
 
     public boolean createThread(ThreadRequestDTO threadRequestDTO) {
         Member owner = memberRepository.findById(threadRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        long id = random.nextLong(50);
-        System.out.println("Generated ID: " + id);
-
+       long id = HelperMethod.generateUniqueIds();
+        System.out.println("Generated ID: " + id); //need tools for unique thread id
         String category = threadRequestDTO.getCategory().name();
-        System.out.println(category);
-
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
+        Thread thread = new Thread( id, threadRequestDTO.getTitle(), category,LocalDateTime.now());
         thread.setOwner(owner);
-        String toxicStatus = "notToxic"; //Call the AI here
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), toxicStatus, owner.getId(), false);
+        //ADD Thread to cache
+       ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;  //temporary set ToxicStatus = NOT-TOXIC
+        //Then Call the AI here to generate the toxicStatus
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), tempToxicEnum, owner.getId(), false, "");
         threadRepository.save(thread);
         return true;
     }
 
-    public boolean reportThread(ReportThreadRequestDTO reportThreadRequestDTO){
-        return inMemoryRepository.changeThreadStatusForReportingAndComplaining(reportThreadRequestDTO.getId(), reportThreadRequestDTO.getThreadCategory().name(),
-                reportThreadRequestDTO.getFrom(), reportThreadRequestDTO.getTo(), reportThreadRequestDTO.getReason());
+    public boolean reportThread(ThreadToxicFlowDTO threadToxicFlowDTO){
+        return inMemoryRepository.changeThreadStatusForMemberReporting(threadToxicFlowDTO.getId(), threadToxicFlowDTO.getThreadCategory().name(),
+          threadToxicFlowDTO.getReason());
     }
 
-    public ResponseEntity<ThreadResponseDTO> updateThread(UpdateThreadTitleDTO updateThreadTitleDTO) {
+    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(UpdateThreadTitleDTO updateThreadTitleDTO) {
 
         // Fetch the thread using the threadId from the DTO
         Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
@@ -158,17 +186,20 @@ public class ThreadService {
             // Return a forbidden response if the IDs do not match
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-
+        //update the thread resolveStatus
+        //call the AI API ?
         // Update the thread title
-
+        thread.setTitle(updateThreadTitleDTO.getTitle());
 
         // Save the updated thread
         thread = threadRepository.save(thread);
+
 
         // Convert the updated thread to a DTO and return it in the response
         ThreadResponseDTO responseDTO = threadMapper.toThreadResponseDTO(thread, thread.getOwner().getId());
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
-    //report thread
+
+
 }

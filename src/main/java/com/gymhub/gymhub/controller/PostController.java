@@ -107,16 +107,16 @@ public class PostController {
     )
     @PatchMapping("/report")
     public ResponseEntity<String> reportPost(
-            @RequestBody ReportPostRequestDTO reportPostRequestDTO)
+            @RequestBody PostToxicFlowDTO postToxicFlowDTO)
              {
         // Set the post ID in the DTO
-        reportPostRequestDTO.setId(reportPostRequestDTO.getId());
+        postToxicFlowDTO.setId(postToxicFlowDTO.getId());
 
         // Assuming you have a way to get the threadId for the post, pass it to the service method
-        long threadId = reportPostRequestDTO.getThreadId(); // Example method to get threadId
+        long threadId = postToxicFlowDTO.getThreadId(); // Example method to get threadId
 
         // Call the service method to report the post
-        boolean success = postService.reportPost(reportPostRequestDTO, threadId);
+        boolean success = postService.reportPost(postToxicFlowDTO, threadId);
 
         // Return appropriate response based on success or failure
         if (success) {

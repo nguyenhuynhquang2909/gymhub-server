@@ -40,4 +40,6 @@ public class MemberService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    //notifications method
 }

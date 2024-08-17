@@ -6,6 +6,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
@@ -42,23 +43,31 @@ public class PostService {
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
-                .map(post -> PostMapper.toPostResponseDTO(post, cache, null)) // Replace null with actual userId if needed
+                .map(post -> PostMapper.postToPostResponseDTO(post)) // Replace null with actual userId if needed
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDTO> getPostsByUserId(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
         return posts.stream()
-                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId))
+                .map(post -> PostMapper.postToPostResponseDTO(post))
                 .collect(Collectors.toList());
     }
 
-    public ResponseEntity<Void> createPost(Long userId, Long threadId, PostRequestDTO postRequestDTO) {
-        Optional<Member> author = memberRepository.findById(userId);
-        Optional<Thread> thread = threadRepository.findById(threadId);
-
+    public ResponseEntity<Void> createPost(PostRequestDTO postRequestDTO) {
+        Optional<Member> author = memberRepository.findById(postRequestDTO.getAuthorId());
+        Optional<Thread> thread = threadRepository.findById(postRequestDTO.getThreadId());
         if (author.isPresent() && thread.isPresent()) {
-            Post post = PostMapper.toPost(postRequestDTO, author.get(), thread.get());
+
+            long id = HelperMethod.generateUniqueIds();
+            System.out.println("Generated ID: " + id); //need tools for unique thread id
+            postRequestDTO.setPostId(id);
+            Post post = PostMapper.postRequestToPost(postRequestDTO, author.get(), thread.get());
+            //ADD POST TO CACHE
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;  //temporary set ToxicStatus = NOT-TOXIC
+            //Then Call the AI here to generate the toxicStatus
+
+            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(),postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, resolveStatus, reason );
             postRepository.save(post);
             return new ResponseEntity<>(HttpStatus.CREATED); // Return CREATED status
         } else {
@@ -100,19 +109,20 @@ public class PostService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    public boolean reportPost(ReportPostRequestDTO reportPostRequestDTO, long threadId) {
+    public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {
         // Extract necessary information from the DTO
-        long postId = reportPostRequestDTO.getId();
-        int from = reportPostRequestDTO.getFrom();
-        int to = reportPostRequestDTO.getTo();
-        String reason = reportPostRequestDTO.getReason();
+        long postId = postRequestDTO.getPostId();
+        long threadId = postRequestDTO.getThreadId();
+        //reason already inside para
+        ToxicStatusEnum toxicStatusEnum = ToxicStatusEnum.PENDING;
+        boolean resolveStatus = false;
 
         // Call the inMemoryRepository's changePostStatus method with the extracted values
-        boolean result = inMemoryRepository.changePostStatus(postId, threadId, from, to, reason);
+        boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, reason);
 
         // Log the action using the constructor that requires threadId
         ChangePostStatusAction action = new ChangePostStatusAction(
-                ++actionIdCounter, postId, threadId, from, to, reason);
+                ++actionIdCounter,"changePostToxicStatusForMemberReporting", postId, threadId,toxicStatusEnum, resolveStatus, reason);
         inMemoryRepository.logAction(action);
 
         return result;

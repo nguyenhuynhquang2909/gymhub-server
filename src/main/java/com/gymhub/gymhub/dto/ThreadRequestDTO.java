@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.dto;
 
+import com.gymhub.gymhub.domain.Post;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,4 +19,14 @@ public class ThreadRequestDTO {
     @Schema(description = "The category the thread belongs to (FLEXING, ADVISE, SUPPLEMENT) ")
     private ThreadCategoryEnum category;
 
+
+    public ThreadRequestDTO(String title, Long authorId, ThreadCategoryEnum category) {
+        this.title = title;
+        this.authorId = authorId;
+        this.category = category;
+
+    }
+
+    public ThreadRequestDTO() {
+    }
 }
