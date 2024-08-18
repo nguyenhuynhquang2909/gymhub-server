@@ -188,7 +188,7 @@ public class ThreadService {
                 .orElseThrow(() -> new RuntimeException("Thread not found"));
 
         // Check if the author of the thread matches the user making the request
-        if (!thread.getOwner().getId().equals(updateThreadTitleDTO.getUserId())) {
+        if (!thread.getOwner().getId().equals(updateThreadTitleDTO.getAuthorId())) {
             // Return a forbidden response if the IDs do not match
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }

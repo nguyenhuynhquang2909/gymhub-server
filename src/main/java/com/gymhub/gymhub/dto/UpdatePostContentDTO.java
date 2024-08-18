@@ -17,19 +17,19 @@ public class UpdatePostContentDTO {
     private Long postId;
     @Schema(description = "Post's thread ID")
     private Long threadId;
+
+    @Schema(description = "Post's author ID")
+    private Long authorId;
     @Schema(description = "New Content")
     private String content;
     @Schema(description = "New images encoded as Strings")
     private List<String> encodedImage;
 
 
-
-    //update both content and image
-
-
-    public UpdatePostContentDTO(Long postId, Long threadId, String content, List<String> encodedImage) {
+    public UpdatePostContentDTO(Long postId, Long threadId, Long authorId, String content, List<String> encodedImage) {
         this.postId = postId;
         this.threadId = threadId;
+        this.authorId = authorId;
         this.content = content;
         this.encodedImage = encodedImage;
     }

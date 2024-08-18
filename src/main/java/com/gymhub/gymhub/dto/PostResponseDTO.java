@@ -43,6 +43,9 @@ public class PostResponseDTO {
     @Schema(description = "The post count of the Thread")
     private int postCount;
 
+    @Schema(description = "The view count of the Thread")
+    private int viewCount;
+
     @Schema(description = "Name of the author of the thread")
     private String authorName;
 

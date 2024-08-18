@@ -13,6 +13,9 @@ public class ThreadRequestDTO {
     @Schema(description = "The id of the thread")
     private Long id;
 
+    @Schema(description = "The id of the member that created the thread")
+    private Long authorId;
+
     @Schema(description = "The title of the thread")
     private String title;
 
