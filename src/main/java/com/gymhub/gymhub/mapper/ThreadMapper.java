@@ -59,10 +59,5 @@ public class ThreadMapper {
         dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
         return dto;
     }
-    public ThreadToxicFlowDTO toThreadToxicFlowDTO(Thread thread) {
-        ThreadToxicFlowDTO dto = new ThreadToxicFlowDTO();
-        dto.setId(thread.getId());
-        dto.setThreadCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
-        return dto;
-    }
+
 }

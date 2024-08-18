@@ -163,7 +163,7 @@ public class ModService {
     }
 
 //ban A Thread => call cache method to change thread toxic status and resolve status
-    public ResponseEntity<Void> banAThreadWhileSurfing(ModeratorRequestAndResponseDTO modDTO, Long threadId, String category, ToxicStatusEnum newToxicStatus, String reason) {
+    public ResponseEntity<Void> banAThreadWhileSurfing(ModeratorRequestAndResponseDTO modDTO, Long threadId, ThreadCategoryEnum category, ToxicStatusEnum newToxicStatus, String reason) {
         // Check if mod exists
         Optional<Moderator> mod = moderatorRepository.findModByUserName(modDTO.getUsername());
         if (mod.isPresent()) {
@@ -173,6 +173,33 @@ public class ModService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    public ResponseEntity<Void> resolveAPendingThread(ModeratorRequestAndResponseDTO modDTO, Long threadId, ThreadCategoryEnum category, ToxicStatusEnum newToxicStatus, String reason) {
+        // Check if mod exists
+        Optional<Moderator> mod = moderatorRepository.findModByUserName(modDTO.getUsername());
+        if (mod.isPresent()) {
+            // Call the repository method to change the thread toxic status and set the resolve status
+            inMemoryRepository.changeThreadToxicStatusFromModDashBoard(threadId, category, newToxicStatus, reason);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+
+    public ResponseEntity<Void> resolveAPendingPost(ModeratorRequestAndResponseDTO modDTO, Long postId, Long threadId, ToxicStatusEnum newToxicStatus, String reason) {
+        // Check if mod exists
+        Optional<Moderator> mod = moderatorRepository.findModByUserName(modDTO.getUsername());
+        if (mod.isPresent()) {
+            // Call the repository method to change the post toxic status and set the resolve status
+            inMemoryRepository.changePostToxicStatusFromModDashboard(postId, threadId, newToxicStatus, reason);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 
 
 }

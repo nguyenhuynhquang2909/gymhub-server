@@ -126,16 +126,17 @@ public class ThreadController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
     @Operation(
             description = "This operation reports a thread to the server and returns a boolean indicating success",
             tags = "Thread Page"
     )
     @PatchMapping("/report")
-    public ResponseEntity<String> reportThread(@RequestBody ThreadToxicFlowDTO threadToxicFlowDTO) {
+    public ResponseEntity<String> reportThread(
+            @RequestBody ThreadRequestDTO threadRequestDTO,
+            @RequestParam("reason") String reason) {
 
         // Call the service method to report the thread
-        boolean success = threadService.reportThread(threadToxicFlowDTO);
+        boolean success = threadService.reportThread(threadRequestDTO, reason);
 
         // Return appropriate response based on success or failure
         if (success) {
@@ -144,6 +145,7 @@ public class ThreadController {
             return new ResponseEntity<>("Failed to report thread.", HttpStatus.BAD_REQUEST);
         }
     }
+
 
     @Operation(
             description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)",

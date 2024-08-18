@@ -1,6 +1,8 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.mapper.ModeratorMapper;
+import com.gymhub.gymhub.repository.ModeratorRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
 import com.gymhub.gymhub.service.ModService;
 import com.gymhub.gymhub.service.UserService;
@@ -27,6 +29,8 @@ public class ModController {
     private ModService modService;
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private ModeratorRepository moderatorRepository;
 
     /**
      * Gets mod.
@@ -78,23 +82,40 @@ public class ModController {
         ModDashboardTablesResponseDTO response = new ModDashboardTablesResponseDTO(pendingPosts, pendingThreads, bannedMembers);
         return ResponseEntity.ok(response);
     }
-    //decide if a pending post is toxic or not toxic
 
 
 
+    @Operation(description = "This operation helps mod to decide whether a pending post is toxic or not",
+            tags = "Mod Dashboard Page")
+    @GetMapping("/mod-{modId}/resolvePendingPost-{postId}")
+    public ResponseEntity<Void> resolveAPendingPost(
+            @PathVariable("modId") Long modId,
+            @PathVariable("postId") Long postId,
+            @RequestParam("threadId") Long threadId,
+            @RequestParam("newToxicStatus") ToxicStatusEnum newToxicStatus,
+            @RequestParam("reason") String reason) {
 
+        // Get moderator details and construct ModeratorRequestAndResponseDTO
+        ModeratorRequestAndResponseDTO modDTO = new ModeratorRequestAndResponseDTO();
 
+        return modService.resolveAPendingPost(modDTO, postId, threadId, newToxicStatus, reason);
+    }
 
-//    //decide if a pending thread  is toxic or not toxic
+    @Operation(description = "This operation helps mod to decide whether a pending thread is toxic or not",
+            tags = "Mod Dashboard Page")
+    @GetMapping("/mod-{modId}/resolvePendingThread-{threadId}")
+    public ResponseEntity<Void> resolveAPendingThread(
+            @PathVariable("modId") Long modId,
+            @PathVariable("threadId") Long threadId,
+            @RequestParam("category") ThreadCategoryEnum category,
+            @RequestParam("newToxicStatus") ToxicStatusEnum newToxicStatus,
+            @RequestParam("reason") String reason) {
 
+        // Get moderator details and construct ModeratorRequestAndResponseDTO
+        ModeratorRequestAndResponseDTO modDTO = new ModeratorRequestAndResponseDTO();
 
-//    @Operation(description = "This operation help mod to change toxicStatus of a pending thread",
-//            tags = "Mod Dashboard Page")
-//    @GetMapping("/dashboard/mod-{id}/thread-{id}/decide{NEW-STATUS}")
-//    public List<PostResponseDTO> changeToxicStatusOfAPendingThread() {
-//        return modService.changeToxicStatusOfAThread();
-//    }
-
+        return modService.resolveAPendingThread(modDTO, threadId, category, newToxicStatus, reason);
+    }
 
     /**
      * Bans a member for a specified duration with a given reason.
@@ -174,7 +195,7 @@ public class ModController {
     public ResponseEntity<Void> banAThread(
             @PathVariable("modId") Long modId,
             @PathVariable("threadId") Long threadId,
-            @PathVariable("category") String category,
+            @PathVariable("category") ThreadCategoryEnum category,
             @PathVariable("status") ToxicStatusEnum newToxicStatus,
             @RequestParam("reason") String reason,
             @RequestBody ModeratorRequestAndResponseDTO modDTO)

@@ -10,6 +10,9 @@ import lombok.Setter;
 @Schema(description = "This defines all thread-related fields that clients need to send in request body")
 public class ThreadRequestDTO {
 
+    @Schema(description = "The id of the thread")
+    private Long id;
+
     @Schema(description = "The title of the thread")
     private String title;
 
@@ -20,11 +23,11 @@ public class ThreadRequestDTO {
     private ThreadCategoryEnum category;
 
 
-    public ThreadRequestDTO(String title, Long authorId, ThreadCategoryEnum category) {
+    public ThreadRequestDTO(Long id, String title, Long authorId, ThreadCategoryEnum category) {
+        this.id = id;
         this.title = title;
         this.authorId = authorId;
         this.category = category;
-
     }
 
     public ThreadRequestDTO() {

@@ -176,9 +176,9 @@ public class ThreadService {
         return true;
     }
 
-    public boolean reportThread(ThreadToxicFlowDTO threadToxicFlowDTO){
-        return inMemoryRepository.changeThreadStatusForMemberReporting(threadToxicFlowDTO.getId(), threadToxicFlowDTO.getThreadCategory().name(),
-          threadToxicFlowDTO.getReason());
+    public boolean reportThread(ThreadRequestDTO threadRequestDTO, String reason){
+        return inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(), threadRequestDTO.getCategory(),
+                reason);
     }
 
     public ResponseEntity<ThreadResponseDTO> updateThreadTitle(UpdateThreadTitleDTO updateThreadTitleDTO) {
