@@ -19,6 +19,7 @@ public interface ThreadRepository extends JpaRepository<Thread, Long> {
     List<Thread> findAll();
 
     //more method
+    Thread findThreadById(Long id);
 
 }
 

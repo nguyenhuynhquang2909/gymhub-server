@@ -3,6 +3,7 @@ package com.gymhub.gymhub.mapper;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.PendingPostDTO;
 import com.gymhub.gymhub.dto.PostRequestDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -73,6 +74,18 @@ public class PostMapper {
         dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Set the encoded image if it exists
         dto.setThreadId(post.getThread().getId()); // Set the thread ID
         return dto;
+    }
+
+    public static PendingPostDTO postToPendingPostDTO(Post post) {
+        if (post == null) {
+            return null;
+        }
+
+        Long postID = post.getId();
+        String authorUsername = post.getAuthor() != null ? post.getAuthor().getUserName() : null;
+        String content = post.getContent();
+
+        return new PendingPostDTO(postID, authorUsername, content);
     }
 
 

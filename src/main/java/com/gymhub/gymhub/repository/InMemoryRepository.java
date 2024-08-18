@@ -35,6 +35,7 @@ public class InMemoryRepository {
     @Autowired
     ThreadRepository threadRepository;
 
+
     @Autowired
     PostRepository postRepository;
 
@@ -843,6 +844,34 @@ public class InMemoryRepository {
 
     public Set<Long> getFollowing(Long memberId) {
         return cache.getFollowingCache().getOrDefault(memberId, ConcurrentHashMap.newKeySet());
+    }
+    /**
+     * Follow another member.
+     *
+     * @param followerId The ID of the member who wants to follow.
+     * @param followingId The ID of the member to be followed.
+     */
+    public void follow(Long followerId, Long followingId) {
+        cache.getFollowingCache().computeIfAbsent(followerId, k -> ConcurrentHashMap.newKeySet()).add(followingId);
+        cache.getFollowersCache().computeIfAbsent(followingId, k -> ConcurrentHashMap.newKeySet()).add(followerId);
+    }
+
+
+    /**
+     * Unfollow another member.
+     *
+     * @param followerId The ID of the member who wants to unfollow.
+     * @param followingId The ID of the member to be unfollowed.
+     */
+    public void unfollow(Long followerId, Long followingId) {
+        Set<Long> follwingSet = cache.getFollowingCache().get(followerId);
+        if (follwingSet != null) {
+            follwingSet.remove(followerId);
+        }
+        Set<Long> followersSet = cache.getFollowersCache().get(followingId);
+        if (followersSet != null) {
+            followersSet.remove(followerId);
+        }
     }
 
 

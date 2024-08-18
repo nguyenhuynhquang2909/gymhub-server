@@ -58,5 +58,19 @@ public class ThreadMapper {
         dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
         return dto;
     }
+    public static PendingThreadDTO threadToPendingThreadDTO(Thread thread) {
+        if (thread == null) {
+            return null;
+        }
+
+        // Extract the required fields from the Thread entity
+        Long threadId = thread.getId(); // Assuming getId() returns the ID of the Thread
+        ThreadCategoryEnum threadCategory = ThreadCategoryEnum.valueOf(thread.getCategory()); // Assuming category is stored as a String and matches the enum values
+        String authorUsername = thread.getOwner() != null ? thread.getOwner().getUserName() : null;
+        String title = thread.getTitle();
+
+        // Create and return a new PendingThreadDTO using the extracted values
+        return new PendingThreadDTO(threadId, threadCategory, authorUsername, title);
+    }
 
 }

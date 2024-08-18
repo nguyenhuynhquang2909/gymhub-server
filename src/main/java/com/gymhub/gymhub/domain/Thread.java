@@ -36,7 +36,6 @@ public class Thread extends ForumUnit {
 
 
 
-
     public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
         this.title = name;
