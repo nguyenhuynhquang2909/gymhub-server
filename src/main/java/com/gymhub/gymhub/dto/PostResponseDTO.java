@@ -26,8 +26,10 @@ public class PostResponseDTO {
     @Schema(description = "like count of the post")
     private int likeCount;
 
+    /**
     @Schema(description = "View count of the post")
     private int viewCount;
+     **/
 
     @Schema(description = "The current toxicStatus of the post")
     private ToxicStatusEnum toxicStatus;

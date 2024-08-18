@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Schema(description = "This includes all fields that clients need to include in request body when sending register request")
-public class RegisterRequest {
+public class RegisterRequestDTO {
     @Schema(description = "The username of the client")
-    private String userName;
+    private String username;
     @Schema(description = "The password of the client")
     private String password;
     @Schema(description = "The email of the client")
