@@ -38,7 +38,7 @@ public class ModController {
      * @param modDTO the mod dto
      * @return the mod
      */
-//mod view profile
+    //mod view profile
     @Operation(description = "This operation returns mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
@@ -54,10 +54,10 @@ public class ModController {
      * @param modDTO the mod dto
      * @return the response entity
      */
-//mod update profile
+    //mod update profile
     @Operation(description = "This operation update mod profile information",
             tags = "Mod Profile Page")
-    @GetMapping("/update/mod-{id}")
+    @PutMapping("/update/mod-{id}")
     public ResponseEntity<Void> updateMod(
             @RequestBody ModeratorRequestAndResponseDTO modDTO) {
         return modService.updateModInfo(modDTO);
@@ -78,16 +78,13 @@ public class ModController {
         List<PostResponseDTO> pendingPosts = modService.getAllPendingPosts();
         List<ThreadResponseDTO> pendingThreads = modService.getAllPendingThreads();
         List<BannedMemberDTO> bannedMembers = modService.displayBannedMembers(modService.getBannedMembers());
-                //how to display a row of bannedMembers?=> username, ban until, reasons
         ModDashboardTablesResponseDTO response = new ModDashboardTablesResponseDTO(pendingPosts, pendingThreads, bannedMembers);
         return ResponseEntity.ok(response);
     }
 
-
-
     @Operation(description = "This operation helps mod to decide whether a pending post is toxic or not",
             tags = "Mod Dashboard Page")
-    @GetMapping("/mod-{modId}/resolvePendingPost-{postId}")
+    @PatchMapping("/mod-{modId}/resolvePendingPost-{postId}")
     public ResponseEntity<Void> resolveAPendingPost(
             @PathVariable("modId") Long modId,
             @PathVariable("postId") Long postId,
@@ -103,7 +100,7 @@ public class ModController {
 
     @Operation(description = "This operation helps mod to decide whether a pending thread is toxic or not",
             tags = "Mod Dashboard Page")
-    @GetMapping("/mod-{modId}/resolvePendingThread-{threadId}")
+    @PatchMapping("/mod-{modId}/resolvePendingThread-{threadId}")
     public ResponseEntity<Void> resolveAPendingThread(
             @PathVariable("modId") Long modId,
             @PathVariable("threadId") Long threadId,
@@ -126,7 +123,7 @@ public class ModController {
      * @return A response indicating the outcome of the ban operation.
      */
     @Operation(description = "This operation helps mod to ban a member with a duration in milliseconds", tags = "Mod Dashboard Page")
-    @GetMapping("/dashboard/mod-{modId}/ban/member-{memberId}")
+    @PatchMapping("/dashboard/mod-{modId}/ban/member-{memberId}")
     public ResponseEntity<Void> banAMember(@PathVariable("memberId") Long userId,
                                            @RequestParam("duration") Long durationMillis,
                                            @RequestParam("reason") String reason) {
@@ -134,7 +131,6 @@ public class ModController {
         modService.banMember(userId, banUntilDate, reason);
         return ResponseEntity.ok().build();
     }
-    //unban a member
 
     /**
      * Un ban a member response entity.
@@ -143,12 +139,11 @@ public class ModController {
      * @return the response entity
      */
     @Operation(description = "This operation helps mod to remove a member from a ban list", tags = "Mod Dashboard Page")
-    @GetMapping("/dashboard/mod-{modId}/unBan/member-{memberId}")
+    @DeleteMapping("/dashboard/mod-{modId}/unBan/member-{memberId}")
     public ResponseEntity<Void> unBanAMember(@PathVariable("memberId") Long userId) {
         modService.unbanMember(userId);
         return ResponseEntity.ok().build();
     }
-
 
     /**
      * Ban a post response entity.
@@ -162,7 +157,7 @@ public class ModController {
      * @return the response entity
      */
     @Operation(description = "This operation helps mod to immediately ban a post while surfing the forum", tags = "Mod Surfing Forum")
-    @GetMapping("/dashboard/mod-{modId}/ban/post-{postId}/thread-{threadId}/status-{status}")
+    @PatchMapping("/dashboard/mod-{modId}/ban/post-{postId}/thread-{threadId}/status-{status}")
     public ResponseEntity<Void> banAPost(
             @PathVariable("modId") Long modId,
             @PathVariable("postId") Long postId,
@@ -174,10 +169,6 @@ public class ModController {
         // Call the service to ban the post while surfing
         return modService.banAPostWhileSurfing(modDTO, postId, threadId, newToxicStatus, reason);
     }
-
-
-
-    //ban a thread  immediately
 
     /**
      * Ban a thread response entity.
@@ -191,7 +182,7 @@ public class ModController {
      * @return the response entity
      */
     @Operation(description = "This operation helps mod to immediately ban a thread while surfing the forum", tags = "Mod Surfing Forum")
-    @GetMapping("/dashboard/mod-{modId}/ban/thread-{threadId}/category-{category}/status-{status}")
+    @PatchMapping("/dashboard/mod-{modId}/ban/thread-{threadId}/category-{category}/status-{status}")
     public ResponseEntity<Void> banAThread(
             @PathVariable("modId") Long modId,
             @PathVariable("threadId") Long threadId,
@@ -203,6 +194,4 @@ public class ModController {
         // Call the service to ban the thread while surfing
         return modService.banAThreadWhileSurfing(modDTO, threadId, category, newToxicStatus, reason);
     }
-
-
 }

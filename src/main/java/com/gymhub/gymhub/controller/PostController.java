@@ -94,7 +94,7 @@ public class PostController {
             description = "This operation changes the content and the image of a post (checks if the member is the post owner)",
             tags = "Thread Page"
     )
-    @PatchMapping("/update/post-{id}")
+    @PutMapping("/update/post-{id}")
     public ResponseEntity<Void> updatePost(
             @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,

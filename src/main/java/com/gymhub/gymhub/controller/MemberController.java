@@ -33,7 +33,7 @@ public class MemberController {
 
     @Operation(description = "This operation changes the information of member",
             tags = "Member Profile Page")
-    @PostMapping("/update/member-{id}")
+    @PutMapping("/update/member-{id}")
     public ResponseEntity<Void> updateMember(
             @RequestBody MemberRequestDTO memberRequestDTO
     ) {
