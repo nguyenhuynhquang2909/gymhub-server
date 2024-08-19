@@ -43,14 +43,14 @@ public class ThreadMapper {
     public Thread toThread(ThreadRequestDTO threadRequestDTO) {
         Thread thread = new Thread();
         thread.setTitle(threadRequestDTO.getTitle());
-        thread.setCategory(threadRequestDTO.getCategory().toString());
+        thread.setCategory(threadRequestDTO.getCategory());
         return thread;
     }
 
     public ThreadRequestDTO toThreadRequestDTO(Thread thread) {
         ThreadRequestDTO dto = new ThreadRequestDTO();
         dto.setTitle(thread.getTitle());
-        dto.setCategory(ThreadCategoryEnum.valueOf(thread.getCategory().toUpperCase()));
+        dto.setCategory(thread.getCategory());
         return dto;
     }
 
@@ -60,7 +60,7 @@ public class ThreadMapper {
         }
 
         Long threadId = thread.getId();
-        ThreadCategoryEnum threadCategory = ThreadCategoryEnum.valueOf(thread.getCategory());
+        ThreadCategoryEnum threadCategory = thread.getCategory();
         String authorUsername = thread.getOwner() != null ? thread.getOwner().getUserName() : null;
         String title = thread.getTitle();
         String reason = inMemoryRepository.getReasonByThreadId(threadId);

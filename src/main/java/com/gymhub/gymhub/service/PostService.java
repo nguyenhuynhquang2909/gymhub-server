@@ -34,6 +34,8 @@ public class PostService {
 
     @Autowired
     private InMemoryRepository inMemoryRepository;
+    @Autowired
+    private PostMapper postMapper;
 
     @Autowired
     private Cache cache;
@@ -43,14 +45,14 @@ public class PostService {
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
-                .map(PostMapper::postToPostResponseDTO)
+                .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDTO> getPostsByUserId(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
         return posts.stream()
-                .map(PostMapper::postToPostResponseDTO)
+                .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +66,7 @@ public class PostService {
             Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
                     .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
 
-            Post post = PostMapper.postRequestToPost(postRequestDTO, author, thread);
+            Post post = postMapper.postRequestToPost(postRequestDTO, author, thread);
 
             // Temporary setup for the post before AI analysis
             ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;

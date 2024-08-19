@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.in_memory;
 
+import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -93,7 +94,7 @@ public class Cache {
      * //     * 0 for pending,
      * //     * -1 for toxic
      */
-    HashMap<String, HashMap<Integer, LinkedList<Long>>> threadListByCategoryAndToxicStatus = new HashMap<>();
+    HashMap<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> threadListByCategoryAndToxicStatus = new HashMap<>();
 
 
     /**

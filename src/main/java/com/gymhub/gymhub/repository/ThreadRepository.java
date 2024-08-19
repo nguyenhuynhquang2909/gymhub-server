@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.repository;
 
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
-    List<Thread> findByCategory(String category);
+    List<Thread> findByCategory(ThreadCategoryEnum category);
 
     List<Thread> findByOwnerId(Long ownerId);
 
@@ -20,12 +21,7 @@ public interface ThreadRepository extends JpaRepository<Thread, Long> {
     @EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
     List<Thread> findAll();
 
-    //more method
-//    Thread findThreadById(Long id);
 
-//    @Query
-//    Thread findByThreadIdList(List<Long> threadIdList);
-//    @Query("SELECT t FROM Thread t WHERE t.id IN :id")
 @EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
     List<Thread> findByIdIn(List<Long> ids);
 

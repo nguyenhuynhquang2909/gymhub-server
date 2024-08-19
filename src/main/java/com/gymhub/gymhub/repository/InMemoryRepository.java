@@ -192,7 +192,7 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addThreadToCache(long threadId, String category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
 
@@ -212,7 +212,7 @@ public class InMemoryRepository {
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
 
         // Manage thread list by category and status
-        cache.getThreadListByCategoryAndToxicStatus().computeIfAbsent(category, k -> new HashMap<>());
+        cache.getThreadListByCategoryAndToxicStatus().computeIfAbsent((category), k -> new HashMap<>());
         cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
         cache.getThreadListByCategoryAndToxicStatus().get(category).get(toxicStatusBooleanNumber).add(threadId);
 
@@ -283,16 +283,33 @@ public class InMemoryRepository {
      * @return a list of thread IDs in the specified category
      */
     public HashMap<Integer, LinkedList<Long>> getAllThreadIdsByCategory(ThreadCategoryEnum category) {
-        // Retrieve the map of statuses and their corresponding thread lists for the given category
-        return cache.getThreadListByCategoryAndToxicStatus().getOrDefault(category.name(), new HashMap<>());
+        // Debugging: Print the entire cache for inspection using the category object itself
+        System.out.println("Cache content: " + cache.getThreadListByCategoryAndToxicStatus().getOrDefault(category, new HashMap<>()));
+
+        // Use the category object directly as the key
+        return cache.getThreadListByCategoryAndToxicStatus().getOrDefault(category, new HashMap<>());
+    }
+
+
+    public LinkedList<Long> getThreadIdsByCategoryAndStatus(ThreadCategoryEnum category, int status) {
+        // Get the map associated with the category
+        HashMap<Integer, LinkedList<Long>> statusMap = cache.getThreadListByCategoryAndToxicStatus().get(category);
+
+        if (statusMap != null) {
+            // Return the list of thread IDs for the given status
+            return statusMap.getOrDefault(status, new LinkedList<>());
+        } else {
+            // Return an empty list if the category is not found
+            return new LinkedList<>();
+        }
     }
 
     // Get Pending Threads
-    public HashMap<String, HashMap<Integer, LinkedList<Long>>> getPendingThreads() {
-        HashMap<String, HashMap<Integer, LinkedList<Long>>> pendingThreadsByCategory = new HashMap<>();
+    public HashMap<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> getPendingThreads() {
+        HashMap<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> pendingThreadsByCategory = new HashMap<>();
 
-        for (Map.Entry<String, HashMap<Integer, LinkedList<Long>>> categoryEntry : cache.getThreadListByCategoryAndToxicStatus().entrySet()) {
-            String category = categoryEntry.getKey();
+        for (Map.Entry<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> categoryEntry : cache.getThreadListByCategoryAndToxicStatus().entrySet()) {
+            ThreadCategoryEnum category = categoryEntry.getKey();
             HashMap<Integer, LinkedList<Long>> threadsByStatus = categoryEntry.getValue();
 
             LinkedList<Long> pendingThreadsInCategory = threadsByStatus.get(0);
@@ -942,7 +959,7 @@ public class InMemoryRepository {
      * METHODS TO AUTOMATICALLY DELETE TOXIC THREADS AND POST WHEN REACHING A SIZE LIMIT
      */
 
-    private void deleteToxicThreadsAndClearList(String category) {
+    private void deleteToxicThreadsAndClearList(ThreadCategoryEnum category) {
         LinkedList<Long> toxicList = cache.getThreadListByCategoryAndToxicStatus().get(category).get(-1);
 
         if (toxicList != null && !toxicList.isEmpty()) {

@@ -42,9 +42,15 @@ public class ModService {
 
     @Autowired
     private ThreadMapper threadMapper;
+    @Autowired
+    private PostMapper postMapper;
+    @Autowired
+    private ModeratorMapper moderatorMapper;
+    @Autowired
+    private MemberMapper memberMapper;
 
     public void updateModInfo(ModeratorRequestAndResponseDTO modDTO) {
-        Moderator existingMod = ModeratorMapper.modDTOToMod(modDTO);
+        Moderator existingMod = moderatorMapper.modDTOToMod(modDTO);
         if (!existingMod.getUserName().startsWith("mod")) {
             throw new IllegalArgumentException("Moderator username must start with 'mod'");
         }
@@ -61,7 +67,7 @@ public class ModService {
                 .map(postResponseDTO -> {
                     Post post = postRepository.findById(postResponseDTO.getId())
                             .orElseThrow(() -> new RuntimeException("Post not found"));
-                    return PostMapper.postToPendingPostDTO(post);
+                    return postMapper.postToPendingPostDTO(post);
                 })
                 .collect(Collectors.toList());
     }
@@ -118,7 +124,7 @@ public class ModService {
                     .orElse(null);
             if (member != null) {
                 BanInfo banInfo = cache.getBannedList().get(userId);
-                BannedMemberDTO bannedMemberDTO = MemberMapper.memberToBannedMemberDTO(
+                BannedMemberDTO bannedMemberDTO = memberMapper.memberToBannedMemberDTO(
                         member,
                         banInfo.getBanUntilDate().getTime(),
                         banInfo.getBanReason()
