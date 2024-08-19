@@ -69,7 +69,6 @@ public class PostMapper {
     public static PostRequestDTO postToPostRequestDTO(Post post) {
         PostRequestDTO dto = new PostRequestDTO();
         dto.setPostId(post.getId()); // Set the post ID
-        dto.setAuthorId(post.getAuthor().getId()); // Set the author ID
         dto.setContent(post.getContent()); // Set the content
         dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Set the encoded image if it exists
         dto.setThreadId(post.getThread().getId()); // Set the thread ID

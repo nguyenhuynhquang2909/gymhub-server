@@ -55,8 +55,8 @@ public class MemberService {
     }
 
 
-    public ResponseEntity<Void> updateMemberInfo(MemberRequestDTO memberRequestDTO) {
-        Optional<Member> member =  memberRepository.findById(memberRequestDTO.getId());
+    public ResponseEntity<Void> updateMemberInfo(Long memberId, MemberRequestDTO memberRequestDTO) {
+        Optional<Member> member =  memberRepository.findById(memberId);
         if (member.isPresent()) {
             Member existingMember = member.get();
             existingMember.setPassword(memberRequestDTO.getPassword());

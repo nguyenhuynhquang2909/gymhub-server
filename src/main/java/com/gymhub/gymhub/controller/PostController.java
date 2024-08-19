@@ -109,9 +109,10 @@ public class PostController {
             @PathVariable Long threadId,
             @RequestBody PostRequestDTO post) {
 
-        post.setAuthorId(userDetails.getId()); // Set the author ID from the authenticated user
 
-        boolean success = postService.createPost(post);
+
+        boolean success = postService.createPost(userDetails.getId(),post);
+        //API AI
 
         if (success) {
             return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully

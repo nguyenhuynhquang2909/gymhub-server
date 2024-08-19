@@ -41,7 +41,7 @@ public class MemberMapper {
 
     public static MemberRequestDTO memberToMemberRequestDTO(Member member) {
         MemberRequestDTO dto = new MemberRequestDTO();
-        dto.setId(member.getId());
+
         dto.setUserName(member.getUserName());
         dto.setEmail(member.getEmail());
         dto.setPassword(member.getPassword());

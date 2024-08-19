@@ -13,8 +13,7 @@ public class PostRequestDTO {
     @Schema(description = "Id of the post")
     private Long postId;
 
-    @Schema(description = "Id of the author of the post")
-    private Long authorId;
+
 
     @Schema(description = "Content of the post")
     private String content;
@@ -27,7 +26,6 @@ public class PostRequestDTO {
 
     public PostRequestDTO(Long postId, Long authorId, String content, String encodedImage, Long threadId) {
         this.postId = postId;
-        this.authorId = authorId;
         this.content = content;
         this.encodedImage = encodedImage;
         this.threadId = threadId;

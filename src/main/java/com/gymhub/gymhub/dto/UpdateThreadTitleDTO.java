@@ -7,12 +7,11 @@ import lombok.Getter;
 @Getter
 public class UpdateThreadTitleDTO {
     private Long ThreadId;
-    private Long authorId;
     private String title;
 
-    public UpdateThreadTitleDTO(Long threadId, Long authorId, String title) {
+    public UpdateThreadTitleDTO(Long threadId, String title) {
         ThreadId = threadId;
-        this.authorId = authorId;
+
         this.title = title;
     }
 }

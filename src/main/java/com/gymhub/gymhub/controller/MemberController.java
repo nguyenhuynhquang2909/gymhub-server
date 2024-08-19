@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.controller;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
 import com.gymhub.gymhub.repository.InMemoryRepository;
@@ -47,9 +48,11 @@ public class MemberController {
 
     @Operation(description = "This operation changes the information of a member", tags = "Member Profile Page")
     @PutMapping("/update/member-{id}")
-    public ResponseEntity<Void> updateMember(@RequestBody MemberRequestDTO memberRequestDTO) {
+    public ResponseEntity<Void> updateMember(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody MemberRequestDTO memberRequestDTO) {
         try {
-            memberService.updateMemberInfo(memberRequestDTO);
+            memberService.updateMemberInfo(customUserDetails.getId(),   memberRequestDTO);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
@@ -59,12 +62,12 @@ public class MemberController {
     @Operation(description = "This operation allows a member to follow another member", tags = "Member Actions")
     @PostMapping("/follow/{followingId}")
     public ResponseEntity<String> followMember(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable Long followingId) {
-        if (userDetails == null) {
+        if (customUserDetails == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
-        Long followerId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+        Long followerId = memberService.getMemberIdFromUserName( customUserDetails.getUsername());
         memberService.followMember(followerId, followingId);
         return ResponseEntity.ok("Member followed successfully");
     }

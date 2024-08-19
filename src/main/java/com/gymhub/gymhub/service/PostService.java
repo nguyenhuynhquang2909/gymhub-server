@@ -54,12 +54,12 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public boolean createPost(PostRequestDTO postRequestDTO) {
+    public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
         try {
             long id = HelperMethod.generateUniqueIds();
             postRequestDTO.setPostId(id);
 
-            Member author = memberRepository.findById(postRequestDTO.getAuthorId())
+            Member author = memberRepository.findById(memberID)
                     .orElseThrow(() -> new IllegalArgumentException("Author not found"));
             Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
                     .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
@@ -72,7 +72,7 @@ public class PostService {
             String tempReason = "";
 
             // Add post to cache
-            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, tempResolveStatus, tempReason);
+            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
 
             postRepository.save(post);
             return true; // Operation succeeded
