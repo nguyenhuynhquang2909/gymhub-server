@@ -28,8 +28,14 @@ import static com.gymhub.gymhub.helper.HelperMethod.convertStringToxicStatusToBo
 @Repository
 public class InMemoryRepository {
     //
-    @Autowired
-    Cache cache;
+
+    private Cache cache;
+
+    public InMemoryRepository() {
+        this.cache = new Cache(); // Make sure it's initialized
+    }
+//    @Autowired
+//    Cache cache;
     private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
     @Autowired
@@ -249,6 +255,7 @@ public class InMemoryRepository {
     }
 
 
+
     /**
      * Methods to GET domain entities from cache
      */
@@ -267,7 +274,9 @@ public class InMemoryRepository {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
 
-            if (threadParaMap.get("Status").equals(1)) {
+            // Check if "Status" is null before calling equals
+            Object status = threadParaMap.get("Status");
+            if (status != null && status.equals(1)) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
@@ -276,11 +285,14 @@ public class InMemoryRepository {
                 BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
                 postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
+            } else {
+                System.err.println("Skipping thread ID " + threadId + " due to null status or status not being 1.");
             }
         }
 
         return returnCollection;
     }
+
 
     /**
      * Returns all thread IDs for the specified category.
