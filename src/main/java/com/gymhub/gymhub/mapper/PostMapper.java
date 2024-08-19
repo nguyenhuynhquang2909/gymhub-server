@@ -84,8 +84,9 @@ public class PostMapper {
         Long postID = post.getId();
         String authorUsername = post.getAuthor() != null ? post.getAuthor().getUserName() : null;
         String content = post.getContent();
+        String reason = inMemoryRepository.getReasonByPostId(postID);
 
-        return new PendingPostDTO(postID, authorUsername, content);
+        return new PendingPostDTO(postID, authorUsername, content, reason);
     }
 
 

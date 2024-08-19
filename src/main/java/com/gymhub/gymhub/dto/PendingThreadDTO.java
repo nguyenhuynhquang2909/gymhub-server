@@ -10,11 +10,13 @@ public class PendingThreadDTO {
     private ThreadCategoryEnum threadCategory;
     private String authorUsername;
     private String title;
+    private String reason;
 
-    public PendingThreadDTO(Long threadId, ThreadCategoryEnum threadCategory, String authorUsername, String title) {
+    public PendingThreadDTO(Long threadId, ThreadCategoryEnum threadCategory, String authorUsername, String title, String reason) {
         this.threadId = threadId;
         this.threadCategory = threadCategory;
         this.authorUsername = authorUsername;
         this.title = title;
+        this.reason = reason;
     }
 }

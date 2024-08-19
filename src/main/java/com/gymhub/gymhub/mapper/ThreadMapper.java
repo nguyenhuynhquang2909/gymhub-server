@@ -13,7 +13,7 @@ import java.time.ZoneOffset;
 public class ThreadMapper {
 
     @Autowired
-    private InMemoryRepository inMemoryRepository;
+    private static InMemoryRepository inMemoryRepository;
 
 
 
@@ -68,9 +68,10 @@ public class ThreadMapper {
         ThreadCategoryEnum threadCategory = ThreadCategoryEnum.valueOf(thread.getCategory()); // Assuming category is stored as a String and matches the enum values
         String authorUsername = thread.getOwner() != null ? thread.getOwner().getUserName() : null;
         String title = thread.getTitle();
+        String reason = inMemoryRepository.getReasonByThreadId(threadId);
 
         // Create and return a new PendingThreadDTO using the extracted values
-        return new PendingThreadDTO(threadId, threadCategory, authorUsername, title);
+        return new PendingThreadDTO(threadId, threadCategory, authorUsername, title, reason);
     }
 
 }
