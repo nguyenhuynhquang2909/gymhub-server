@@ -1,7 +1,6 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.config.CustomUserDetails;
-import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -60,15 +58,15 @@ public class ThreadController {
     }
 
     @Operation(description = "This operation returns a number of threads that belong to the 'advice' category", tags = {"Homepage", "Advice Category"})
-    @GetMapping("/advise")
-    public ResponseEntity<List<ThreadResponseDTO>> getAdviseThread(
+    @GetMapping("/advice")
+    public ResponseEntity<List<ThreadResponseDTO>> getAdviceThread(
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
         try {
             int offset = page * limit;
-            return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.ADVISE, limit, offset)); // 200 OK
+            return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.ADVICE, limit, offset)); // 200 OK
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
@@ -148,13 +146,13 @@ public class ThreadController {
     public ResponseEntity<Void> updateThreadTitle(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
-            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO,
+            @RequestBody ThreadRequestDTO threadRequestDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         // Set the threadID in the DTO
-        updateThreadTitleDTO.setThreadId(threadID);
+        threadRequestDTO.setId(threadID);
 
-        boolean success = threadService.updateThreadTitle(userDetails.getId(), updateThreadTitleDTO);
+        boolean success = threadService.updateThread(userDetails.getId(), threadRequestDTO);
 
         if (success) {
             return ResponseEntity.ok().build(); // 200 OK if the thread title was updated successfully

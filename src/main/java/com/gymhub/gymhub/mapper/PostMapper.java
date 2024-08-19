@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 @Component
 public class PostMapper {
   @Autowired
-    private static InMemoryRepository inMemoryRepository;
+    private  InMemoryRepository inMemoryRepository;
 
 
 
 
 
-    public static PostResponseDTO postToPostResponseDTO(Post post) {
+    public  PostResponseDTO postToPostResponseDTO(Post post) {
         PostResponseDTO dto = new PostResponseDTO();
 
         // Set basic fields
@@ -53,7 +53,7 @@ public class PostMapper {
         return dto;
     }
 
-    public static Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
+    public Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
         Image image = new Image(postRequestDTO. getEncodedImage().getBytes());
         Post post = new Post(
                 LocalDateTime.now(),
@@ -66,7 +66,7 @@ public class PostMapper {
         return post;
     }
 
-    public static PostRequestDTO postToPostRequestDTO(Post post) {
+    public  PostRequestDTO postToPostRequestDTO(Post post) {
         PostRequestDTO dto = new PostRequestDTO();
         dto.setPostId(post.getId()); // Set the post ID
         dto.setContent(post.getContent()); // Set the content
@@ -75,7 +75,7 @@ public class PostMapper {
         return dto;
     }
 
-    public static PendingPostDTO postToPendingPostDTO(Post post) {
+    public  PendingPostDTO postToPendingPostDTO(Post post) {
         if (post == null) {
             return null;
         }

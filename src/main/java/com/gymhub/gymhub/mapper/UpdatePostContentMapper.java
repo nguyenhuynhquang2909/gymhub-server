@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class UpdatePostContentMapper {
 
     // Method to map UpdatePostContentDTO to an existing Post entity
-    public static void updatePostFromDTO(UpdatePostContentDTO updatePostContentDTO, Post post) {
+    public  void updatePostFromDTO(UpdatePostContentDTO updatePostContentDTO, Post post) {
         // Update the content
         post.setContent(updatePostContentDTO.getContent());
 

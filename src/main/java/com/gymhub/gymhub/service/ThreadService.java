@@ -46,7 +46,7 @@ public class ThreadService {
                 Long threadId = (Long) map.get("ThreadID");
                 Thread thread = threadRepository.findById(threadId)
                         .orElseThrow(() -> new RuntimeException("Thread not found"));
-                threadList.add(threadMapper.toThreadResponseDTO(thread, null));
+                threadList.add(threadMapper.toThreadResponseDTO(thread));
             }
             returnCollection.put(key, threadList);
         }
@@ -55,28 +55,16 @@ public class ThreadService {
     }
 
     public List<ThreadResponseDTO> getAllThreadsByCategory(ThreadCategoryEnum category, int limit, int offset) {
-        List<Long> threadListByCategoryAndStatus = Optional.ofNullable(
-                        inMemoryRepository.getAllThreadIdsByCategory(category))
-                .map(statusMap -> statusMap.get(1)) // Assuming status 1 for non-toxic threads
-                .orElse(new LinkedList<>());
+        List<Long> listOfThreadIdByCategory =
+                inMemoryRepository.getThreadIdsByCategoryAndStatus(category, 1);
 
-        List<ThreadResponseDTO> threadResponseDTOs = new ArrayList<>();
-        int count = 0;
-        for (int i = offset; i < threadListByCategoryAndStatus.size() && count < limit; i++) {
-            Long threadId = threadListByCategoryAndStatus.get(i);
-            ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
-            Thread thread = threadRepository.findById(threadId).orElse(null);
+        System.out.println("List of thread id by category : " + listOfThreadIdByCategory);
 
-            if (thread != null) {
-                ThreadResponseDTO dto = threadMapper.toThreadResponseDTO(thread, threadParams.mappingCount());
-                if (dto != null) {
-                    threadResponseDTOs.add(dto);
-                    count++;
-                }
-            }
-        }
+        List<ThreadResponseDTO> returnList = mapThreadListToThreadResponseDTOList(listOfThreadIdByCategory);
+        System.out.println("List of Thread DTOs " + returnList);
+        return returnList;
 
-        return threadResponseDTOs;
+
     }
 
     public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
@@ -93,7 +81,7 @@ public class ThreadService {
             Thread thread = threadRepository.findById(threadId).orElse(null);
 
             if (thread != null) {
-                ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread, authorId);
+                ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread);
                 threadResponseDTO.setLikeCount((Integer) threadParams.get("LikeCount"));
                 threadResponseDTO.setViewCount((Integer) threadParams.get("ViewCount"));
                 threadResponseDTO.setPostCount((Integer) threadParams.get("PostCount"));
@@ -114,11 +102,11 @@ public class ThreadService {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         long id = HelperMethod.generateUniqueIds();
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory().name(), LocalDateTime.now());
+        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
         thread.setOwner(owner);
 
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory().name(), tempToxicEnum, owner.getId(), false, "");
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), tempToxicEnum, owner.getId(), false, "");
         threadRepository.save(thread);
     }
 
@@ -127,21 +115,47 @@ public class ThreadService {
                 reason);
     }
 
-    public boolean updateThreadTitle(Long memberId, UpdateThreadTitleDTO updateThreadTitleDTO) {
+    public boolean updateThread(Long memberId, ThreadRequestDTO threadRequestDTO) {
         try {
-            Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
+            Thread thread = threadRepository.findById(threadRequestDTO.getId())
                     .orElseThrow(() -> new RuntimeException("Thread not found"));
 
             if (!thread.getOwner().getId().equals(memberId)) {
                 return false; // User is not authorized to update this thread
             }
 
-            thread.setTitle(updateThreadTitleDTO.getTitle());
+            thread.setTitle(threadRequestDTO.getTitle());
+            thread.setTags(threadRequestDTO.getTags());
             threadRepository.save(thread);
             return true; // Operation succeeded
         } catch (Exception e) {
             return false; // Operation failed due to exception
         }
     }
+
+    public List<Thread> getAllThreadsByListOfIds(List<Long> threadIds) {
+
+        List<Thread> returnList = threadRepository.findAllByIdsWithOwner(threadIds);
+
+        return returnList;
+
+    }
+
+    public List<ThreadResponseDTO> mapThreadListToThreadResponseDTOList(List<Long> threadIds) {
+        List<Thread> threadList = getAllThreadsByListOfIds(threadIds);
+        List<ThreadResponseDTO> dtoList = new ArrayList<>();
+        for (int i = 0; i < threadList.size(); i++) {
+            try {
+                Thread thread = threadList.get(i);
+                ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread);
+                dtoList.add(threadResponseDTO);
+            } catch (Exception e) {
+                System.err.println("Error mapping thread: " + threadList.get(i).getId() + ", " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        return dtoList;
+    }
+
 
 }

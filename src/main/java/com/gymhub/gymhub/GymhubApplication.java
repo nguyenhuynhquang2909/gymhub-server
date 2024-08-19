@@ -5,6 +5,7 @@ import com.gymhub.gymhub.domain.ForumAccount;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
@@ -48,6 +49,9 @@ public class GymhubApplication {
 	@PostConstruct
 	private void cacheFill(){
 		System.out.println("Duong hello test ");
+//		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
+//		System.out.println("Mock thread list" + mockThreadList.size());
+
 		List<Member> members = memberRepository.findAll();
 		Iterator<Member> iterator = members.iterator();
 

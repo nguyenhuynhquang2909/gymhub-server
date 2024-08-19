@@ -15,9 +15,9 @@ import java.util.Date;
 public class MemberMapper {
 
     @Autowired
-    private static InMemoryRepository inMemoryRepository;
+    private  InMemoryRepository inMemoryRepository;
 
-    public static MemberResponseDTO memberToMemberResponseDTO(Member member) {
+    public  MemberResponseDTO memberToMemberResponseDTO(Member member) {
 
         MemberResponseDTO dto = new MemberResponseDTO();
         dto.setId(member.getId());
@@ -39,7 +39,7 @@ public class MemberMapper {
     }
 
 
-    public static MemberRequestDTO memberToMemberRequestDTO(Member member) {
+    public  MemberRequestDTO memberToMemberRequestDTO(Member member) {
         MemberRequestDTO dto = new MemberRequestDTO();
 
         dto.setUserName(member.getUserName());
@@ -50,7 +50,7 @@ public class MemberMapper {
         return dto;
     }
 
-    public static Member memberRequestToMember(MemberRequestDTO memberRequestDTO, String encodedPassword) {
+    public  Member memberRequestToMember(MemberRequestDTO memberRequestDTO, String encodedPassword) {
         byte[] avatar = Base64.getDecoder().decode(memberRequestDTO.getStringAvatar());
         return new Member(
 
@@ -69,7 +69,7 @@ public class MemberMapper {
      * @return The BannedMemberDTO containing member and ban details.
      */
 
-    public static BannedMemberDTO memberToBannedMemberDTO(Member member, Long bannedUntil, String reason) {
+    public  BannedMemberDTO memberToBannedMemberDTO(Member member, Long bannedUntil, String reason) {
         Date banUntilDate = new Date(bannedUntil);
         return new BannedMemberDTO(
                 member.getId(),
