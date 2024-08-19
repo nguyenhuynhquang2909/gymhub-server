@@ -1,37 +1,28 @@
 package com.gymhub.gymhub.actions;
 
-public class ChangeThreadStatusAction extends MustLogAction {
-    private static final long serialVersionUID = 1L;
-    private long threadId;
-    private String category;
-    private int from;
-    private int to;
-    private String reason;
-    public ChangeThreadStatusAction(Long actionId, long threadId, String category, int from,
-                                    int to, String reason) {
-        super(actionId, "ChangeThreadStatus");
-        this.threadId = threadId;
-        this.category = category;
-        this.from = from;
-        this.to = to;
-        this.reason = reason;
-    }
-    public long getThreadId() {
-        return threadId;
-    }
-    public String getCategory() {
-        return category;
-    }
-    public int getFrom() {
-        return from;
-    }
-    public int getTo() {
-        return to;
-    }
-    public String getReason() {
-        return reason;
-    }
+    import com.gymhub.gymhub.dto.ThreadCategoryEnum;
+    import com.gymhub.gymhub.dto.ToxicStatusEnum;
+    import lombok.Setter;
+    import lombok.Getter;
+
+    @Setter
+    @Getter
+    public class ChangeThreadStatusAction extends MustLogAction {
+        private static final long serialVersionUID = 1L;
+        private long threadId;
+        private ThreadCategoryEnum category;
+        private ToxicStatusEnum toxicStatus;
+        private boolean resolveStatus;
+        private String reason;
 
 
 
-}
+        public ChangeThreadStatusAction(Long actionId, String actionType, long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+            super(actionId, actionType);
+            this.threadId = threadId;
+            this.category = category;
+            this.toxicStatus = toxicStatus;
+            this.resolveStatus = resolveStatus;
+            this.reason = reason;
+        }
+    }

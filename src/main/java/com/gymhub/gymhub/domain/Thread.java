@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
         name = "Thread.owner",
         attributeNodes = @NamedAttributeNode("owner")
 )
-
+//to simply the logic, a Thread could be create without the first post (the tittle is the problem/question) => reddit like
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)
@@ -33,7 +33,6 @@ public class Thread extends ForumUnit {
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false, updatable = false)
     private Member owner;
-
 
 
 

@@ -9,4 +9,9 @@ public class UpdateThreadTitleDTO {
     private Long ThreadId;
     private String title;
 
+    public UpdateThreadTitleDTO(Long threadId, String title) {
+        ThreadId = threadId;
+
+        this.title = title;
+    }
 }

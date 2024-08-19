@@ -3,13 +3,11 @@ package com.gymhub.gymhub.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.sql.Date;
-import java.util.HashSet;
-import java.util.Set;
-
 @Getter
 @NoArgsConstructor
 @Entity
@@ -37,11 +35,6 @@ public class Member extends ForumAccount {
     @Column(name = "join_date", nullable = false, updatable = false, unique = false)
     private Date joinDate;
 
-    @Transient
-    private Set<Long> followers = new HashSet<>();
-
-    @Transient
-    private Set<Long> following = new HashSet<>();
 
 
     public Member(String userName, String password, String email, Date joinDate) {
@@ -49,17 +42,6 @@ public class Member extends ForumAccount {
         this.joinDate = joinDate;
     }
 
-    public void follow(Long memeberId) {
-        following.add(memeberId);
+    public Member(Long memberId, String userName, String encode, String email, Date date) {
     }
-    public void unfollow(Long memberId) {
-        following.remove(memberId);
-    }
-    public void addFollower(Long memberId) {
-        followers.add(memberId);
-    }
-    public void removeFollower(Long memberId) {
-        followers.remove(memberId);
-    }
-
 }

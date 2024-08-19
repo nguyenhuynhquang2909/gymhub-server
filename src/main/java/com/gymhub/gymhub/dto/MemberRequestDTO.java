@@ -8,8 +8,6 @@ import lombok.Setter;
 @Schema(description = "This includes all the member-related field to be included in server's response")
 public class MemberRequestDTO {
 
-    @Schema(description = "The id of the member")
-    private Long id;
 
     @Schema(description = "The username of an account")
     private String userName;
@@ -25,4 +23,15 @@ public class MemberRequestDTO {
 
     @Schema(description = "The password of an account")
     private String password;
+
+    public MemberRequestDTO( String userName, String email, String bio, String stringAvatar, String password) {
+        this.userName = userName;
+        this.email = email;
+        this.bio = bio;
+        this.stringAvatar = stringAvatar;
+        this.password = password;
+    }
+
+    public MemberRequestDTO() {
+    }
 }

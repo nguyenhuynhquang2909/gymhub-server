@@ -6,8 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Schema(description = "This defines all moderator-related fields that clients need to send in request body")
-public class ModeratorDTO {
+@Schema(description = "This defines all moderator-related fields for both  request (clients need to send in request body) and response (servers need to send in respond body)")
+public class ModeratorRequestAndResponseDTO {
     @Schema(description = "The ID of the moderator")
     private Long id;
 

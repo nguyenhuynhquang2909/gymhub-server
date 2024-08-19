@@ -6,19 +6,18 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,93 +30,96 @@ public class PostService {
     private ThreadRepository threadRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
+
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
     @Autowired
     private Cache cache;
+
     private long actionIdCounter = 0;
 
-    public List<PostResponseDTO> getPostsByThreadId(Long threadId, Long userId) {
+    public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
         return posts.stream()
-                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId)) // Replace null with actual userId if needed
+                .map(PostMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDTO> getPostsByUserId(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
         return posts.stream()
-                .map(post -> PostMapper.toPostResponseDTO(post, cache, userId))
+                .map(PostMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public ResponseEntity<Void> createPost(Long userId, Long threadId, PostRequestDTO postRequestDTO) {
-        Optional<Member> author = userRepository.findById(userId);
-        Optional<Thread> thread = threadRepository.findById(threadId);
+    public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
+        try {
+            long id = HelperMethod.generateUniqueIds();
+            postRequestDTO.setPostId(id);
 
-        if (author.isPresent() && thread.isPresent()) {
-            Post post = PostMapper.toPost(postRequestDTO, author.get(), thread.get());
+            Member author = memberRepository.findById(memberID)
+                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+            Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
+                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+
+            Post post = PostMapper.postRequestToPost(postRequestDTO, author, thread);
+
+            // Temporary setup for the post before AI analysis
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            boolean tempResolveStatus = false;
+            String tempReason = "";
+
+            // Add post to cache
+            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
+
             postRepository.save(post);
-            return new ResponseEntity<>(HttpStatus.CREATED); // Return CREATED status
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Return NOT FOUND if user or thread is missing
+            return true; // Operation succeeded
+        } catch (Exception e) {
+            return false; // Operation failed due to exception
         }
     }
 
-    public ResponseEntity<Void> updatePost(Long authorId, UpdatePostContentDTO updatePostContentDTO) {
-        Optional<Member> member = userRepository.findById(authorId);
-        Optional<Thread> thread = threadRepository.findById(updatePostContentDTO.getThreadId());
-        Optional<Post> post = postRepository.findById(updatePostContentDTO.getPostId());
 
-        if (member.isPresent() && thread.isPresent() && post.isPresent()) {
-            Post existingPost = post.get();
+    public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
+        try {
+            Post post = postRepository.findById(updatePostContentDTO.getPostId())
+                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-            // Check if the member is the author of the post
-            if (existingPost.getAuthor().getId().equals(member.get().getId())) {
-                // Update the post content
-                existingPost.setContent(updatePostContentDTO.getContent());
-
-                // Update the post image
-                Image updatedImage = existingPost.getImage();
-                if (updatedImage == null) {
-                    updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
-                    updatedImage.setPost(existingPost);
-                    existingPost.setImage(updatedImage);
-                } else {
-                    updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
-                }
-
-                // Save the updated post
-                postRepository.save(existingPost);
-
-                return new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            if (!post.getAuthor().getId().equals(memberId)) {
+                return false; // User is not authorized to update this post
             }
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            //CALL AI API
+            post.setContent(updatePostContentDTO.getContent());
+
+            Image updatedImage = post.getImage();
+            if (updatedImage == null) {
+                updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                updatedImage.setPost(post);
+                post.setImage(updatedImage);
+            } else {
+                updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+            }
+
+            postRepository.save(post);
+            return true; // Operation succeeded
+        } catch (IllegalArgumentException | SecurityException e) {
+            return false; // Operation failed due to exception
         }
     }
-    public boolean reportPost(ReportPostRequestDTO reportPostRequestDTO, long threadId) {
-        // Extract necessary information from the DTO
-        long postId = reportPostRequestDTO.getId();
-        int from = reportPostRequestDTO.getFrom();
-        int to = reportPostRequestDTO.getTo();
-        String reason = reportPostRequestDTO.getReason();
 
-        // Call the inMemoryRepository's changePostStatus method with the extracted values
-        boolean result = inMemoryRepository.changePostStatus(postId, threadId, from, to, reason);
 
-        // Log the action using the constructor that requires threadId
+    public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {
+        long postId = postRequestDTO.getPostId();
+        long threadId = postRequestDTO.getThreadId();
+
+        boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, reason);
+
         ChangePostStatusAction action = new ChangePostStatusAction(
-                ++actionIdCounter, postId, threadId, from, to, reason);
+                ++actionIdCounter, "changePostToxicStatusForMemberReporting", postId, threadId, ToxicStatusEnum.PENDING, false, reason);
         inMemoryRepository.logAction(action);
 
         return result;
     }
-
-
-
 }

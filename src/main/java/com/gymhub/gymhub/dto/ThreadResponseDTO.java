@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +18,7 @@ public class ThreadResponseDTO {
 
     @Setter
     @Schema(description = "The date and time the thread is created")
-    private LocalDateTime creationDateTime;
+    private Long creationDateTime;
 
     @Setter
     @Transient
@@ -31,10 +29,6 @@ public class ThreadResponseDTO {
     @Setter
     @Schema(description = "View count of the thread")
     private int viewCount;
-
-    @Setter
-    @Schema(description = "True if the thread has been reported")
-    private boolean beenReport;
 
     @Setter
     @Schema(description = "true if the thread has been liked by the user")
@@ -56,6 +50,35 @@ public class ThreadResponseDTO {
     @Schema(description = "Encoded avatar (Base64) of the author of the thread")
     private String authorAvatar;
 
-    @Schema(description = "Name of the thread")
-    private String name;
+    @Schema(description = "Title of the thread")
+    private String title;
+
+
+    @Schema(description = "The current toxic status of a thread. Front-end use this to choose who to display this thread to")
+    private ToxicStatusEnum toxicStatus;
+
+    @Schema(description = "The current resolve status of a thread (if it had been processed by mod. Hide report button if true")
+    private boolean resolveStatus;
+
+
+    @Schema(description = "Only display this if the thread is currently being reported by member, ban by AI or ban by mod")
+    private String reason;
+
+
+    public ThreadResponseDTO(Long id, Long creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+        this.id = id;
+        this.creationDateTime = creationDateTime;
+        this.likeCount = likeCount;
+        this.viewCount = viewCount;
+
+        this.beenLiked = beenLiked;
+        this.postCount = postCount;
+        this.authorName = authorName;
+        this.authorId = authorId;
+        this.authorAvatar = authorAvatar;
+        this.title = title;
+        this.toxicStatus = toxicStatus;
+        this.resolveStatus = resolveStatus;
+        this.reason = reason;
+    }
 }

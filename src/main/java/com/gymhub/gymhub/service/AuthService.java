@@ -3,7 +3,7 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.in_memory.SessionStorage;
-import com.gymhub.gymhub.repository.UserRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.cfg.Environment;
@@ -36,7 +36,7 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UserRepository memberAccountRepository;
+    private MemberRepository memberAccountRepository;
 
     @Autowired
     SessionStorage sessionStorage;

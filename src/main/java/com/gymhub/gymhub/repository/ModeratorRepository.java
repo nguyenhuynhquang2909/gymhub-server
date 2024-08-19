@@ -14,6 +14,4 @@ public interface ModeratorRepository extends JpaRepository<Moderator, Long> {
     // Keep the names of these methods consistent with the field names in the Moderator entity
     Boolean existsByUserName(String userName);
     Boolean existsByEmail(String email);
-
-
 }

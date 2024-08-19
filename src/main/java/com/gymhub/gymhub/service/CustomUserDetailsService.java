@@ -3,11 +3,16 @@ package com.gymhub.gymhub.service;
 import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Moderator;
+import com.gymhub.gymhub.dto.MemberRequestDTO;
+import com.gymhub.gymhub.dto.ModeratorRequestAndResponseDTO;
 import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.repository.ModeratorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,15 +20,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Service
-public class CustomUserDetailService implements UserDetailsService {
-    @Autowired
-    MemberRepository memberRepository;
+public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    ModeratorRepository moderatorRepository;
+    private MemberRepository memberRepository;
 
+    @Autowired
+    private ModeratorRepository moderatorRepository;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username.startsWith("mod_")) {
@@ -36,7 +42,7 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     private UserDetails loadMemberByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByUserName(username).
+        Member member = memberRepository.findMemberByUserName(username).
                 orElseThrow(() -> new UsernameNotFoundException("Member Not Found with username: " + username));
         CustomUserDetails userDetails = new CustomUserDetails();
         userDetails.setUsername(member.getUserName());
@@ -61,4 +67,6 @@ public class CustomUserDetailService implements UserDetailsService {
         userDetails.setAuthorities(authorities);
         return userDetails;
     }
+
+
 }

@@ -3,6 +3,7 @@ package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.components.CookieManager;
 import com.gymhub.gymhub.in_memory.SessionStorage;
+import com.gymhub.gymhub.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import com.gymhub.gymhub.dto.LoginRequestDTO;
 import com.gymhub.gymhub.dto.RegisterRequestDTO;
 import com.gymhub.gymhub.dto.TokenRefreshRequest;
 import com.gymhub.gymhub.dto.TokenRefreshResponse;
-import com.gymhub.gymhub.repository.UserRepository;
+
 import com.gymhub.gymhub.service.AuthService;
 import com.gymhub.gymhub.service.RefreshTokenService;
 
@@ -49,7 +50,7 @@ public class AuthController {
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
     private CookieManager cookieManager;
@@ -132,7 +133,7 @@ public class AuthController {
         }
         // Fetch the user from the database using the username from UserDetails
         String username = userDetails.getUsername();
-        Member member = userRepository.findByUserName(username)
+        Member member = memberRepository.findMemberByUserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Create a response with the user's information
