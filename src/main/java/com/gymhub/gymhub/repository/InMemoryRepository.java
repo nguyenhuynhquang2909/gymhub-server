@@ -838,11 +838,11 @@ public class InMemoryRepository {
     }
 
 
-    public Set<Long> getFollowers(Long memberId) {
+    public Set<Long> getFollowersId(Long memberId) {
         return cache.getFollowersCache().getOrDefault(memberId, ConcurrentHashMap.newKeySet());
     }
 
-    public Set<Long> getFollowing(Long memberId) {
+    public Set<Long> getFollowingId(Long memberId) {
         return cache.getFollowingCache().getOrDefault(memberId, ConcurrentHashMap.newKeySet());
     }
     /**

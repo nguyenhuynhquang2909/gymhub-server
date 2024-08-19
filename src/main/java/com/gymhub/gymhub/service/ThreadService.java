@@ -110,8 +110,8 @@ public class ThreadService {
         return threadResponseDTOList;
     }
 
-    public void createThread(ThreadRequestDTO threadRequestDTO) {
-        Member owner = memberRepository.findById(threadRequestDTO.getAuthorId())
+    public void createThread(Long memberId, ThreadRequestDTO threadRequestDTO) {
+        Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         long id = HelperMethod.generateUniqueIds();
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory().name(), LocalDateTime.now());
@@ -127,17 +127,21 @@ public class ThreadService {
                 reason);
     }
 
-    public ThreadResponseDTO updateThreadTitle(UpdateThreadTitleDTO updateThreadTitleDTO) {
-        Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
-                .orElseThrow(() -> new RuntimeException("Thread not found"));
+    public boolean updateThreadTitle(Long memberId, UpdateThreadTitleDTO updateThreadTitleDTO) {
+        try {
+            Thread thread = threadRepository.findById(updateThreadTitleDTO.getThreadId())
+                    .orElseThrow(() -> new RuntimeException("Thread not found"));
 
-        if (!thread.getOwner().getId().equals(updateThreadTitleDTO.getAuthorId())) {
-            throw new SecurityException("You do not have permission to update this thread");
+            if (!thread.getOwner().getId().equals(memberId)) {
+                return false; // User is not authorized to update this thread
+            }
+
+            thread.setTitle(updateThreadTitleDTO.getTitle());
+            threadRepository.save(thread);
+            return true; // Operation succeeded
+        } catch (Exception e) {
+            return false; // Operation failed due to exception
         }
-
-        thread.setTitle(updateThreadTitleDTO.getTitle());
-        thread = threadRepository.save(thread);
-
-        return threadMapper.toThreadResponseDTO(thread, thread.getOwner().getId());
     }
+
 }

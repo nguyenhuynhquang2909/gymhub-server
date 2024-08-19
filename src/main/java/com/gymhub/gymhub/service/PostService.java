@@ -14,10 +14,10 @@ import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,49 +54,61 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public void createPost(PostRequestDTO postRequestDTO) {
-        long id = HelperMethod.generateUniqueIds();
-        postRequestDTO.setPostId(id);
+    public boolean createPost(PostRequestDTO postRequestDTO) {
+        try {
+            long id = HelperMethod.generateUniqueIds();
+            postRequestDTO.setPostId(id);
 
-        Member author = memberRepository.findById(postRequestDTO.getAuthorId())
-                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-        Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
-                .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+            Member author = memberRepository.findById(postRequestDTO.getAuthorId())
+                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+            Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
+                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
 
-        Post post = PostMapper.postRequestToPost(postRequestDTO, author, thread);
+            Post post = PostMapper.postRequestToPost(postRequestDTO, author, thread);
 
-        // Temporary setup for the post before AI analysis
-        ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        boolean tempResolveStatus = false;
-        String tempReason = "";
+            // Temporary setup for the post before AI analysis
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            boolean tempResolveStatus = false;
+            String tempReason = "";
 
-        // Add post to cache
-        inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, tempResolveStatus, tempReason);
+            // Add post to cache
+            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), postRequestDTO.getAuthorId(), tempToxicEnum, tempResolveStatus, tempReason);
 
-        postRepository.save(post);
+            postRepository.save(post);
+            return true; // Operation succeeded
+        } catch (Exception e) {
+            return false; // Operation failed due to exception
+        }
     }
 
-    public void updatePost(UpdatePostContentDTO updatePostContentDTO) {
-        Post post = postRepository.findById(updatePostContentDTO.getPostId())
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        if (!post.getAuthor().getId().equals(updatePostContentDTO.getAuthorId())) {
-            throw new SecurityException("You do not have permission to update this post");
+    public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
+        try {
+            Post post = postRepository.findById(updatePostContentDTO.getPostId())
+                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+            if (!post.getAuthor().getId().equals(memberId)) {
+                return false; // User is not authorized to update this post
+            }
+            //CALL AI API
+            post.setContent(updatePostContentDTO.getContent());
+
+            Image updatedImage = post.getImage();
+            if (updatedImage == null) {
+                updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                updatedImage.setPost(post);
+                post.setImage(updatedImage);
+            } else {
+                updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+            }
+
+            postRepository.save(post);
+            return true; // Operation succeeded
+        } catch (IllegalArgumentException | SecurityException e) {
+            return false; // Operation failed due to exception
         }
-
-        post.setContent(updatePostContentDTO.getContent());
-
-        Image updatedImage = post.getImage();
-        if (updatedImage == null) {
-            updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
-            updatedImage.setPost(post);
-            post.setImage(updatedImage);
-        } else {
-            updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
-        }
-
-        postRepository.save(post);
     }
+
 
     public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {
         long postId = postRequestDTO.getPostId();

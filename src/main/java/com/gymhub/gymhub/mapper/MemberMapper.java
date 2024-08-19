@@ -4,7 +4,6 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.BannedMemberDTO;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
-import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,8 +29,8 @@ public class MemberMapper {
         dto.setJoinDate(member.getJoinDate());
         dto.setLikeCount(inMemoryRepository.getMemberTotalLikeCountByMemberId(member.getId()));
         dto.setPostCount(inMemoryRepository.getMemberTotalPostCountByMemberId(member.getId()));
-        dto.setFollowerIds(inMemoryRepository.getFollowers(member.getId()));
-        dto.setFollowingIds(inMemoryRepository.getFollowing(member.getId()));
+        dto.setFollowerIds(inMemoryRepository.getFollowersId(member.getId()));
+        dto.setFollowingIds(inMemoryRepository.getFollowingId(member.getId()));
         dto.setFollowerCount(dto.getFollowerIds().size());
         dto.setFollowingCount(dto.getFollowingIds().size());
         dto.setBanUntilDate(inMemoryRepository.getBanUntilDateByMemberId(member.getId()));

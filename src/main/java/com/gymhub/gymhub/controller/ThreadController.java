@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.controller;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.ThreadRepository;
@@ -104,26 +105,25 @@ public class ThreadController {
         }
     }
 
-    @Operation(description = "This operation creates a new thread", tags = "Homepage")
     @PostMapping("/new")
     public ResponseEntity<String> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            if (userDetails == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"); // 401 Unauthorized
-            }
-            String username = userDetails.getUsername();
-            Member member = memberRepository.findMemberByUserName(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            threadRequest.setAuthorId(member.getId());
-            threadService.createThread(threadRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create thread: " + e.getMessage()); // 400 Bad Request
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server error occurred."); // 500 Internal Server Error
-        }
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+
+        //This URL has been blocked from access unless the user is logged in
+        /**
+         if (userDetails == null) {
+         return ResponseEntity.status(401).body("Unauthorized");
+         }
+         String username = userDetails.getUsername();
+         Member member = userRepository.findByUserName(username)
+         .orElseThrow(() -> new RuntimeException("User not found"));
+         **/
+        System.out.println(threadRepository.findAll().size());
+        threadService.createThread(userDetails.getId(), threadRequest);        //New API this line
+        System.out.println(threadRepository.findAll().size());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Operation(description = "This operation reports a thread to the server and returns a boolean indicating success", tags = "Thread Page")
@@ -145,20 +145,22 @@ public class ThreadController {
 
     @Operation(description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)", tags = "Thread Page")
     @PatchMapping("/update/{threadID}")
-    public ResponseEntity<ThreadResponseDTO> updateThreadTitle(
+    public ResponseEntity<Void> updateThreadTitle(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
-            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO) {
-        try {
-            updateThreadTitleDTO.setThreadId(threadID);
-            ThreadResponseDTO responseDTO = threadService.updateThreadTitle(updateThreadTitleDTO);
-            return ResponseEntity.ok(responseDTO); // 200 OK
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+            @RequestBody UpdateThreadTitleDTO updateThreadTitleDTO,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        // Set the threadID in the DTO
+        updateThreadTitleDTO.setThreadId(threadID);
+
+        boolean success = threadService.updateThreadTitle(userDetails.getId(), updateThreadTitleDTO);
+
+        if (success) {
+            return ResponseEntity.ok().build(); // 200 OK if the thread title was updated successfully
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
         }
     }
+
 }
