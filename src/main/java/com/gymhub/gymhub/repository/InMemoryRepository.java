@@ -910,7 +910,13 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the resolveStatus if it exists, otherwise return null
-            return (boolean) threadParameters.getOrDefault("resolveStatus", null);
+            int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", null);
+          if (resolveStatusInt == 1){
+              return  true;
+          }else {
+              return false;
+          }
+
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
             throw new RuntimeException("Thread not found");

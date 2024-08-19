@@ -40,6 +40,9 @@ public class ModService {
     @Autowired
     private ThreadRepository threadRepository;
 
+    @Autowired
+    private ThreadMapper threadMapper;
+
     public void updateModInfo(ModeratorRequestAndResponseDTO modDTO) {
         Moderator existingMod = ModeratorMapper.modDTOToMod(modDTO);
         if (!existingMod.getUserName().startsWith("mod")) {
@@ -72,7 +75,7 @@ public class ModService {
                 .map(threadResponseDTO -> {
                     Thread thread = threadRepository.findById(threadResponseDTO.getId())
                             .orElseThrow(() -> new RuntimeException("Thread not found"));
-                    return ThreadMapper.threadToPendingThreadDTO(thread);
+                    return threadMapper.threadToPendingThreadDTO(thread);
                 })
                 .collect(Collectors.toList());
     }
