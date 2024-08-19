@@ -133,19 +133,18 @@ public class InMemoryRepository {
         return true;
     }
 
-
     public boolean addPostToCache(long postId, long threadId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         // Store the post ID
         cache.getAllPostId().put(postId, postId);
 
-        // Convert toxicStatus to a boolean number (1 for non-toxic, 0 for pending, -1 for toxic)
-        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+        // Handle null toxicStatus by defaulting to non-toxic (1)
+        int toxicStatusBooleanNumber = (toxicStatus == null) ? 1 : HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
 
         // Add the post to the appropriate list based on its toxic status
-        cache.getPostListByThreadIdAndToxicStatus().computeIfAbsent(threadId, k -> new HashMap<>());
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
-        LinkedList<Long> toxicPostList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(toxicStatusBooleanNumber);
-        toxicPostList.add(postId);
+        cache.getPostListByThreadIdAndToxicStatus()
+                .computeIfAbsent(threadId, k -> new HashMap<>())
+                .computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>())
+                .add(postId);
 
         // Initialize the post parameters
         ConcurrentHashMap<String, Object> postParaMap = new ConcurrentHashMap<>();
@@ -171,7 +170,7 @@ public class InMemoryRepository {
         cache.getParametersForAllPosts().put(postId, postParaMap);
 
         // Add the post to the user's list of posts
-        cache.getPostListByUser().get(userId).add(postId);
+        cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
 
         // Check if toxic status is -1 and the total toxic post count exceeds 20
         if (toxicStatusBooleanNumber == -1) {
@@ -192,6 +191,7 @@ public class InMemoryRepository {
     }
 
 
+
     public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
@@ -205,18 +205,24 @@ public class InMemoryRepository {
         threadParaMap.put("CreationDate", System.currentTimeMillis());
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
-        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+
+        // Handle null toxicStatus by defaulting to non-toxic (1)
+        int toxicStatusBooleanNumber = (toxicStatus == null) ? 1 : HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
         threadParaMap.put("Status", toxicStatusBooleanNumber);
 
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
 
         // Manage thread list by category and status
-        cache.getThreadListByCategoryAndToxicStatus().computeIfAbsent((category), k -> new HashMap<>());
-        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
-        cache.getThreadListByCategoryAndToxicStatus().get(category).get(toxicStatusBooleanNumber).add(threadId);
+        cache.getThreadListByCategoryAndToxicStatus()
+                .computeIfAbsent(category, k -> new HashMap<>())
+                .computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>())
+                .add(threadId);
 
-        cache.getThreadListByUser().get(authorId).add(threadId);
+        // Add the thread to the author's list of threads
+        cache.getThreadListByUser()
+                .computeIfAbsent(authorId, k -> new HashSet<>())
+                .add(threadId);
 
         // Initialize post list for this thread by toxic status
         cache.getPostListByThreadIdAndToxicStatus().put(threadId, new HashMap<>());
@@ -828,13 +834,13 @@ public class InMemoryRepository {
     }
 
     // Method to get the toxicStatus of a post by its ID
-    public ToxicStatusEnum getToxicStatusByPostId(Long postId) {
+    public Integer getToxicStatusByPostId(Long postId) {
         // Check if the post exists in the map
         if (cache.getParametersForAllPosts().containsKey(postId)) {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (ToxicStatusEnum) postParameters.getOrDefault("toxicStatus", null);
+            return (Integer) postParameters.getOrDefault("toxicStatus", 1);
         } else {
             // If the post ID is not found, return null or throw an exception based on your requirements
             return null;
@@ -941,13 +947,13 @@ public class InMemoryRepository {
     }
 
 
-    public ToxicStatusEnum getToxicStatusByThreadId(Long threadId) {
+    public Integer getToxicStatusByThreadId(Long threadId) {
         // Check if the thread exists in the map
         if (cache.getParametersForAllThreads().containsKey(threadId)) {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (ToxicStatusEnum) threadParameters.getOrDefault("toxicStatus", null);
+            return (Integer) threadParameters.getOrDefault("toxicStatus", 1);
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
             return null;
