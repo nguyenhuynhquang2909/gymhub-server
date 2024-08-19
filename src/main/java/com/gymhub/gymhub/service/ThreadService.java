@@ -46,7 +46,7 @@ public class ThreadService {
                 Long threadId = (Long) map.get("ThreadID");
                 Thread thread = threadRepository.findById(threadId)
                         .orElseThrow(() -> new RuntimeException("Thread not found"));
-                threadList.add(threadMapper.toThreadResponseDTO(thread, null));
+                threadList.add(threadMapper.toThreadResponseDTO(thread));
             }
             returnCollection.put(key, threadList);
         }
@@ -59,24 +59,31 @@ public class ThreadService {
                         inMemoryRepository.getAllThreadIdsByCategory(category))
                 .map(statusMap -> statusMap.get(1)) // Assuming status 1 for non-toxic threads
                 .orElse(new LinkedList<>());
+        System.out.println("Supplement thread id : " + threadListByCategoryAndStatus);
 
-        List<ThreadResponseDTO> threadResponseDTOs = new ArrayList<>();
-        int count = 0;
-        for (int i = offset; i < threadListByCategoryAndStatus.size() && count < limit; i++) {
-            Long threadId = threadListByCategoryAndStatus.get(i);
-            ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
-            Thread thread = threadRepository.findById(threadId).orElse(null);
+        List<ThreadResponseDTO> returnList =mapThreadListToThreadResponseDTOList(threadListByCategoryAndStatus);
+        System.out.println("List of Thread DTOs " + returnList);
+         return  returnList ;
 
-            if (thread != null) {
-                ThreadResponseDTO dto = threadMapper.toThreadResponseDTO(thread, threadParams.mappingCount());
-                if (dto != null) {
-                    threadResponseDTOs.add(dto);
-                    count++;
-                }
-            }
-        }
-
-        return threadResponseDTOs;
+//        List<ThreadResponseDTO> threadResponseDTOs = new ArrayList<>();
+//        int count = 0;
+//        for (int i = offset; i < threadListByCategoryAndStatus.size() && count < limit; i++) {
+//            Long threadId = threadListByCategoryAndStatus.get(i);
+//            ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
+//            Thread thread = threadRepository.findById(threadId).orElse(null);
+//
+//            if (thread != null) {
+//                ThreadResponseDTO dto = threadMapper.toThreadResponseDTO(thread, threadParams.mappingCount());
+//                System.out.println("DTO : " + dto);
+//                if (dto != null) {
+//                    threadResponseDTOs.add(dto);
+//                    count++;
+//                }
+//            }
+//        }
+//        System.out.println("threadResponseDTOs" + threadResponseDTOs);
+//
+//        return threadResponseDTOs;
     }
 
     public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
@@ -93,7 +100,7 @@ public class ThreadService {
             Thread thread = threadRepository.findById(threadId).orElse(null);
 
             if (thread != null) {
-                ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread, authorId);
+                ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread);
                 threadResponseDTO.setLikeCount((Integer) threadParams.get("LikeCount"));
                 threadResponseDTO.setViewCount((Integer) threadParams.get("ViewCount"));
                 threadResponseDTO.setPostCount((Integer) threadParams.get("PostCount"));
@@ -143,5 +150,28 @@ public class ThreadService {
             return false; // Operation failed due to exception
         }
     }
+
+    public List<Thread> getAllThreadsByListOfIds(List<Long> threadIds) {
+
+        List<Thread> returnList = threadRepository.findAllById(threadIds);
+        System.out.println("List of threads " + returnList );
+        return  returnList;
+
+    }
+
+    public List<ThreadResponseDTO> mapThreadListToThreadResponseDTOList(List<Long> threadIds) {
+        List<Thread> threadList = getAllThreadsByListOfIds(threadIds);
+        List<ThreadResponseDTO> dtoList = new ArrayList<>(); // Create a list to hold the DTOs
+        for (int i = 0; i < threadList.size(); i++) { // Normal for loop
+            Thread thread = threadList.get(i); // Get each thread from the list
+            ThreadResponseDTO threadResponseDTO = ThreadMapper.toThreadResponseDTO(thread); // Map thread to DTO
+            dtoList.add(threadResponseDTO); // Add the DTO to the list
+        }
+        System.out.println("dtos list " + dtoList);
+        return dtoList; // Return the list of DTOs
+    }
+
+
+
 
 }

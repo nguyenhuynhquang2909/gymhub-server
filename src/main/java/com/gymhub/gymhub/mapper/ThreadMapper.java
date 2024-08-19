@@ -17,7 +17,7 @@ public class ThreadMapper {
 
 
 
-    public ThreadResponseDTO toThreadResponseDTO(Thread thread, Long memberId) {
+    public static ThreadResponseDTO toThreadResponseDTO(Thread thread) {
         ThreadResponseDTO dto = new ThreadResponseDTO();
         dto.setId(thread.getId());
 
@@ -28,7 +28,7 @@ public class ThreadMapper {
         dto.setLikeCount(inMemoryRepository.getLikeCountByThreadId(thread.getId()));
         dto.setViewCount(inMemoryRepository.getThreadViewCountByThreadId(thread.getId()));
         dto.setReason(inMemoryRepository.getReasonByThreadId(thread.getId()));
-        dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), memberId));
+        dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), thread.getOwner().getId()));
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByThreadId(thread.getId()));
         dto.setToxicStatus(inMemoryRepository.getToxicStatusByThreadId(thread.getId()));
 
