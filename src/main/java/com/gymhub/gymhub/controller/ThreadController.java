@@ -100,6 +100,7 @@ public class ThreadController {
         try {
             return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id, limit, page)); // 200 OK
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }

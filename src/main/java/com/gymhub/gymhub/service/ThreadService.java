@@ -94,6 +94,11 @@ public class ThreadService {
 
     public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
         Set<Long> threadsCreatedByUser = cache.getThreadListByUser().get(authorId);
+        // Check if threadsCreatedByUser is null
+        if (threadsCreatedByUser == null) {
+            System.err.println("No threads found for user ID: " + authorId);
+            return new ArrayList<>(); // Return an empty list if no threads are found
+        }
         List<Long> paginatedThreadIds = threadsCreatedByUser.stream()
                 .skip(offset)
                 .limit(limit)
@@ -113,8 +118,8 @@ public class ThreadService {
                 threadResponseDTO.setCreationDateTime((Long) threadParams.get("CreationDate"));
                 ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.get("toxicStatus"));
                 threadResponseDTO.setToxicStatus(toxicStatus);
-                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("resolveStatus"));
-                threadResponseDTO.setReason((String) threadParams.get("reason"));
+                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("ResolveStatus"));
+                threadResponseDTO.setReason((String) threadParams.get("Reason"));
 
                 threadResponseDTOList.add(threadResponseDTO);
             }
