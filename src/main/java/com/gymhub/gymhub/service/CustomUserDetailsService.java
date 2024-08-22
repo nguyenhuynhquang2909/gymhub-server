@@ -5,6 +5,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Moderator;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.ModeratorRequestAndResponseDTO;
+import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.repository.ModeratorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import java.util.Optional;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
+    @Autowired
+    private InMemoryRepository inMemoryRepository;
     @Autowired
     private MemberRepository memberRepository;
 
@@ -48,6 +51,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         userDetails.setUsername(member.getUserName());
         userDetails.setPassword(member.getPassword());
         userDetails.setId(member.getId());
+        userDetails.setEnabled(inMemoryRepository.checkBanStatus(member.getId()));
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         userDetails.setAuthorities(authorities);
