@@ -19,4 +19,8 @@ public class CustomUserDetails implements UserDetails {
     private String password;
     private boolean isEnabled;
     private Collection<? extends GrantedAuthority> authorities;
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;  // This should return true if the user is enabled
+    }
 }

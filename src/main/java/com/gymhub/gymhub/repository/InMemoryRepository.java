@@ -587,6 +587,10 @@ public class InMemoryRepository {
         return (banInfo != null) ? banInfo.getBanReason() : null;
     }
 
+    public boolean checkBanStatus(Long userID){
+        return (!cache.getBannedList().containsKey(userID) ||  (cache.getBannedList().containsKey(userID) && findBanExpiration(userID) <= System.currentTimeMillis()));
+    }
+
 
     /**
      * Methods to return map builders for post and threads

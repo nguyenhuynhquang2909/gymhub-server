@@ -71,7 +71,7 @@ public class AuthService {
         cookie.setMaxAge((int) jwtExpiration / 1000);
         response.addCookie(cookie);
         //Create a new session
-        Long userId = tokenProvider.getClaimsFromJwt(jwt).get("UserID", Long.class);
+        Long userId = tokenProvider.getClaimsFromJwt(jwt).get("userId", Long.class);
         UUID sessionID = sessionStorage.createNewSession(userId);
         Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
         sessionCookie.setHttpOnly(true);
