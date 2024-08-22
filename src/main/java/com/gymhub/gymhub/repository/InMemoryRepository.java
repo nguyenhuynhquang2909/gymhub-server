@@ -588,7 +588,7 @@ public class InMemoryRepository {
     }
 
     public boolean checkBanStatus(Long userID){
-        return cache.getBannedList().containsKey(userID) &&  findBanExpiration(userID) > System.currentTimeMillis();
+        return (!cache.getBannedList().containsKey(userID) ||  (cache.getBannedList().containsKey(userID) && findBanExpiration(userID) <= System.currentTimeMillis()));
     }
 
 
