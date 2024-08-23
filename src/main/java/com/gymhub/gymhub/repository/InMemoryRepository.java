@@ -151,7 +151,7 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> postParaMap = new ConcurrentHashMap<>();
         postParaMap.put("LikeCount", 0);
         postParaMap.put("CreationDate", System.currentTimeMillis());
-        postParaMap.put("Status", toxicStatusBooleanNumber);
+        postParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
         postParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         postParaMap.put("Reason", reason);
 
@@ -206,7 +206,7 @@ public class InMemoryRepository {
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
         int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
-        threadParaMap.put("Status", toxicStatusBooleanNumber);
+        threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
 
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
@@ -261,7 +261,7 @@ public class InMemoryRepository {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
 
-            if (threadParaMap.get("Status").equals(1)) {
+            if (threadParaMap.get("ToxicStatus").equals(1)) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
@@ -394,7 +394,7 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
         if (threadParaMap == null) return false;
 
-        threadParaMap.put("Status", newToxicStatusBooleanValue);
+        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         threadParaMap.put("ResolveStatus", 1);
         threadParaMap.put("Reason", reason);
 
@@ -418,8 +418,8 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
         if (threadParaMap == null) return false;
 
-        int oldToxicStatus = (Integer) threadParaMap.get("Status");
-        threadParaMap.put("Status", newToxicStatusBooleanValue);
+        int oldToxicStatus = (Integer) threadParaMap.get("ToxicStatus");
+        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         threadParaMap.put("ResolveStatus", 1);
         threadParaMap.put("Reason", reason);
 
@@ -442,8 +442,8 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
         if (threadParaMap == null) return false;
 
-        int oldToxicStatus = (Integer) threadParaMap.get("Status");
-        threadParaMap.put("Status", newToxicStatusBooleanValue);
+        int oldToxicStatus = (Integer) threadParaMap.get("ToxicStatus");
+        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         threadParaMap.put("ResolveStatus", 1);
         threadParaMap.put("Reason", reason);
 
@@ -467,8 +467,8 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
         if (postParaMap == null) return false;
 
-        int oldToxicStatus = (Integer) postParaMap.get("Status");
-        postParaMap.put("Status", newToxicStatusBooleanValue);
+        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
+        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         postParaMap.put("ResolveStatus", 1);
         postParaMap.put("Reason", reason);
 
@@ -491,8 +491,8 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
         if (postParaMap == null) return false;
 
-        int oldToxicStatus = (Integer) postParaMap.get("Status");
-        postParaMap.put("Status", newToxicStatusBooleanValue);
+        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
+        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         postParaMap.put("ResolveStatus", 1);
         postParaMap.put("Reason", reason);
 
@@ -516,8 +516,8 @@ public class InMemoryRepository {
         ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
         if (postParaMap == null) return false;
 
-        int oldToxicStatus = (Integer) postParaMap.get("Status");
-        postParaMap.put("Status", newToxicStatusBooleanValue);
+        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
+        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
         postParaMap.put("ResolveStatus", 0);
         postParaMap.put("Reason", reason);
 
@@ -811,7 +811,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (String) threadParameters.getOrDefault("reason", null);
+            return (String) threadParameters.getOrDefault("Reason", "");
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
             return null;
@@ -825,7 +825,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the resolveStatus if it exists, otherwise return null
-            return (boolean) postParameters.getOrDefault("resolveStatus", null);
+            return (boolean) postParameters.getOrDefault("ResolveStatus", false);
         } else {
             throw new RuntimeException("postId " + postId + " not found");
         }
@@ -852,7 +852,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the resolveStatus if it exists, otherwise return null
-            return (String) postParameters.getOrDefault("reason", null);
+            return (String) postParameters.getOrDefault("Reason", "");
         } else {
             throw new RuntimeException("postId " + postId + " not found");
         }
@@ -931,7 +931,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the resolveStatus if it exists, otherwise return null
-            int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", null);
+            int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", false);
           if (resolveStatusInt == 1){
               return  true;
           }else {
@@ -945,13 +945,13 @@ public class InMemoryRepository {
     }
 
 
-    public ToxicStatusEnum getToxicStatusByThreadId(Long threadId) {
+    public Integer getToxicStatusByThreadId(Long threadId) {
         // Check if the thread exists in the map
         if (cache.getParametersForAllThreads().containsKey(threadId)) {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (ToxicStatusEnum) threadParameters.getOrDefault("toxicStatus", null);
+            return (Integer) threadParameters.getOrDefault("ToxicStatus", 1);
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
             return null;

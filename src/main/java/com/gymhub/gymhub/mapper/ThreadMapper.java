@@ -1,9 +1,6 @@
 package com.gymhub.gymhub.mapper;
 
-import com.gymhub.gymhub.dto.PendingThreadDTO;
-import com.gymhub.gymhub.dto.ThreadCategoryEnum;
-import com.gymhub.gymhub.dto.ThreadRequestDTO;
-import com.gymhub.gymhub.dto.ThreadResponseDTO;
+import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +27,17 @@ public class ThreadMapper {
         dto.setReason(inMemoryRepository.getReasonByThreadId(thread.getId()));
         dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), thread.getOwner().getId()));
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByThreadId(thread.getId()));
-        dto.setToxicStatus(inMemoryRepository.getToxicStatusByThreadId(thread.getId()));
+
+        Integer toxicStatusBoolean = inMemoryRepository.getToxicStatusByThreadId(thread.getId());
+        if (toxicStatusBoolean == 1) {
+            dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
+
+        } else if (toxicStatusBoolean == 0) {
+            dto.setToxicStatus(ToxicStatusEnum.PENDING);
+        } else if (toxicStatusBoolean == -1) {
+            dto.setToxicStatus(ToxicStatusEnum.TOXIC);
+        }
+
 
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());
