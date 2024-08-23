@@ -37,22 +37,47 @@ public class ThreadService {
     private Cache cache;
 
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
+        // Get the suggested threads cache hashmap from the in-memory repository
         HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
+        System.out.println("10 suggested threads: " + suggestedThreads);
+
+        // Collect all thread IDs from the suggested threads cache into a List
+        List<Long> allThreadIds = new ArrayList<>();
+        for (TreeMap<BigDecimal, HashMap<String, Number>> threadMaps : suggestedThreads.values()) {
+            for (HashMap<String, Number> map : threadMaps.values()) {
+                Long threadId = (Long) map.get("ThreadID");
+                allThreadIds.add(threadId);
+            }
+        }
+
+        // Fetch all threads in a single query
+        List<Thread> threads = threadRepository.findAllByIdsWithOwner(allThreadIds);
+        Map<Long, Thread> threadMap = threads.stream().collect(Collectors.toMap(Thread::getId, thread -> thread));
+
+        // Prepare the return collection
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
 
+        // Process each suggested thread
         for (String key : suggestedThreads.keySet()) {
             List<ThreadResponseDTO> threadList = new LinkedList<>();
             for (HashMap<String, Number> map : suggestedThreads.get(key).values()) {
                 Long threadId = (Long) map.get("ThreadID");
-                Thread thread = threadRepository.findById(threadId)
-                        .orElseThrow(() -> new RuntimeException("Thread not found"));
-                threadList.add(threadMapper.toThreadResponseDTO(thread));
+                Thread thread = threadMap.get(threadId);
+                if (thread != null) {
+                    threadList.add(threadMapper.toThreadResponseDTO(thread));
+                } else {
+                    System.err.println("Thread not found with ID: " + threadId);
+                }
             }
             returnCollection.put(key, threadList);
         }
 
+        System.out.println("Return collection: " + returnCollection);
         return returnCollection;
     }
+
+
+
 
     public List<ThreadResponseDTO> getAllThreadsByCategory(ThreadCategoryEnum category, int limit, int offset) {
         List<Long> listOfThreadIdByCategory =
@@ -69,6 +94,11 @@ public class ThreadService {
 
     public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
         Set<Long> threadsCreatedByUser = cache.getThreadListByUser().get(authorId);
+        // Check if threadsCreatedByUser is null
+        if (threadsCreatedByUser == null) {
+            System.err.println("No threads found for user ID: " + authorId);
+            return new ArrayList<>(); // Return an empty list if no threads are found
+        }
         List<Long> paginatedThreadIds = threadsCreatedByUser.stream()
                 .skip(offset)
                 .limit(limit)
@@ -88,8 +118,8 @@ public class ThreadService {
                 threadResponseDTO.setCreationDateTime((Long) threadParams.get("CreationDate"));
                 ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.get("toxicStatus"));
                 threadResponseDTO.setToxicStatus(toxicStatus);
-                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("resolveStatus"));
-                threadResponseDTO.setReason((String) threadParams.get("reason"));
+                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("ResolveStatus"));
+                threadResponseDTO.setReason((String) threadParams.get("Reason"));
 
                 threadResponseDTOList.add(threadResponseDTO);
             }

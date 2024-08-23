@@ -6,6 +6,7 @@ import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.PendingPostDTO;
 import com.gymhub.gymhub.dto.PostRequestDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
+import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.repository.InMemoryRepository;
@@ -35,7 +36,24 @@ public class PostMapper {
 
         // Set status fields from cache
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByPostId(post.getId()));
-        dto.setToxicStatus(inMemoryRepository.getToxicStatusByPostId(post.getId()));
+        Integer toxicStatusInt = inMemoryRepository.getToxicStatusByPostId(post.getId());
+        if (toxicStatusInt != null) {
+            if (toxicStatusInt == 1){
+                dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
+            }
+            if (toxicStatusInt == 0){
+                dto.setToxicStatus(ToxicStatusEnum.PENDING);
+            }
+            if (toxicStatusInt == -1){
+                dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
+            }
+
+        }else {
+            dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
+        }
+
+
+
         dto.setBeenLiked(inMemoryRepository.checkIfAPostHasBeenLikedByAMemberId(post.getId(), post.getAuthor().getId()));
         dto.setReason(inMemoryRepository.getReasonByPostId(post.getId()));
         // Set additional post-related fields

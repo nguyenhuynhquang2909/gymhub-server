@@ -31,13 +31,14 @@ public class ThreadController {
     @Autowired
     private MemberRepository memberRepository;
 
-    @Operation(description = "This method returns the top 10 threads ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post", tags = "Homepage")
+    @Operation(description = "This method returns all the thread ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post", tags = "Homepage")
     @GetMapping("/suggested")
     public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
         try {
             HashMap<String, List<ThreadResponseDTO>> map = threadService.get10SuggestedThreads();
             return ResponseEntity.ok(map); // 200 OK
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -99,6 +100,7 @@ public class ThreadController {
         try {
             return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id, limit, page)); // 200 OK
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
