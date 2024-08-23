@@ -82,6 +82,14 @@ public class GymhubApplication {
 
 		System.out.println("Cache Initialization: Done");
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
+// Print cache contents to verify
+		System.out.println("Cache Contents:");
+
+		// Assuming you have methods to retrieve cached data
+		System.out.println("Threads in cache: " + cache.getParametersForAllThreads()); // Assuming getParametersForAllThreads() returns a map of threads
+		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
+		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
+		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
 
 
 // Print cache contents to verify

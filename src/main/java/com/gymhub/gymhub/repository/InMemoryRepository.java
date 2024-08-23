@@ -28,14 +28,8 @@ import static com.gymhub.gymhub.helper.HelperMethod.convertStringToxicStatusToBo
 @Repository
 public class InMemoryRepository {
     //
-
-    private Cache cache;
-
-    public InMemoryRepository() {
-        this.cache = new Cache(); // Make sure it's initialized
-    }
-//    @Autowired
-//    Cache cache;
+    @Autowired
+    Cache cache;
     private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
     @Autowired
@@ -139,26 +133,26 @@ public class InMemoryRepository {
         return true;
     }
 
+
     public boolean addPostToCache(long postId, long threadId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         // Store the post ID
         cache.getAllPostId().put(postId, postId);
 
-        // Handle null toxicStatus by defaulting to non-toxic (1)
-
-        int toxicStatusBooleanNumber = (toxicStatus == null) ? 1 : HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+        // Convert toxicStatus to a boolean number (1 for non-toxic, 0 for pending, -1 for toxic)
+        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
 
         // Add the post to the appropriate list based on its toxic status
-        cache.getPostListByThreadIdAndToxicStatus()
-                .computeIfAbsent(threadId, k -> new HashMap<>())
-                .computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>())
-                .add(postId);
+        cache.getPostListByThreadIdAndToxicStatus().computeIfAbsent(threadId, k -> new HashMap<>());
+        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
+        LinkedList<Long> toxicPostList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(toxicStatusBooleanNumber);
+        toxicPostList.add(postId);
 
         // Initialize the post parameters
         ConcurrentHashMap<String, Object> postParaMap = new ConcurrentHashMap<>();
         postParaMap.put("LikeCount", 0);
         postParaMap.put("CreationDate", System.currentTimeMillis());
         postParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
-        postParaMap.put("ResolveStatus", resolveStatus);
+        postParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         postParaMap.put("Reason", reason);
 
         // Update the thread's latest post creation date if the post is non-toxic
@@ -177,7 +171,7 @@ public class InMemoryRepository {
         cache.getParametersForAllPosts().put(postId, postParaMap);
 
         // Add the post to the user's list of posts
-        cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
+        cache.getPostListByUser().get(userId).add(postId);
 
         // Check if toxic status is -1 and the total toxic post count exceeds 20
         if (toxicStatusBooleanNumber == -1) {
@@ -198,7 +192,6 @@ public class InMemoryRepository {
     }
 
 
-
     public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
@@ -212,24 +205,18 @@ public class InMemoryRepository {
         threadParaMap.put("CreationDate", System.currentTimeMillis());
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
-
-        // Handle null toxicStatus by defaulting to non-toxic (1)
-        int toxicStatusBooleanNumber = (toxicStatus == null) ? 1 : HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
 
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
 
         // Manage thread list by category and status
-        cache.getThreadListByCategoryAndToxicStatus()
-                .computeIfAbsent(category, k -> new HashMap<>())
-                .computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>())
-                .add(threadId);
+        cache.getThreadListByCategoryAndToxicStatus().computeIfAbsent((category), k -> new HashMap<>());
+        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
+        cache.getThreadListByCategoryAndToxicStatus().get(category).get(toxicStatusBooleanNumber).add(threadId);
 
-        // Add the thread to the author's list of threads
-        cache.getThreadListByUser()
-                .computeIfAbsent(authorId, k -> new HashSet<>())
-                .add(threadId);
+        cache.getThreadListByUser().get(authorId).add(threadId);
 
         // Initialize post list for this thread by toxic status
         cache.getPostListByThreadIdAndToxicStatus().put(threadId, new HashMap<>());
@@ -256,7 +243,6 @@ public class InMemoryRepository {
     }
 
 
-
     /**
      * Methods to GET domain entities from cache
      */
@@ -275,43 +261,20 @@ public class InMemoryRepository {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
 
-            // Handle ToxicStatus
-            Object status = threadParaMap.get("ToxicStatus");
-            if (status == null) {
-                status = 1; // Default to non-toxic
-                threadParaMap.put("ToxicStatus", status);
-            }
-
-            if (status.equals(1)) {
+            if (threadParaMap.get("ToxicStatus").equals(1)) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
                 returnCollectionByAlgorithm.put(score, returnedMap);
 
-                // Handle PostCreationDate
-                Object postCreationDateObj = threadParaMap.get("PostCreationDate");
-                System.out.println(postCreationDateObj);
-                if (postCreationDateObj != null) {
-                    try {
-                        Long postCreationDateLong = (Long) postCreationDateObj;
-                        BigDecimal postCreationDate = BigDecimal.valueOf(postCreationDateLong.longValue());
-                        postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
-                        returnCollectionByPostCreation.put(postCreationDate, returnedMap);
-                    } catch (ClassCastException e) {
-                        System.err.println("PostCreationDate is not a Long value for thread ID " + threadId);
-                    }
-                } else {
-                    System.err.println("PostCreationDate is null for thread ID " + threadId);
-                }
-            } else {
-                System.err.println("Skipping thread ID " + threadId + " due to null status or status not being 1.");
+                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
+                postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
+                returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
         }
 
         return returnCollection;
     }
-
-
 
     /**
      * Returns all thread IDs for the specified category.
@@ -848,7 +811,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (String) threadParameters.getOrDefault("Reason", null);
+            return (String) threadParameters.getOrDefault("Reason", "");
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
             return null;
@@ -869,13 +832,13 @@ public class InMemoryRepository {
     }
 
     // Method to get the toxicStatus of a post by its ID
-    public Integer getToxicStatusByPostId(Long postId) {
+    public ToxicStatusEnum getToxicStatusByPostId(Long postId) {
         // Check if the post exists in the map
         if (cache.getParametersForAllPosts().containsKey(postId)) {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the toxicStatus if it exists, otherwise return null
-            return (Integer) postParameters.getOrDefault("ToxicStatus", 1);
+            return (ToxicStatusEnum) postParameters.getOrDefault("toxicStatus", null);
         } else {
             // If the post ID is not found, return null or throw an exception based on your requirements
             return null;
@@ -889,7 +852,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the resolveStatus if it exists, otherwise return null
-            return (String) postParameters.getOrDefault("Reason", null);
+            return (String) postParameters.getOrDefault("Reason", "");
         } else {
             throw new RuntimeException("postId " + postId + " not found");
         }
@@ -968,7 +931,7 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the thread
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the resolveStatus if it exists, otherwise return null
-            int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", null);
+            int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", false);
           if (resolveStatusInt == 1){
               return  true;
           }else {

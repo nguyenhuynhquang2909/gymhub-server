@@ -27,23 +27,16 @@ public class ThreadMapper {
         dto.setReason(inMemoryRepository.getReasonByThreadId(thread.getId()));
         dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), thread.getOwner().getId()));
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByThreadId(thread.getId()));
-        Integer toxicStatusInteger = inMemoryRepository.getToxicStatusByThreadId(thread.getId());
-        if (toxicStatusInteger != null) {
-            if (toxicStatusInteger == 1) {
-                dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
 
-            }
-            if (toxicStatusInteger == 0) {
-                dto.setToxicStatus(ToxicStatusEnum.PENDING);
-            }
-            if (toxicStatusInteger == -1) {
-                dto.setToxicStatus(ToxicStatusEnum.TOXIC);
-            }
-        }
-        else {
+        Integer toxicStatusBoolean = inMemoryRepository.getToxicStatusByThreadId(thread.getId());
+        if (toxicStatusBoolean == 1) {
             dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
-        }
 
+        } else if (toxicStatusBoolean == 0) {
+            dto.setToxicStatus(ToxicStatusEnum.PENDING);
+        } else if (toxicStatusBoolean == -1) {
+            dto.setToxicStatus(ToxicStatusEnum.TOXIC);
+        }
 
 
         dto.setAuthorName(thread.getOwner().getUserName());
