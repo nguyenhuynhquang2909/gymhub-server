@@ -4,8 +4,9 @@ public class AddUserAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private Long userId;
 
-    public AddUserAction(Long actionId, long userId) {
-        super(actionId, "AddUser");
+    public AddUserAction(long userId) {
+        super();
+        this.actionType = "Add Users";
         this.userId = userId;
     }
 
