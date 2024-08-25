@@ -51,41 +51,46 @@ public class PostController {
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
-        // Check if the user is logged in by getting the JWT token from the request
-        String token = cookieManager.getCookieValue("AuthenticationToken");
-        UUID sessionID;
+        try {
+            // Check if the user is logged in by getting the JWT token from the request
+            String token = cookieManager.getCookieValue("AuthenticationToken");
+            UUID sessionID;
 
-        if (token == null) { // User is not logged in
-            if (cookieManager.getCookieValue("SessionID") == null) { // No existing session ID
-                sessionID = sessionStorage.createNewSessionWhenViewThread();
-                Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
-                sessionCookie.setHttpOnly(true);
-                sessionCookie.setSecure(true);
-                sessionCookie.setPath("/");
-                sessionCookie.setMaxAge(60 * 60);
-                response.addCookie(sessionCookie);
-                sessionStorage.addThreadToThreadView(sessionID, id);
-            } else { // Existing session
-                sessionID = UUID.fromString(cookieManager.getCookieValue("SessionID"));
-                sessionStorage.addThreadToThreadView(sessionID, id);
+            if (token == null) { // User is not logged in
+                if (cookieManager.getCookieValue("SessionID") == null) { // No existing session ID
+                    sessionID = sessionStorage.createNewSessionWhenViewThread();
+                    Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
+                    sessionCookie.setHttpOnly(true);
+                    sessionCookie.setSecure(true);
+                    sessionCookie.setPath("/");
+                    sessionCookie.setMaxAge(60 * 60);
+                    response.addCookie(sessionCookie);
+                    sessionStorage.addThreadToThreadView(sessionID, id);
+                } else { // Existing session
+                    sessionID = UUID.fromString(cookieManager.getCookieValue("SessionID"));
+                    sessionStorage.addThreadToThreadView(sessionID, id);
+                }
+                return postService.getPostsByThreadId(id);
+            } else { // User is logged in
+                Long userID = jwtTokenProvider.getClaimsFromJwt(token).get("userID", Long.class);
+                if (cookieManager.getCookieValue("SessionID") == null) { // No session ID in cookie
+                    sessionID = sessionStorage.createNewSession(userID);
+                    Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
+                    sessionCookie.setHttpOnly(true);
+                    sessionCookie.setSecure(true);
+                    sessionCookie.setPath("/");
+                    sessionCookie.setMaxAge(60 * 60);
+                    response.addCookie(sessionCookie);
+                    sessionStorage.addThreadToThreadView(sessionID, id);
+                } else {
+                    sessionID = UUID.fromString(cookieManager.getCookieValue("SessionID"));
+                    sessionStorage.addThreadToThreadView(sessionID, id);
+                }
+                return postService.getPostsByThreadId(id);
             }
-            return postService.getPostsByThreadId(id);
-        } else { // User is logged in
-            Long userID = jwtTokenProvider.getClaimsFromJwt(token).get("userID", Long.class);
-            if (cookieManager.getCookieValue("SessionID") == null) { // No session ID in cookie
-                sessionID = sessionStorage.createNewSession(userID);
-                Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
-                sessionCookie.setHttpOnly(true);
-                sessionCookie.setSecure(true);
-                sessionCookie.setPath("/");
-                sessionCookie.setMaxAge(60 * 60);
-                response.addCookie(sessionCookie);
-                sessionStorage.addThreadToThreadView(sessionID, id);
-            } else {
-                sessionID = UUID.fromString(cookieManager.getCookieValue("SessionID"));
-                sessionStorage.addThreadToThreadView(sessionID, id);
-            }
-            return postService.getPostsByThreadId(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Return null or handle as per your application's needs
         }
     }
 
@@ -98,7 +103,12 @@ public class PostController {
             @Parameter(description = "The next page to be fetched", required = false)
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
-        return postService.getPostsByUserId(userDetails.getId());
+        try {
+            return postService.getPostsByUserId(userDetails.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Return null or handle as per your application's needs
+        }
     }
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
@@ -109,18 +119,19 @@ public class PostController {
             @PathVariable Long threadId,
             @RequestBody PostRequestDTO post) {
 
+        try {
+            boolean success = postService.createPost(userDetails.getId(), post);
 
-
-        boolean success = postService.createPost(userDetails.getId(),post);
-        //API AI
-
-        if (success) {
-            return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if there was an error
+            if (success) {
+                return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if there was an error
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     @Operation(description = "This operation increments or decrements the like count of a post", tags = "Thread Page")
     @PatchMapping("/like/post-{postId}")
@@ -130,7 +141,13 @@ public class PostController {
             @PathVariable Long postId,
             @RequestBody IncreDecreDTO body) {
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            // Existing code or logic here
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
@@ -141,15 +158,19 @@ public class PostController {
             @PathVariable Long id,
             @RequestBody UpdatePostContentDTO body) {
 
-        boolean success = postService.updatePost(userDetails.getId(), body);
+        try {
+            boolean success = postService.updatePost(userDetails.getId(), body);
 
-        if (success) {
-            return ResponseEntity.ok().build(); // 200 OK if the update was successful
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
+            if (success) {
+                return ResponseEntity.ok().build(); // 200 OK if the update was successful
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     @Operation(description = "This operation reports a post to the server and returns a boolean indicating success", tags = "Thread Page")
     @PatchMapping("/report")
@@ -165,6 +186,7 @@ public class PostController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to report post."); // 400 Bad Request
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to report post due to server error."); // 500 Internal Server Error
         }
     }

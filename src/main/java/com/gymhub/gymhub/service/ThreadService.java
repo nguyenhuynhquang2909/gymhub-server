@@ -34,7 +34,7 @@ public class ThreadService {
     private ThreadMapper threadMapper;
 
     @Autowired
-    private Cache cache;
+    private Cache cache = new Cache();
 
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
@@ -92,8 +92,10 @@ public class ThreadService {
 
     }
 
-    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
+    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset)   {
+        System.out.println("type of author id : " + authorId.getClass().getSimpleName());
         Set<Long> threadsCreatedByUser = cache.getThreadListByUser().get(authorId);
+
         // Check if threadsCreatedByUser is null
         if (threadsCreatedByUser == null) {
             System.err.println("No threads found for user ID: " + authorId);
@@ -107,7 +109,10 @@ public class ThreadService {
         List<ThreadResponseDTO> threadResponseDTOList = new ArrayList<>();
 
         for (Long threadId : paginatedThreadIds) {
+            System.out.println("Type of threadId : " + threadId.getClass().getSimpleName());
+            System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
             ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
+
             Thread thread = threadRepository.findById(threadId).orElse(null);
 
             if (thread != null) {

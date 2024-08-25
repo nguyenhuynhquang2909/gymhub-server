@@ -29,7 +29,7 @@ import static com.gymhub.gymhub.helper.HelperMethod.convertStringToxicStatusToBo
 public class InMemoryRepository {
     //
     @Autowired
-    Cache cache;
+    private  Cache cache = new Cache();
     private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
     private static long actionIdCounter = 0;
     @Autowired
@@ -262,6 +262,7 @@ public class InMemoryRepository {
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
 
             if (threadParaMap.get("ToxicStatus").equals(1)) {
+                System.out.println("Found not toxic thread ! ");
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
@@ -272,7 +273,7 @@ public class InMemoryRepository {
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
         }
-
+        System.out.println("Return collection : " + returnCollection);
         return returnCollection;
     }
 

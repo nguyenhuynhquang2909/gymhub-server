@@ -33,12 +33,12 @@ public class ThreadController {
 
     @Operation(description = "This method returns all the thread ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post", tags = "Homepage")
     @GetMapping("/suggested")
-    public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getTrendingThread() {
+    public ResponseEntity<HashMap<String, List<ThreadResponseDTO>>> getSuggestedThreads() {
         try {
             HashMap<String, List<ThreadResponseDTO>> map = threadService.get10SuggestedThreads();
             return ResponseEntity.ok(map); // 200 OK
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -54,6 +54,7 @@ public class ThreadController {
             int offset = page * limit;
             return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.FLEXING, limit, offset)); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -69,6 +70,7 @@ public class ThreadController {
             int offset = page * limit;
             return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.ADVICE, limit, offset)); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -84,6 +86,7 @@ public class ThreadController {
             int offset = page * limit;
             return ResponseEntity.ok(threadService.getAllThreadsByCategory(ThreadCategoryEnum.SUPPLEMENT, limit, offset)); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -100,7 +103,7 @@ public class ThreadController {
         try {
             return ResponseEntity.ok(threadService.getAllThreadByOwnerId(id, limit, page)); // 200 OK
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+           e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -109,21 +112,27 @@ public class ThreadController {
     public ResponseEntity<String> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails
-    ){
+    ) {
+        try {
+            // Log the initial size of the thread repository
+            System.out.println("Before creating thread: Total threads = " + threadRepository.findAll().size());
 
-        //This URL has been blocked from access unless the user is logged in
-        /**
-         if (userDetails == null) {
-         return ResponseEntity.status(401).body("Unauthorized");
-         }
-         String username = userDetails.getUsername();
-         Member member = userRepository.findByUserName(username)
-         .orElseThrow(() -> new RuntimeException("User not found"));
-         **/
-        System.out.println(threadRepository.findAll().size());
-        threadService.createThread(userDetails.getId(), threadRequest);        //New API this line
-        System.out.println(threadRepository.findAll().size());
-        return new ResponseEntity<>(HttpStatus.OK);
+            // Create a new thread
+            threadService.createThread(userDetails.getId(), threadRequest);
+
+            // Log the size of the thread repository after creating the new thread
+            System.out.println("After creating thread: Total threads = " + threadRepository.findAll().size());
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (Exception e) {
+            // Print the stack trace for debugging
+            e.printStackTrace();
+
+            // Return a generic internal server error response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while creating the thread. Please try again later.");
+        }
     }
 
     @Operation(description = "This operation reports a thread to the server and returns a boolean indicating success", tags = "Thread Page")
@@ -139,6 +148,7 @@ public class ThreadController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to report thread."); // 400 Bad Request
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to report thread due to server error."); // 500 Internal Server Error
         }
     }
@@ -151,16 +161,25 @@ public class ThreadController {
             @RequestBody ThreadRequestDTO threadRequestDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // Set the threadID in the DTO
-        threadRequestDTO.setId(threadID);
+        try {
+            // Set the threadID in the DTO
+            threadRequestDTO.setId(threadID);
 
-        boolean success = threadService.updateThread(userDetails.getId(), threadRequestDTO);
+            boolean success = threadService.updateThread(userDetails.getId(), threadRequestDTO);
 
-        if (success) {
-            return ResponseEntity.ok().build(); // 200 OK if the thread title was updated successfully
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
+            if (success) {
+                return ResponseEntity.ok().build(); // 200 OK if the thread title was updated successfully
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
+            }
+        } catch (Exception e) {
+            // Print out the error message to the console
+            e.printStackTrace();
+
+            // Return a generic internal server error response
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
+
 
 }
