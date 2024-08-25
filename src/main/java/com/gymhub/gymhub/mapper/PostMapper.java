@@ -36,7 +36,7 @@ public class PostMapper {
 
         // Set status fields from cache
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByPostId(post.getId()));
-        Integer toxicStatusInt = inMemoryRepository.getToxicStatusByPostId(post.getId());
+        Integer toxicStatusInt = inMemoryRepository.getToxicStatusByPostId(post.getId()).ordinal();
         if (toxicStatusInt != null) {
             if (toxicStatusInt == 1){
                 dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
