@@ -137,7 +137,7 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addPostToCache(long postId, long threadId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+    public boolean addPostToCache(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         // Store the post ID
         cache.getAllPostId().put(postId, postId);
 
@@ -191,7 +191,9 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime,
+                                    ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason
+    ) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
 
@@ -222,9 +224,6 @@ public class InMemoryRepository {
             toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
         }
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
-
-        System.out.println("Thread Para Map: " + threadParaMap);
-
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
 
@@ -276,10 +275,9 @@ public class InMemoryRepository {
 
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
+            System.out.println("Thread ID: " + threadId);
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
-
-            if (threadParaMap.get("ToxicStatus").equals(1)) {
-                System.out.println("Found not toxic thread ! ");
+            if ((int) threadParaMap.get("ToxicStatus") == 1) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
@@ -683,7 +681,6 @@ public class InMemoryRepository {
         System.out.println("likeCount " + threadParaMap.get("LikeCount"));
         // Get like, post, and view counts from the map
         int likeNum = (int) threadParaMap.get("LikeCount");
-
         int postNum = (int)  threadParaMap.get("PostCount");
         int viewNum = (int)  threadParaMap.get("ViewCount");
 
