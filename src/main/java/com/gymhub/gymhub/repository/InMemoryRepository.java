@@ -285,10 +285,12 @@ public class InMemoryRepository {
             // Check if "ToxicStatus" is present and not null
             Integer toxicStatus = (Integer) threadParaMap.get("ToxicStatus");
             if (toxicStatus == null) {
+                System.out.println("Thread ID with null toxic status" + threadId);
                 toxicStatus = 1; // Default to 1 if null
                 threadParaMap.put("ToxicStatus", toxicStatus); // Update the map
                 System.out.println("ToxicStatus was null, set to 1 for threadId: " + threadId);
             }
+            System.out.println("ToxicStatus + " + threadParaMap.get("ToxicStatus") );
             if ( threadParaMap.get("ToxicStatus").equals (1)) {
                 System.out.println("Found not toxic thread ! ");
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));

@@ -88,14 +88,11 @@ public class GymhubApplication {
 
 
 
-		// Assuming you have methods to retrieve cached data
-		System.out.println("Thread list with user ID "+ cache.getThreadListByUser());
-		Long userId = 1L; // Replace with the actual user ID you want to query
-		System.out.println("Thread list with user ID = 1 "+ cache.getThreadListByUser().get(userId));
-//		System.out.println("Threads in cache: " + cache.getParametersForAllThreads()); // Assuming getParametersForAllThreads() returns a map of threads
-//		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
-//		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-//		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
+
+		System.out.println("Threads in cache: " + cache.getParametersForAllThreads()); //251
+		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
+		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus()); //251 exist
+		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
 
 	}
 
