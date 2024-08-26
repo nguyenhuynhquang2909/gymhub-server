@@ -148,7 +148,7 @@ public class ThreadController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to report thread."); // 400 Bad Request
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+           e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to report thread due to server error."); // 500 Internal Server Error
         }
     }
