@@ -137,7 +137,7 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addPostToCache(long postId, long threadId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+    public boolean addPostToCache(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         // Store the post ID
         cache.getAllPostId().put(postId, postId);
 
@@ -161,12 +161,8 @@ public class InMemoryRepository {
         // Update the thread's latest post creation date if the post is non-toxic
         if (toxicStatusBooleanNumber == 1) {
             // Ensure threadParaMap is not null
-            ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-            if (threadParaMap == null) {
-                // Initialize threadParaMap if it doesn't exist
-                threadParaMap = new ConcurrentHashMap<>();
-                cache.getParametersForAllThreads().put(threadId, threadParaMap);
-            }
+            ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().computeIfAbsent(threadId, k -> new ConcurrentHashMap<>());
+            // Initialize threadParaMap if it doesn't exist
             threadParaMap.put("PostCreationDate", System.currentTimeMillis());
         }
 
@@ -195,7 +191,9 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime,
+                                    ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason
+    ) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
 
@@ -226,9 +224,6 @@ public class InMemoryRepository {
             toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
         }
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
-
-        System.out.println("Thread Para Map: " + threadParaMap);
-
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
 
@@ -280,25 +275,15 @@ public class InMemoryRepository {
 
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
+            System.out.println("Thread ID: " + threadId);
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
-
-            // Check if "ToxicStatus" is present and not null
-            Integer toxicStatus = (Integer) threadParaMap.get("ToxicStatus");
-            if (toxicStatus == null) {
-                System.out.println("Thread ID with null toxic status" + threadId);
-                toxicStatus = 1; // Default to 1 if null
-                threadParaMap.put("ToxicStatus", toxicStatus); // Update the map
-                System.out.println("ToxicStatus was null, set to 1 for threadId: " + threadId);
-            }
-            System.out.println("ToxicStatus + " + threadParaMap.get("ToxicStatus") );
-            if ( threadParaMap.get("ToxicStatus").equals (1)) {
-                System.out.println("Found not toxic thread ! ");
+            if ((int) threadParaMap.get("ToxicStatus") == 1) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
                 returnCollectionByAlgorithm.put(score, returnedMap);
 
-                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
+                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")));
                 postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
@@ -696,7 +681,6 @@ public class InMemoryRepository {
         System.out.println("likeCount " + threadParaMap.get("LikeCount"));
         // Get like, post, and view counts from the map
         int likeNum = (int) threadParaMap.get("LikeCount");
-
         int postNum = (int)  threadParaMap.get("PostCount");
         int viewNum = (int)  threadParaMap.get("ViewCount");
 

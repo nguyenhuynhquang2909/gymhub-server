@@ -141,7 +141,7 @@ public class ThreadService {
         thread.setOwner(owner);
 
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), threadRequestDTO.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
+        inMemoryRepository.addThreadToCache(id, threadRequestDTO.getCategory(), threadRequestDTO.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
         threadRepository.save(thread);
     }
 
