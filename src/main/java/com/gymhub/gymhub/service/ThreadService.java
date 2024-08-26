@@ -35,7 +35,7 @@ public class ThreadService {
     private ThreadMapper threadMapper;
 
     @Autowired
-    private Cache cache;
+    private Cache cache = new Cache();
 
     @Autowired
     private ThreadSequence threadSequence;
@@ -96,8 +96,10 @@ public class ThreadService {
 
     }
 
-    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset) {
+    public List<ThreadResponseDTO> getAllThreadByOwnerId(Long authorId, int limit, int offset)   {
+        System.out.println("type of author id : " + authorId.getClass().getSimpleName());
         Set<Long> threadsCreatedByUser = cache.getThreadListByUser().get(authorId);
+
         // Check if threadsCreatedByUser is null
         if (threadsCreatedByUser == null) {
             System.err.println("No threads found for user ID: " + authorId);
@@ -111,7 +113,10 @@ public class ThreadService {
         List<ThreadResponseDTO> threadResponseDTOList = new ArrayList<>();
 
         for (Long threadId : paginatedThreadIds) {
+            System.out.println("Type of threadId : " + threadId.getClass().getSimpleName());
+            System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
             ConcurrentHashMap<String, Object> threadParams = cache.getParametersForAllThreads().get(threadId);
+
             Thread thread = threadRepository.findById(threadId).orElse(null);
 
             if (thread != null) {
@@ -140,7 +145,7 @@ public class ThreadService {
         thread.setOwner(owner);
 
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), tempToxicEnum, owner.getId(), false, "");
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
         threadRepository.save(thread);
     }
 

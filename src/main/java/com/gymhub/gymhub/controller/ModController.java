@@ -35,7 +35,6 @@ public class ModController {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-
     @Operation(description = "This operation returns mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
@@ -45,6 +44,7 @@ public class ModController {
             ModeratorRequestAndResponseDTO response = (ModeratorRequestAndResponseDTO) customUserDetailsService.loadUserByUsername(modUsername);
             return ResponseEntity.ok(response); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
         }
     }
@@ -57,7 +57,11 @@ public class ModController {
             modService.updateModInfo(modDTO);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
 
@@ -77,11 +81,10 @@ public class ModController {
             ModDashboardTablesResponseDTO response = new ModDashboardTablesResponseDTO(pendingPosts, pendingThreads, bannedMembers);
             return ResponseEntity.ok(response); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
-
-
 
     @Operation(description = "This operation helps mod to decide whether a pending post is toxic or not",
             tags = "Mod Dashboard Page")
@@ -96,6 +99,7 @@ public class ModController {
             modService.resolveAPendingPost(postId, threadId, newToxicStatus, reason);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -113,6 +117,7 @@ public class ModController {
             modService.resolveAPendingThread(threadId, category, newToxicStatus, reason);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -127,6 +132,7 @@ public class ModController {
             modService.banMember(userId, banUntilDate, reason);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -138,6 +144,7 @@ public class ModController {
             modService.unbanMember(userId);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -154,6 +161,7 @@ public class ModController {
             modService.banAPostWhileSurfing(postId, threadId, newToxicStatus, reason);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
@@ -170,6 +178,7 @@ public class ModController {
             modService.banAThreadWhileSurfing(threadId, category, newToxicStatus, reason);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }

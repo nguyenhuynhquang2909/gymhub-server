@@ -32,6 +32,7 @@ public class MemberController {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
@@ -42,7 +43,11 @@ public class MemberController {
             MemberResponseDTO memberResponseDTO = (MemberResponseDTO) customUserDetailsService.loadUserByUsername(id.toString());
             return ResponseEntity.ok(memberResponseDTO); // 200 OK
         } catch (UsernameNotFoundException e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
 
@@ -52,10 +57,14 @@ public class MemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody MemberRequestDTO memberRequestDTO) {
         try {
-            memberService.updateMemberInfo(customUserDetails.getId(),   memberRequestDTO);
+            memberService.updateMemberInfo(customUserDetails.getId(), memberRequestDTO);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
 
@@ -64,12 +73,17 @@ public class MemberController {
     public ResponseEntity<String> followMember(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable Long followingId) {
-        if (customUserDetails == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+        try {
+            if (customUserDetails == null) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            Long followerId = memberService.getMemberIdFromUserName(customUserDetails.getUsername());
+            memberService.followMember(followerId, followingId);
+            return ResponseEntity.ok("Member followed successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to follow member due to server error.");
         }
-        Long followerId = memberService.getMemberIdFromUserName( customUserDetails.getUsername());
-        memberService.followMember(followerId, followingId);
-        return ResponseEntity.ok("Member followed successfully");
     }
 
     @Operation(description = "This operation allows a member to unfollow another member", tags = "Member Actions")
@@ -77,55 +91,80 @@ public class MemberController {
     public ResponseEntity<String> unfollowMember(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long followingId) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+            Long followerId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+            memberService.unfollowMember(followerId, followingId);
+            return ResponseEntity.ok("Member unfollowed successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to unfollow member due to server error.");
         }
-        Long followerId = memberService.getMemberIdFromUserName(userDetails.getUsername());
-        memberService.unfollowMember(followerId, followingId);
-        return ResponseEntity.ok("Member unfollowed successfully");
     }
 
     @Operation(description = "This operation returns the number of followers", tags = "Member Actions")
     @GetMapping("/followers/count")
     public ResponseEntity<Integer> getFollowersCount(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+            Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+            int followerCount = memberService.getFollowersNumber(memberId);
+            return ResponseEntity.ok(followerCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
-        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
-        int followerCount = memberService.getFollowersNumber(memberId);
-        return ResponseEntity.ok(followerCount);
     }
 
     @Operation(description = "This operation returns the number of members the user is following", tags = "Member Actions")
     @GetMapping("/following/count")
     public ResponseEntity<Integer> getFollowingCount(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+            Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+            int followingCount = memberService.getFollowingNumber(memberId);
+            return ResponseEntity.ok(followingCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
-        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
-        int followingCount = memberService.getFollowingNumber(memberId);
-        return ResponseEntity.ok(followingCount);
     }
 
     @Operation(description = "This operation returns the list of followers", tags = "Member Actions")
     @GetMapping("/followers")
     public ResponseEntity<Set<Long>> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+            Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+            Set<Long> followers = inMemoryRepository.getFollowersId(memberService.getMemberIdFromUserName(userDetails.getUsername()));
+            return ResponseEntity.ok(followers);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
-        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
-        Set<Long> followers = inMemoryRepository.getFollowersId(memberService.getMemberIdFromUserName(userDetails.getUsername()));
-        return ResponseEntity.ok(followers);
     }
 
     @Operation(description = "This operation returns the list of members the user is following", tags = "Member Actions")
     @GetMapping("/following")
     public ResponseEntity<Set<Long>> getFollowing(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(401).build();
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).build();
+            }
+            Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
+            Set<Long> following = memberService.getFollowingId(memberId);
+            return ResponseEntity.ok(following);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
-        Long memberId = memberService.getMemberIdFromUserName(userDetails.getUsername());
-        Set<Long> following = memberService.getFollowingId(memberId);
-        return ResponseEntity.ok(following);
     }
 }
