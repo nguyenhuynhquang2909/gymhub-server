@@ -120,7 +120,7 @@ public class PostService {
         boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, ToxicStatusEnum.PENDING, reason);
 
         ChangePostStatusAction action = new ChangePostStatusAction(
-                ++actionIdCounter, "changePostToxicStatusForMemberReporting", postId, threadId, ToxicStatusEnum.PENDING, false, reason);
+                postId, threadId, ToxicStatusEnum.PENDING, false, reason);
         inMemoryRepository.logAction(action);
 
         return result;
