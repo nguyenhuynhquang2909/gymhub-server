@@ -50,16 +50,17 @@ public class MemberMapper {
         return dto;
     }
 
+    /**
     public  Member memberRequestToMember(MemberRequestDTO memberRequestDTO, String encodedPassword) {
         byte[] avatar = Base64.getDecoder().decode(memberRequestDTO.getStringAvatar());
         return new Member(
-
                 memberRequestDTO.getUserName(),
                 encodedPassword, // Encode the password before setting it
                 memberRequestDTO.getEmail(),
                 (java.sql.Date) new Date(System.currentTimeMillis())
         );
     }
+     **/
     /**
      * Maps a Member entity and related ban information to a BannedMemberDTO.
      *
