@@ -7,6 +7,7 @@ import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.helper.HelperMethod;
+import com.gymhub.gymhub.helper.PostSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
@@ -38,7 +39,7 @@ public class PostService {
     private PostMapper postMapper;
 
     @Autowired
-    private Cache cache;
+    private PostSequence postSequence;
 
     private long actionIdCounter = 0;
 
@@ -58,7 +59,7 @@ public class PostService {
 
     public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
         try {
-            long id = HelperMethod.generateUniqueIds();
+            long id = postSequence.getUserId();
             postRequestDTO.setPostId(id);
 
             Member author = memberRepository.findById(memberID)
@@ -116,7 +117,7 @@ public class PostService {
         long postId = postRequestDTO.getPostId();
         long threadId = postRequestDTO.getThreadId();
 
-        boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, reason);
+        boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, ToxicStatusEnum.PENDING, reason);
 
         ChangePostStatusAction action = new ChangePostStatusAction(
                 ++actionIdCounter, "changePostToxicStatusForMemberReporting", postId, threadId, ToxicStatusEnum.PENDING, false, reason);

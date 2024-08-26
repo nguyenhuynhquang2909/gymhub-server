@@ -16,8 +16,9 @@ public class AddThreadAction extends MustLogAction {
 
 
 
-    public AddThreadAction(Long actionId, String actionType, long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
-        super(actionId, "AddThread");
+    public AddThreadAction(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+        super();
+        this.actionType = "Add Thread";
         this.threadId = threadId;
         this.category = category;
         this.toxicStatus = toxicStatus;
