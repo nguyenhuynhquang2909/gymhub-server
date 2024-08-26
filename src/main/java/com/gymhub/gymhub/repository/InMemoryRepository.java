@@ -8,6 +8,7 @@ import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.in_memory.BanInfo;
 import com.gymhub.gymhub.in_memory.Cache;
+import com.gymhub.gymhub.in_memory.CacheManipulation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -16,8 +17,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SubmissionPublisher;
@@ -31,8 +30,12 @@ import static com.gymhub.gymhub.helper.HelperMethod.convertStringToxicStatusToBo
 public class InMemoryRepository {
     //
     @Autowired
-    private  Cache cache = new Cache();
+    Cache cache;
+    @Autowired
+    CacheManipulation cacheManipulation;
+
     private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
+
     private static long actionIdCounter = 0;
     @Autowired
     ThreadRepository threadRepository;
@@ -63,35 +66,30 @@ public class InMemoryRepository {
                     MustLogAction action = (MustLogAction) ois.readObject();
                     if (action instanceof AddUserAction) {
                         cache.getAllMemberID().put(((AddUserAction) action).getUserId(), ((AddUserAction) action).getUserId());
-                    } else if (action instanceof AddThreadAction) {
-                        AddThreadAction addThreadAction = (AddThreadAction) action;
+                    } else if (action instanceof AddThreadAction addThreadAction) {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
-                                addThreadAction.getCreationDateTime(),
                                 addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
                         );
-                    } else if (action instanceof ChangeThreadStatusAction) {
-                        ChangeThreadStatusAction changeThreadStatusAction = (ChangeThreadStatusAction) action;
+                    } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         changeThreadToxicStatusFromModDashBoard(
                                 changeThreadStatusAction.getThreadId(),
                                 changeThreadStatusAction.getCategory(),
                                 changeThreadStatusAction.getToxicStatus(),
                                 changeThreadStatusAction.getReason()
                         );
-                    } else if (action instanceof ChangePostStatusAction) {
-                        ChangePostStatusAction changePostStatusAction = (ChangePostStatusAction) action;
+                    } else if (action instanceof ChangePostStatusAction changePostStatusAction) {
                         changePostToxicStatusFromModDashboard(
                                 changePostStatusAction.getPostId(),
                                 changePostStatusAction.getThreadId(),
                                 changePostStatusAction.getToxicStatus(),
                                 changePostStatusAction.getReason()
                         );
-                    } else if (action instanceof AddPostAction) {
-                        AddPostAction addPostAction = (AddPostAction) action;
+                    } else if (action instanceof AddPostAction addPostAction) {
                         addPostToCache(
                                 addPostAction.getPostId(),
                                 addPostAction.getThreadId(),
@@ -100,8 +98,7 @@ public class InMemoryRepository {
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
-                    } else if (action instanceof LikePostAction) {
-                        LikePostAction likePostAction = (LikePostAction) action;
+                    } else if (action instanceof LikePostAction likePostAction) {
                         likePost(
                                 likePostAction.getPostId(),
                                 likePostAction.getUserId(),
@@ -125,137 +122,36 @@ public class InMemoryRepository {
 
     // Add User
     public boolean addUserToCache(long userId) {
-        cache.getAllMemberID().put(userId, userId);
-        cache.getPostLikeListByUser().put(userId, new HashSet<>());
-        cache.getThreadLikeListByUser().put(userId, new HashSet<>());
-        cache.getPostListByUser().put(userId, new HashSet<>());
-        cache.getThreadListByUser().put(userId, new HashSet<>());
-
-        AddUserAction action = new AddUserAction(++actionIdCounter, userId);
-        logAction(action);
-        return true;
+        if (cacheManipulation.addUserToCache(userId)){
+            AddUserAction action = new AddUserAction(userId);
+            logAction(action);
+            return true;
+        }
+        return false;
     }
 
 
     public boolean addPostToCache(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
-        // Store the post ID
-        cache.getAllPostId().put(postId, postId);
+        if (cacheManipulation.addPostToCache(postId, threadId, userId, toxicStatus, resolveStatus, reason)) {
+            // Log the action
+            AddPostAction action = new AddPostAction(threadId, postId, userId, toxicStatus, resolveStatus, reason);
+            logAction(action);
 
-        // Convert toxicStatus to a boolean number (1 for non-toxic, 0 for pending, -1 for toxic)
-        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
-
-        // Add the post to the appropriate list based on its toxic status
-        cache.getPostListByThreadIdAndToxicStatus().computeIfAbsent(threadId, k -> new HashMap<>());
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
-        LinkedList<Long> toxicPostList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(toxicStatusBooleanNumber);
-        toxicPostList.add(postId);
-
-        // Initialize the post parameters
-        ConcurrentHashMap<String, Object> postParaMap = new ConcurrentHashMap<>();
-        postParaMap.put("LikeCount", 0);
-        postParaMap.put("CreationDate", System.currentTimeMillis());
-        postParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
-        postParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
-        postParaMap.put("Reason", reason);
-
-        // Update the thread's latest post creation date if the post is non-toxic
-        if (toxicStatusBooleanNumber == 1) {
-            // Ensure threadParaMap is not null
-            ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().computeIfAbsent(threadId, k -> new ConcurrentHashMap<>());
-            // Initialize threadParaMap if it doesn't exist
-            threadParaMap.put("PostCreationDate", System.currentTimeMillis());
+            return true;
         }
+        return false;
 
-        // Store the post parameters in the cache
-        cache.getParametersForAllPosts().put(postId, postParaMap);
-
-        // Add the post to the user's list of posts
-        cache.getPostListByUser().get(userId).add(postId);
-
-        // Check if toxic status is -1 and the total toxic post count exceeds 20
-        if (toxicStatusBooleanNumber == -1) {
-            int totalToxicPostCount = cache.getPostListByThreadIdAndToxicStatus().values().stream()
-                    .mapToInt(statusMap -> statusMap.getOrDefault(-1, new LinkedList<>()).size())
-                    .sum();
-
-            if (totalToxicPostCount > 20) {
-                deleteToxicPostsAndClearList(threadId);
-            }
-        }
-
-        // Log the action
-        AddPostAction action = new AddPostAction(++actionIdCounter, threadId, postId, userId, toxicStatus, resolveStatus, reason);
-        logAction(action);
-
-        return true;
     }
 
 
-    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime,
-                                    ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason
-    ) {
-        // Store the thread ID
-        cache.getAllThreadID().put(threadId, threadId);
-
-        // Initialize thread parameters
-        ConcurrentHashMap<String, Object> threadParaMap = new ConcurrentHashMap<>();
-        threadParaMap.put("ThreadID", threadId);
-        // Convert counts into Integer objects and put them into threadParaMap
-        Integer likeCount = Integer.valueOf(0);
-        Integer viewCount = Integer.valueOf(0);
-        Integer postCount = Integer.valueOf(0);
-        threadParaMap.put("LikeCount", likeCount);
-        threadParaMap.put("ViewCount", viewCount
-        );
-        threadParaMap.put("PostCount", postCount);
-
-        if (creationDateTime == null){
-            creationDateTime = LocalDateTime.now();
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+        if (cacheManipulation.addThreadToCache(threadId, category, toxicStatus, authorId, resolveStatus, reason)) {
+            // Log the action
+            AddThreadAction action = new AddThreadAction(threadId, category, toxicStatus, authorId, resolveStatus, reason);
+            logAction(action);
+            return true;
         }
-
-        threadParaMap.put("CreationDate", creationDateTime);
-        threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
-        threadParaMap.put("Reason", reason);
-        // Check if toxicStatus is null, and set toxicStatusBooleanNumber accordingly
-        int toxicStatusBooleanNumber;
-        if (toxicStatus == null) {
-            toxicStatusBooleanNumber = 1; // Default to 1 if null
-        } else {
-            toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
-        }
-        threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
-        // Add thread parameters to the cache
-        cache.getParametersForAllThreads().put(threadId, threadParaMap);
-
-        // Manage thread list by category and status
-        cache.getThreadListByCategoryAndToxicStatus().computeIfAbsent((category), k -> new HashMap<>());
-        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
-        cache.getThreadListByCategoryAndToxicStatus().get(category).get(toxicStatusBooleanNumber).add(threadId);
-
-        cache.getThreadListByUser().get(authorId).add(threadId);
-
-        // Initialize post list for this thread by toxic status
-        cache.getPostListByThreadIdAndToxicStatus().put(threadId, new HashMap<>());
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).put(1, new LinkedList<>());
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).put(0, new LinkedList<>());
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).put(-1, new LinkedList<>());
-
-        // Check if toxic status is -1 and the TOXIC size exceeds 20
-        if (toxicStatusBooleanNumber == -1) {
-            int totalToxicCount = cache.getThreadListByCategoryAndToxicStatus().values().stream()
-                    .mapToInt(statusMap -> statusMap.getOrDefault(-1, new LinkedList<>()).size())
-                    .sum();
-
-            if (totalToxicCount > 20) {
-                deleteToxicThreadsAndClearList(category);
-            }
-        }
-
-        // Log the action
-        AddThreadAction action = new AddThreadAction(++actionIdCounter, "AddThread", threadId, category, creationDateTime ,toxicStatus, authorId, resolveStatus, reason);
-        logAction(action);
-
-        return true;
+        return false;
     }
 
 
@@ -275,20 +171,20 @@ public class InMemoryRepository {
 
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
-            System.out.println("Thread ID: " + threadId);
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
-            if ((int) threadParaMap.get("ToxicStatus") == 1) {
+
+            if (threadParaMap.get("ToxicStatus").equals(1)) {
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
                 returnCollectionByAlgorithm.put(score, returnedMap);
 
-                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")));
+                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
                 postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
         }
-        System.out.println("Return collection : " + returnCollection);
+
         return returnCollection;
     }
 
@@ -365,7 +261,7 @@ public class InMemoryRepository {
 
 
     // Return Thread by Category
-    public boolean returnThreadByCategory(String category, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
+    public boolean returnThreadByCategory(ThreadCategoryEnum category, int limit, int offset, SubmissionPublisher<HashMap<String, Number>> publisher) {
         LinkedList<Long> nonToxicThreadsList = cache.getThreadListByCategoryAndToxicStatus().get(category).get(1);
         Iterator<Long> iterator = nonToxicThreadsList.listIterator(offset);
         int count = 1;
@@ -402,25 +298,10 @@ public class InMemoryRepository {
      * Methods to change toxic status of threads and posts
      */
     // Change Thread Status for Reporting
-    public boolean changeThreadToxicStatusForMemberReporting(long threadId, ThreadCategoryEnum category, String reason) {
-        // Convert to PENDING
-        int newToxicStatusBooleanValue = 0;
-
-        // Retrieve and update the thread parameters
-        ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-        if (threadParaMap == null) return false;
-
-        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        threadParaMap.put("ResolveStatus", 1);
-        threadParaMap.put("Reason", reason);
-
-        // Update the thread list by category and status
-        LinkedList<Long> nonToxicList = cache.getThreadListByCategoryAndToxicStatus().get(category).get(1);
-        if (nonToxicList != null) nonToxicList.remove(threadId);
-        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(0, k -> new LinkedList<>()).add(threadId);
-
+    public boolean changeThreadToxicStatusForMemberReporting(long threadId, ThreadCategoryEnum category,  ToxicStatusEnum newStatus, String reason) {
+        cacheManipulation.changeThreadToxicStatus(threadId, category, newStatus, reason);
         // Log the action
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, "ChangeThreadStatusForReporting", threadId, category, ToxicStatusEnum.PENDING, true, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, ToxicStatusEnum.PENDING, true, reason);
         logAction(action);
 
         return true;
@@ -428,48 +309,19 @@ public class InMemoryRepository {
 
     // Change Thread Status from Mod Dashboard
     public boolean changeThreadToxicStatusFromModDashBoard(long threadId, ThreadCategoryEnum category, ToxicStatusEnum newStatus, String reason) {
-        int newToxicStatusBooleanValue = convertStringToxicStatusToBooleanValue(newStatus);
-
-        // Retrieve and update the thread parameters
-        ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-        if (threadParaMap == null) return false;
-
-        int oldToxicStatus = (Integer) threadParaMap.get("ToxicStatus");
-        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        threadParaMap.put("ResolveStatus", 1);
-        threadParaMap.put("Reason", reason);
-
-        // Update the thread list by category and status
-        LinkedList<Long> oldStatusList = cache.getThreadListByCategoryAndToxicStatus().get(category).get(oldToxicStatus);
-        if (oldStatusList != null) oldStatusList.remove(threadId);
-        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(newToxicStatusBooleanValue, k -> new LinkedList<>()).add(threadId);
+        cacheManipulation.changeThreadToxicStatus(threadId, category, newStatus, reason);
 
         // Log the action
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, "ChangeThreadStatusFromModDashboard", threadId, category, newStatus, true, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, newStatus, true, reason);
         logAction(action);
 
         return true;
     }
 
     public boolean changeThreadToxicStatusForModBanningWhileSurfingForum(long threadId, ThreadCategoryEnum category, ToxicStatusEnum newToxicStatus, String reason) {
-        int newToxicStatusBooleanValue = convertStringToxicStatusToBooleanValue(newToxicStatus);
-
-        // Retrieve and update the thread parameters
-        ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-        if (threadParaMap == null) return false;
-
-        int oldToxicStatus = (Integer) threadParaMap.get("ToxicStatus");
-        threadParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        threadParaMap.put("ResolveStatus", 1);
-        threadParaMap.put("Reason", reason);
-
-        // Update the thread list by category and status
-        LinkedList<Long> oldStatusList = cache.getThreadListByCategoryAndToxicStatus().get(category).get(oldToxicStatus);
-        if (oldStatusList != null) oldStatusList.remove(threadId);
-        cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(newToxicStatusBooleanValue, k -> new LinkedList<>()).add(threadId);
-
+        cacheManipulation.changeThreadToxicStatus(threadId, category, newToxicStatus, reason);
         // Log the action
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(++actionIdCounter, "ChangeThreadStatusForModBanningWhileSurfing", threadId, category, newToxicStatus, true, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, newToxicStatus, true, reason);
         logAction(action);
 
         return true;
@@ -477,73 +329,27 @@ public class InMemoryRepository {
 
     // Change Post Status
     public boolean changePostToxicStatusFromModDashboard(long postId, long threadId, ToxicStatusEnum newToxicStatus, String reason) {
-        int newToxicStatusBooleanValue = convertStringToxicStatusToBooleanValue(newToxicStatus);
-
-        // Retrieve and update the post parameters
-        ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
-        if (postParaMap == null) return false;
-
-        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
-        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        postParaMap.put("ResolveStatus", 1);
-        postParaMap.put("Reason", reason);
-
-        // Update the post list by thread ID and toxic status
-        LinkedList<Long> oldStatusList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(oldToxicStatus);
-        if (oldStatusList != null) oldStatusList.remove(postId);
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(newToxicStatusBooleanValue, k -> new LinkedList<>()).add(postId);
-
+        cacheManipulation.changePostToxicStatus(postId, threadId, newToxicStatus, reason);
         // Log the action
-        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, "changePostToxicStatusFromModDashboard", postId, threadId, newToxicStatus, true, reason);
+        ChangePostStatusAction action = new ChangePostStatusAction(postId, threadId, newToxicStatus, true, reason);
         logAction(action);
 
         return true;
     }
 
     public boolean changePostToxicStatusForModBanningWhileSurfingForum(long postId, long threadId, ToxicStatusEnum newToxicStatus, String reason) {
-        int newToxicStatusBooleanValue = convertStringToxicStatusToBooleanValue(newToxicStatus);
-
-        // Retrieve and update the post parameters
-        ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
-        if (postParaMap == null) return false;
-
-        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
-        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        postParaMap.put("ResolveStatus", 1);
-        postParaMap.put("Reason", reason);
-
-        // Update the post list by thread ID and toxic status
-        LinkedList<Long> oldStatusList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(oldToxicStatus);
-        if (oldStatusList != null) oldStatusList.remove(postId);
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(newToxicStatusBooleanValue, k -> new LinkedList<>()).add(postId);
-
+        cacheManipulation.changePostToxicStatus(postId, threadId, newToxicStatus, reason);
         // Log the action
-        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, "changePostToxicStatusForModBanningWhileSurfingForum", postId, threadId, newToxicStatus, true, reason);
+        ChangePostStatusAction action = new ChangePostStatusAction(postId, threadId, newToxicStatus, true, reason);
         logAction(action);
 
         return true;
     }
 
-    public boolean changePostToxicStatusForMemberReporting(long postId, long threadId, String reason) {
-        // Convert to PENDING
-        int newToxicStatusBooleanValue = 0;
-
-        // Retrieve and update the post parameters
-        ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
-        if (postParaMap == null) return false;
-
-        int oldToxicStatus = (Integer) postParaMap.get("ToxicStatus");
-        postParaMap.put("ToxicStatus", newToxicStatusBooleanValue);
-        postParaMap.put("ResolveStatus", 0);
-        postParaMap.put("Reason", reason);
-
-        // Update the post list by thread ID and toxic status
-        LinkedList<Long> oldStatusList = cache.getPostListByThreadIdAndToxicStatus().get(threadId).get(oldToxicStatus);
-        if (oldStatusList != null) oldStatusList.remove(postId);
-        cache.getPostListByThreadIdAndToxicStatus().get(threadId).computeIfAbsent(newToxicStatusBooleanValue, k -> new LinkedList<>()).add(postId);
-
+    public boolean changePostToxicStatusForMemberReporting(long postId, long threadId,  ToxicStatusEnum newToxicStatus, String reason) {
+        cacheManipulation.changePostToxicStatus(postId, threadId, newToxicStatus, reason);
         // Log the action
-        ChangePostStatusAction action = new ChangePostStatusAction(++actionIdCounter, "changePostToxicStatusForMemberReporting", postId, threadId, ToxicStatusEnum.PENDING, false, reason);
+        ChangePostStatusAction action = new ChangePostStatusAction(postId, threadId, ToxicStatusEnum.PENDING, false, reason);
         logAction(action);
 
         return true;
@@ -555,26 +361,13 @@ public class InMemoryRepository {
 
     // Like Post
     public boolean likePost(long postId, long userId, long threadId, int mode) {
-        ConcurrentHashMap<String, Object> postParaMap = cache.getParametersForAllPosts().get(postId);
-        ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-
-        if (mode == 1) {
-            postParaMap.put("LikeCount", (Integer) postParaMap.get("LikeCount") + 1);
-            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") + 1);
-        } else if (mode == 0) {
-            postParaMap.put("LikeCount", (Integer) postParaMap.get("LikeCount") - 1);
-            threadParaMap.put("LikeCount", (Integer) threadParaMap.get("LikeCount") - 1);
-        } else {
-            return false;
+        if (cacheManipulation.likePost(postId, userId, threadId, mode)) {
+            // Log the action
+            LikePostAction action = new LikePostAction(postId, userId, threadId, mode);
+            logAction(action);
+            return true;
         }
-
-        cache.getPostLikeListByUser().get(userId).add(postId);
-
-        // Log the action
-        LikePostAction action = new LikePostAction(++actionIdCounter, postId, userId, threadId, mode);
-        logAction(action);
-
-        return true;
+        return false;
     }
 
 
@@ -619,22 +412,9 @@ public class InMemoryRepository {
         returnedMap.put("LikeCount", (Integer) cachedMap.get("LikeCount"));
         returnedMap.put("PostCount", (Integer) cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", (Integer) cachedMap.get("ViewCount"));
-
-        // Convert LocalDateTime to milliseconds since epoch if needed
-        Object creationDateObj = cachedMap.get("CreationDate");
-        if (creationDateObj instanceof LocalDateTime) {
-            long creationDateMillis = ((LocalDateTime) creationDateObj)
-                    .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            returnedMap.put("CreationDate", creationDateMillis);
-        } else if (creationDateObj instanceof Number) {
-            returnedMap.put("CreationDate", (Number) creationDateObj);
-        } else {
-            throw new IllegalArgumentException("Unsupported type for CreationDate");
-        }
-
+        returnedMap.put("CreationDate", (Long) cachedMap.get("CreationDate"));
         return returnedMap;
     }
-
 
     private HashMap<String, Number> returnPostMapBuilder(ConcurrentHashMap<String, Object> postParaMap, Long userId, long postId) {
         HashMap<String, Number> returnedPostMap = new HashMap<>();
@@ -660,34 +440,15 @@ public class InMemoryRepository {
      */
 
     private double getThreadRelevancy(ConcurrentHashMap<String, Object> threadParaMap) {
-        // Get the "CreationDate" from the map
-        Object creationDate = threadParaMap.get("CreationDate");
-        System.out.println("creation date time" + creationDate);
-        if (creationDate == null){
-            creationDate = LocalDateTime.now();
-        }
-        System.out.println("type of creationDateTime " + creationDate.getClass().getSimpleName());
+        long primitiveThreadCreationDate = (Long) threadParaMap.get("CreationDate");
+        double distanceFromToday = (double) primitiveThreadCreationDate / System.currentTimeMillis();
 
-        // Convert the LocalDateTime to a timestamp (milliseconds since epoch)
-        long creationDateMillis;
-        if (creationDate instanceof LocalDateTime) {
-            creationDateMillis = ((LocalDateTime) creationDate).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        } else {
-            throw new IllegalArgumentException("Expected LocalDateTime for CreationDate");
-        }
+        int likeNum = (Integer) threadParaMap.get("LikeCount");
+        int postNum = (Integer) threadParaMap.get("PostCount");
+        int viewNum = (Integer) threadParaMap.get("ViewCount");
 
-        // Calculate the distance from today
-        double distanceFromToday = (double) creationDateMillis / System.currentTimeMillis();
-        System.out.println("likeCount " + threadParaMap.get("LikeCount"));
-        // Get like, post, and view counts from the map
-        int likeNum = (int) threadParaMap.get("LikeCount");
-        int postNum = (int)  threadParaMap.get("PostCount");
-        int viewNum = (int)  threadParaMap.get("ViewCount");
-
-        // Return the calculated relevancy score
         return distanceFromToday * (likeNum + viewNum + postNum);
     }
-
 
 
     private static BigDecimal ensureUniqueScore(TreeMap<BigDecimal, HashMap<String, Number>> collection, BigDecimal score) {

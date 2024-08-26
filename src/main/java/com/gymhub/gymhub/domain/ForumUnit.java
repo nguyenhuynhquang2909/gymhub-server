@@ -16,18 +16,13 @@ import java.time.LocalDateTime;
 
 public abstract class ForumUnit {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "creation_date", nullable = false, updatable = true)
     private LocalDateTime creationDateTime;
 
-
-
-
     public ForumUnit(LocalDateTime creationDateTime) {
         this.creationDateTime = creationDateTime;
-
     }
 
     public ForumUnit(Long id, LocalDateTime creationDateTime) {

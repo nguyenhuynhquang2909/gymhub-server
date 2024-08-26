@@ -2,7 +2,9 @@ package com.gymhub.gymhub.service;
 
 
 import com.gymhub.gymhub.domain.Member;
+import com.gymhub.gymhub.helper.MemberSequence;
 import com.gymhub.gymhub.in_memory.SessionStorage;
+import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +28,11 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+    @Autowired
+    private MemberSequence memberSequence;
+
+    @Autowired
+    private InMemoryRepository inMemoryRepository;
     @Autowired 
     private AuthenticationManager authenticationManager;
 
@@ -52,10 +59,11 @@ public class AuthService {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
         String encodedPassword = passwordEncoder.encode(registerRequestDTO.getPassword());
-        Member member = new Member(registerRequestDTO.getUsername(), encodedPassword, registerRequestDTO.getEmail(), new Date(System.currentTimeMillis()));
+        Long memberId = memberSequence.getUserId();
+        Member member = new Member(memberId, registerRequestDTO.getUsername(), encodedPassword, registerRequestDTO.getEmail(), new Date(System.currentTimeMillis()));
         System.out.println(registerRequestDTO.getUsername());
-
         memberAccountRepository.save(member);
+        inMemoryRepository.addUserToCache(memberId);
         return ResponseEntity.ok("User registered successfully");
     }
     public ResponseEntity<AuthRespone> authenticateUser(HttpServletResponse response, LoginRequestDTO loginRequestDTO) {
