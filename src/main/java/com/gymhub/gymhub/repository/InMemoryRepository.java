@@ -68,7 +68,7 @@ public class InMemoryRepository {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
-                                thread.getCreationDateTime(), addThreadAction.getToxicStatus(),
+                                addThreadAction.getCreationDateTime(), addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
