@@ -131,7 +131,7 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addPostToCache(long postId, long threadId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+    public boolean addPostToCache(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         if (cacheManipulation.addPostToCache(postId, threadId, userId, toxicStatus, resolveStatus, reason)) {
             // Log the action
             AddPostAction action = new AddPostAction(threadId, postId, userId, toxicStatus, resolveStatus, reason);
