@@ -5,7 +5,6 @@ import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
-import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.in_memory.BanInfo;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.in_memory.CacheManipulation;
@@ -17,11 +16,10 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SubmissionPublisher;
-
-import static com.gymhub.gymhub.helper.HelperMethod.convertStringToxicStatusToBooleanValue;
 
 /**
  * The type In memory repository.
@@ -70,7 +68,7 @@ public class InMemoryRepository {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
-                                addThreadAction.getToxicStatus(),
+                                addThreadAction.getCreationDateTime(), addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
@@ -144,10 +142,10 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         if (cacheManipulation.addThreadToCache(threadId, category, toxicStatus, authorId, resolveStatus, reason)) {
             // Log the action
-            AddThreadAction action = new AddThreadAction(threadId, category, toxicStatus, authorId, resolveStatus, reason);
+            AddThreadAction action = new AddThreadAction(threadId, category, creationDateTime,  toxicStatus, authorId, resolveStatus, reason);
             logAction(action);
             return true;
         }

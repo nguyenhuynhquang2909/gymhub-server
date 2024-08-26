@@ -62,13 +62,13 @@ public class GymhubApplication {
 		}
 
 		List<Thread> threads = threadRepository.findAll();
-//		System.out.println("List of threads " + threads);
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
 //			System.out.println("Looping through list of threads");
 			Thread thread = iterator2.next();
-				inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
+			inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), thread.getCreationDateTime(),ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
 		}
+
 
 		List<Post> posts = postRepository.findAll();
 //		System.out.println("List of posts " + posts);
@@ -76,7 +76,7 @@ public class GymhubApplication {
 		while(iterator3.hasNext()){
 //			System.out.println("Looping through list of posts");
 			Post post = iterator3.next();
-			System.out.println();
+			//System.out.println();
 			inMemoryRepository.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(),  ToxicStatusEnum.NOT_TOXIC, false, "");
 		}
 
@@ -84,14 +84,15 @@ public class GymhubApplication {
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 // Print cache contents to verify
 		System.out.println("Cache Contents:");
+		System.out.println("Para" + cache.getParametersForAllThreads());
 
 
 
 
 		// Assuming you have methods to retrieve cached data
-		System.out.println("Thread list with user ID "+ cache.getThreadListByUser());
-		Long userId = 1L; // Replace with the actual user ID you want to query
-		System.out.println("Thread list with user ID = 1 "+ cache.getThreadListByUser().get(userId));
+		//System.out.println("Thread list with user ID "+ cache.getThreadListByUser());
+		//Long userId = 1L; // Replace with the actual user ID you want to query
+		//System.out.println("Thread list with user ID = 1 "+ cache.getThreadListByUser().get(userId));
 //		System.out.println("Threads in cache: " + cache.getParametersForAllThreads()); // Assuming getParametersForAllThreads() returns a map of threads
 //		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 //		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
