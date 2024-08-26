@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SubmissionPublisher;
@@ -66,6 +68,7 @@ public class InMemoryRepository {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
+                                addThreadAction.getCreationDateTime(),
                                 addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
@@ -188,22 +191,39 @@ public class InMemoryRepository {
     }
 
 
-    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         // Store the thread ID
         cache.getAllThreadID().put(threadId, threadId);
 
         // Initialize thread parameters
         ConcurrentHashMap<String, Object> threadParaMap = new ConcurrentHashMap<>();
         threadParaMap.put("ThreadID", threadId);
-        threadParaMap.put("LikeCount", 0);
-        threadParaMap.put("ViewCount", 0);
-        threadParaMap.put("PostCount", 0);
-        threadParaMap.put("CreationDate", System.currentTimeMillis());
+        // Convert counts into Integer objects and put them into threadParaMap
+        Integer likeCount = Integer.valueOf(0);
+        Integer viewCount = Integer.valueOf(0);
+        Integer postCount = Integer.valueOf(0);
+        threadParaMap.put("LikeCount", likeCount);
+        threadParaMap.put("ViewCount", viewCount
+        );
+        threadParaMap.put("PostCount", postCount);
+
+        if (creationDateTime == null){
+            creationDateTime = LocalDateTime.now();
+        }
+
+        threadParaMap.put("CreationDate", creationDateTime);
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
-        int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+        // Check if toxicStatus is null, and set toxicStatusBooleanNumber accordingly
+        int toxicStatusBooleanNumber;
+        if (toxicStatus == null) {
+            toxicStatusBooleanNumber = 1; // Default to 1 if null
+        } else {
+            toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+        }
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
 
+        System.out.println("Thread Para Map: " + threadParaMap);
 
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
@@ -233,7 +253,7 @@ public class InMemoryRepository {
         }
 
         // Log the action
-        AddThreadAction action = new AddThreadAction(++actionIdCounter, "AddThread", threadId, category, toxicStatus, authorId, resolveStatus, reason);
+        AddThreadAction action = new AddThreadAction(++actionIdCounter, "AddThread", threadId, category, creationDateTime ,toxicStatus, authorId, resolveStatus, reason);
         logAction(action);
 
         return true;
@@ -257,7 +277,8 @@ public class InMemoryRepository {
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
-            if ((int) threadParaMap.get("ToxicStatus") == 1) {
+
+            if (threadParaMap.get("ToxicStatus").equals(1)) {
                 System.out.println("Found not toxic thread ! ");
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
@@ -600,9 +621,22 @@ public class InMemoryRepository {
         returnedMap.put("LikeCount", (Integer) cachedMap.get("LikeCount"));
         returnedMap.put("PostCount", (Integer) cachedMap.get("PostCount"));
         returnedMap.put("ViewCount", (Integer) cachedMap.get("ViewCount"));
-        returnedMap.put("CreationDate", (Long) cachedMap.get("CreationDate"));
+
+        // Convert LocalDateTime to milliseconds since epoch if needed
+        Object creationDateObj = cachedMap.get("CreationDate");
+        if (creationDateObj instanceof LocalDateTime) {
+            long creationDateMillis = ((LocalDateTime) creationDateObj)
+                    .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            returnedMap.put("CreationDate", creationDateMillis);
+        } else if (creationDateObj instanceof Number) {
+            returnedMap.put("CreationDate", (Number) creationDateObj);
+        } else {
+            throw new IllegalArgumentException("Unsupported type for CreationDate");
+        }
+
         return returnedMap;
     }
+
 
     private HashMap<String, Number> returnPostMapBuilder(ConcurrentHashMap<String, Object> postParaMap, Long userId, long postId) {
         HashMap<String, Number> returnedPostMap = new HashMap<>();
@@ -628,15 +662,35 @@ public class InMemoryRepository {
      */
 
     private double getThreadRelevancy(ConcurrentHashMap<String, Object> threadParaMap) {
-        long primitiveThreadCreationDate = ((Long) threadParaMap.get("CreationDate"));
-        double distanceFromToday = (double) primitiveThreadCreationDate / System.currentTimeMillis();
+        // Get the "CreationDate" from the map
+        Object creationDate = threadParaMap.get("CreationDate");
+        System.out.println("creation date time" + creationDate);
+        if (creationDate == null){
+            creationDate = LocalDateTime.now();
+        }
+        System.out.println("type of creationDateTime " + creationDate.getClass().getSimpleName());
 
-        int likeNum = ((Integer) threadParaMap.get("LikeCount"));
-        int postNum = ((Integer) threadParaMap.get("PostCount"));
-        int viewNum = ((Integer) threadParaMap.get("ViewCount"));
+        // Convert the LocalDateTime to a timestamp (milliseconds since epoch)
+        long creationDateMillis;
+        if (creationDate instanceof LocalDateTime) {
+            creationDateMillis = ((LocalDateTime) creationDate).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else {
+            throw new IllegalArgumentException("Expected LocalDateTime for CreationDate");
+        }
 
+        // Calculate the distance from today
+        double distanceFromToday = (double) creationDateMillis / System.currentTimeMillis();
+        System.out.println("likeCount " + threadParaMap.get("LikeCount"));
+        // Get like, post, and view counts from the map
+        int likeNum = (int) threadParaMap.get("LikeCount");
+
+        int postNum = (int)  threadParaMap.get("PostCount");
+        int viewNum = (int)  threadParaMap.get("ViewCount");
+
+        // Return the calculated relevancy score
         return distanceFromToday * (likeNum + viewNum + postNum);
     }
+
 
 
     private static BigDecimal ensureUniqueScore(TreeMap<BigDecimal, HashMap<String, Number>> collection, BigDecimal score) {

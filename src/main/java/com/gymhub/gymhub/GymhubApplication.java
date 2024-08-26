@@ -67,7 +67,7 @@ public class GymhubApplication {
 		while(iterator2.hasNext()){
 //			System.out.println("Looping through list of threads");
 			Thread thread = iterator2.next();
-				inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
+				inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), thread.getCreationDateTime(),ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
 		}
 
 		List<Post> posts = postRepository.findAll();
