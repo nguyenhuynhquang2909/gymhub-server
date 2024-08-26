@@ -137,11 +137,11 @@ public class ThreadService {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         long id = HelperMethod.generateUniqueIds();
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
+        Thread thread = threadMapper.toThread(threadRequestDTO);
         thread.setOwner(owner);
 
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), tempToxicEnum, owner.getId(), false, "");
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), threadRequestDTO.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
         threadRepository.save(thread);
     }
 
