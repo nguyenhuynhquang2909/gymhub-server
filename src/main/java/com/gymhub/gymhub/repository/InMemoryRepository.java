@@ -145,7 +145,7 @@ public class InMemoryRepository {
     public boolean addThreadToCache(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         if (cacheManipulation.addThreadToCache(threadId, category, toxicStatus, authorId, resolveStatus, reason)) {
             // Log the action
-            AddThreadAction action = new AddThreadAction(threadId, category, toxicStatus, authorId, resolveStatus, reason);
+            AddThreadAction action = new AddThreadAction(threadId, category, creationDateTime,  toxicStatus, authorId, resolveStatus, reason);
             logAction(action);
             return true;
         }
