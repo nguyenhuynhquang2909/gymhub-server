@@ -158,12 +158,8 @@ public class InMemoryRepository {
         // Update the thread's latest post creation date if the post is non-toxic
         if (toxicStatusBooleanNumber == 1) {
             // Ensure threadParaMap is not null
-            ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().get(threadId);
-            if (threadParaMap == null) {
-                // Initialize threadParaMap if it doesn't exist
-                threadParaMap = new ConcurrentHashMap<>();
-                cache.getParametersForAllThreads().put(threadId, threadParaMap);
-            }
+            ConcurrentHashMap<String, Object> threadParaMap = cache.getParametersForAllThreads().computeIfAbsent(threadId, k -> new ConcurrentHashMap<>());
+            // Initialize threadParaMap if it doesn't exist
             threadParaMap.put("PostCreationDate", System.currentTimeMillis());
         }
 
@@ -207,6 +203,7 @@ public class InMemoryRepository {
         threadParaMap.put("Reason", reason);
         int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
+
 
         // Add thread parameters to the cache
         cache.getParametersForAllThreads().put(threadId, threadParaMap);
@@ -260,15 +257,14 @@ public class InMemoryRepository {
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
-
-            if (threadParaMap.get("ToxicStatus").equals(1)) {
+            if ((int) threadParaMap.get("ToxicStatus") == 1) {
                 System.out.println("Found not toxic thread ! ");
                 BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
                 score = ensureUniqueScore(returnCollectionByAlgorithm, score);
                 HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
                 returnCollectionByAlgorithm.put(score, returnedMap);
 
-                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
+                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")));
                 postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
                 returnCollectionByPostCreation.put(postCreationDate, returnedMap);
             }
@@ -632,12 +628,12 @@ public class InMemoryRepository {
      */
 
     private double getThreadRelevancy(ConcurrentHashMap<String, Object> threadParaMap) {
-        long primitiveThreadCreationDate = ((Long) threadParaMap.get("CreationDate")).longValue();
+        long primitiveThreadCreationDate = ((Long) threadParaMap.get("CreationDate"));
         double distanceFromToday = (double) primitiveThreadCreationDate / System.currentTimeMillis();
 
-        int likeNum = ((Integer) threadParaMap.get("LikeCount")).intValue();
-        int postNum = ((Integer) threadParaMap.get("PostCount")).intValue();
-        int viewNum = ((Integer) threadParaMap.get("ViewCount")).intValue();
+        int likeNum = ((Integer) threadParaMap.get("LikeCount"));
+        int postNum = ((Integer) threadParaMap.get("PostCount"));
+        int viewNum = ((Integer) threadParaMap.get("ViewCount"));
 
         return distanceFromToday * (likeNum + viewNum + postNum);
     }
