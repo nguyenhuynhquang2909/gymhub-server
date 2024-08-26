@@ -4,6 +4,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.helper.HelperMethod;
+import com.gymhub.gymhub.helper.ThreadSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.mapper.ThreadMapper;
@@ -35,6 +36,9 @@ public class ThreadService {
 
     @Autowired
     private Cache cache;
+
+    @Autowired
+    private ThreadSequence threadSequence;
 
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
@@ -80,7 +84,7 @@ public class ThreadService {
 
 
     public List<ThreadResponseDTO> getAllThreadsByCategory(ThreadCategoryEnum category, int limit, int offset) {
-        List<Long> listOfThreadIdByCategory =
+        List<Long> listOfThreadIdByCategory = //inMemoryRepository.returnThreadByCategory(category, limit, offset);
                 inMemoryRepository.getThreadIdsByCategoryAndStatus(category, 1);
 
         System.out.println("List of thread id by category : " + listOfThreadIdByCategory);
@@ -131,7 +135,7 @@ public class ThreadService {
     public void createThread(Long memberId, ThreadRequestDTO threadRequestDTO) {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        long id = HelperMethod.generateUniqueIds();
+        long id = threadSequence.getUserId();
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
         thread.setOwner(owner);
 
@@ -141,7 +145,7 @@ public class ThreadService {
     }
 
     public boolean reportThread(ThreadRequestDTO threadRequestDTO, String reason) {
-        return inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(), threadRequestDTO.getCategory(),
+        return inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(), threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING,
                 reason);
     }
 
