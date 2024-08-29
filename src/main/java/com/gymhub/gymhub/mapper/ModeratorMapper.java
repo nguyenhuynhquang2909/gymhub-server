@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.mapper;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Moderator;
 import com.gymhub.gymhub.dto.ModeratorRequestAndResponseDTO;
 import org.springframework.stereotype.Component;
@@ -22,5 +23,13 @@ public class ModeratorMapper {
                 moderatorRequestAndResponseDTO.getPassword(), // Password should be handled securely later on
                 moderatorRequestAndResponseDTO.getEmail()
         );
+    }
+
+    public ModeratorRequestAndResponseDTO customUserDetailToDTO(CustomUserDetails userDetails) {
+        ModeratorRequestAndResponseDTO dto = new ModeratorRequestAndResponseDTO();
+        dto.setId(userDetails.getId());
+        dto.setUsername(userDetails.getUsername());
+        dto.setPassword(userDetails.getPassword());
+        return dto;
     }
 }

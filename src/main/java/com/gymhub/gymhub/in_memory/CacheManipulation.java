@@ -41,6 +41,7 @@ public class CacheManipulation {
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
         int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
+
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
 
         // Add thread parameters to the cache
