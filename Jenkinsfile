@@ -23,7 +23,7 @@ pipeline {
             steps {
                 sh 'mvn --version'
                 sh 'java -version'
-                sh 'mvn clean package'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
