@@ -15,10 +15,7 @@ import com.gymhub.gymhub.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,30 +57,53 @@ public class ModService {
     }
 
     public List<PendingPostDTO> getAllPendingPosts() {
-        List<PostResponseDTO> pendingPosts = (List<PostResponseDTO>) inMemoryRepository.getPendingPosts();
+        HashMap<Long, HashMap<Integer, LinkedList<Long>>> pendingPostsMap = inMemoryRepository.getPendingPosts();
+        List<PendingPostDTO> pendingPostDTOs = new ArrayList<>();
 
-        // Convert the PostResponseDTO list to a list of PendingPostDTOs
-        return pendingPosts.stream()
-                .map(postResponseDTO -> {
-                    Post post = postRepository.findById(postResponseDTO.getId())
+        for (Map.Entry<Long, HashMap<Integer, LinkedList<Long>>> threadEntry : pendingPostsMap.entrySet()) {
+            Long threadId = threadEntry.getKey();
+            HashMap<Integer, LinkedList<Long>> postsByStatus = threadEntry.getValue();
+
+            LinkedList<Long> pendingPostsInThread = postsByStatus.get(0); // Assuming 0 is the status for pending posts
+
+            if (pendingPostsInThread != null) {
+                for (Long postId : pendingPostsInThread) {
+                    Post post = postRepository.findById(postId)
                             .orElseThrow(() -> new RuntimeException("Post not found"));
-                    return postMapper.postToPendingPostDTO(post);
-                })
-                .collect(Collectors.toList());
+                    PendingPostDTO pendingPostDTO = postMapper.postToPendingPostDTO(post);
+                    pendingPostDTOs.add(pendingPostDTO);
+                }
+            }
+        }
+
+        return pendingPostDTOs;
     }
 
 
-    public List<PendingThreadDTO> getAllPendingThreads() {
-        List<ThreadResponseDTO> pendingThreads = (List<ThreadResponseDTO>) inMemoryRepository.getPendingThreads();
 
-        // Convert the ThreadResponseDTO list to a list of PendingThreadDTOs
-        return pendingThreads.stream()
-                .map(threadResponseDTO -> {
-                    Thread thread = threadRepository.findById(threadResponseDTO.getId())
+    public List<PendingThreadDTO> getAllPendingThreads() {
+        // Get the pending threads map from the inMemoryRepository
+        HashMap<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> pendingThreadsMap = inMemoryRepository.getPendingThreads();
+        List<PendingThreadDTO> pendingThreadDTOs = new ArrayList<>();
+
+        // Iterate over the map entries
+        for (Map.Entry<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> categoryEntry : pendingThreadsMap.entrySet()) {
+            HashMap<Integer, LinkedList<Long>> threadsByStatus = categoryEntry.getValue();
+
+            // Get the list of pending threads (assuming 0 is the status for pending threads)
+            LinkedList<Long> pendingThreadsInCategory = threadsByStatus.get(0);
+
+            if (pendingThreadsInCategory != null) {
+                for (Long threadId : pendingThreadsInCategory) {
+                    Thread thread = threadRepository.findById(threadId)
                             .orElseThrow(() -> new RuntimeException("Thread not found"));
-                    return threadMapper.threadToPendingThreadDTO(thread);
-                })
-                .collect(Collectors.toList());
+                    PendingThreadDTO pendingThreadDTO = threadMapper.threadToPendingThreadDTO(thread);
+                    pendingThreadDTOs.add(pendingThreadDTO);
+                }
+            }
+        }
+
+        return pendingThreadDTOs;
     }
 
 

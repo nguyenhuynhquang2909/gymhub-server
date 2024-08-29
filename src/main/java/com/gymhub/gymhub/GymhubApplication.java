@@ -86,6 +86,9 @@ public class GymhubApplication {
 		System.out.println("Cache Contents:");
 		System.out.println("Para" + cache.getParametersForAllThreads());
 
+		System.out.println("All thread by id and toxic status " + cache.getPostListByThreadIdAndToxicStatus());
+		System.out.println("All post by id and toxic status " + cache.getThreadListByCategoryAndToxicStatus());
+
 
 
 

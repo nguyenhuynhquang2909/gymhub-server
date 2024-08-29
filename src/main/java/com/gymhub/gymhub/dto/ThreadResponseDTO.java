@@ -70,7 +70,6 @@ public class ThreadResponseDTO {
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
         this.viewCount = viewCount;
-
         this.beenLiked = beenLiked;
         this.postCount = postCount;
         this.authorName = authorName;
