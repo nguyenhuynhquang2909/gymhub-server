@@ -43,7 +43,7 @@ public class PostController {
     @GetMapping("/thread-{id}")
     public List<PostResponseDTO> getPostsInsideAThread(
             HttpServletResponse response,
-//            HttpServletRequest request,
+            HttpServletRequest request,
 //            @RequestHeader("Cookie") String cookies,
             @PathVariable Long id,
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
@@ -52,6 +52,8 @@ public class PostController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
         try {
+            Cookie[] cookies = request.getCookies();
+            cookieManager.setCookies(cookies);
             // Check if the user is logged in by getting the JWT token from the request
             String token = cookieManager.getCookieValue("AuthenticationToken");
             UUID sessionID;
@@ -60,7 +62,6 @@ public class PostController {
                 if (cookieManager.getCookieValue("SessionID") == null) { // No existing session ID
                     sessionID = sessionStorage.createNewSessionWhenViewThread();
                     Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
-                    sessionCookie.setHttpOnly(true);
                     sessionCookie.setSecure(true);
                     sessionCookie.setPath("/");
                     sessionCookie.setMaxAge(60 * 60);
@@ -77,7 +78,6 @@ public class PostController {
                     sessionID = sessionStorage.createNewSession(userID);
                     Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
                     sessionCookie.setHttpOnly(true);
-                    sessionCookie.setSecure(true);
                     sessionCookie.setPath("/");
                     sessionCookie.setMaxAge(60 * 60);
                     response.addCookie(sessionCookie);

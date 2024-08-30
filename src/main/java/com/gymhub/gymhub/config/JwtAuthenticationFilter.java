@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.gymhub.gymhub.components.CookieManager;
+import com.gymhub.gymhub.service.CustomUserDetailsService;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtTokenProvider tokenProvider;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private CustomUserDetailsService userDetailsService;
 
     @Autowired
     CookieManager cookieManager;
@@ -48,10 +49,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         //String jwt = getJwtFromRequest(request);
         Cookie[] cookies = request.getCookies();
+        cookieManager.setCookies(cookies);
         String jwt = cookieManager.getCookieValue("AuthenticationToken");
         if (jwt != null && tokenProvider.validateToken(jwt)) {
             String username = tokenProvider.getUserNameFromJWT(jwt);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
