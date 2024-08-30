@@ -1,6 +1,8 @@
 package com.gymhub.gymhub.repository;
 
 import com.gymhub.gymhub.actions.*;
+import com.gymhub.gymhub.components.CustomOutputStream;
+import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
@@ -24,20 +26,25 @@ import java.util.concurrent.SubmissionPublisher;
 @Repository
 public class InMemoryRepository {
     //
+    public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
+
     @Autowired
     Cache cache;
+
     @Autowired
     CacheManipulation cacheManipulation;
 
-    public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
-
-    private static long actionIdCounter = 0;
     @Autowired
     ThreadRepository threadRepository;
 
 
     @Autowired
     PostRepository postRepository;
+
+    CustomOutputStream customOutputStream;
+    ObjectOutputStream objectOutputStream;
+
+
 
     /**
      * Methods to log cache action to file for future cache restore
@@ -48,20 +55,27 @@ public class InMemoryRepository {
     public void logAction(MustLogAction action) {
 
  //Implementing Custom Serialization with ObjectOutputStream
-        try (FileOutputStream fos = new FileOutputStream(LOG_FILE_PATH);
-             ObjectOutputStream oos = new ObjectOutputStream(fos) {
-                 @Override
-                 protected void writeStreamHeader() throws IOException {
-                     reset();  // This avoids writing a header again when appending to the log file
-                 }
-             }) {
-            oos.writeObject(action);
-            oos.flush();
-            oos.close();
+        try{;
+            File file = new File(LOG_FILE_PATH);
+            if (file.exists()){
+               try(FileOutputStream fos = new FileOutputStream(file, true)){
+                   customOutputStream = new CustomOutputStream(fos);
+                   customOutputStream.writeObject(action);
+               }
+
+            }
+            else {
+                file.createNewFile();
+                try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                    objectOutputStream = new ObjectOutputStream(fos);
+                    objectOutputStream.writeObject(action);
+                    objectOutputStream.close();
+                }
+
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-
         }
 
     }
@@ -69,28 +83,13 @@ public class InMemoryRepository {
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
     public void restoreFromLog() {
-        try (FileInputStream fis = new FileInputStream(LOG_FILE_PATH);
-             ObjectInputStream ois = new ObjectInputStream(fis) {
-                 @Override
-                 protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-                     try {
-                         return super.resolveClass(desc);
-                     } catch (ClassNotFoundException e) {
-//                         // Handle missing class by mapping to an alternative class
-//                         if (desc.getName().equals("com.example.OldClassName")) {
-////                             return com.gym
-//                         }
-                         throw e;
-                     }
-                 }
-             }) {
+        try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
 
-            while (true) {
+            while (true){
                 try {
-                    MustLogAction action = (MustLogAction) ois.readObject();
+                    MustLogAction action = (MustLogAction) ios.readObject();
                     System.out.println("Current action:  " + action);
                     System.out.println("Type of current action: " + action.getActionType());
-
                     // Handle different action types
                     if (action instanceof AddUserAction) {
                         System.out.println(true);
@@ -139,17 +138,19 @@ public class InMemoryRepository {
                                 likePostAction.getMode()
                         );
                     }
-                } catch (EOFException eof) {
-                    // End of file reached, break the loop
-                    break;
-                } catch (ClassNotFoundException | IOException e) {
-                    e.printStackTrace();
+                } catch (EOFException e){
+                    System.out.println("Finished Reading");
                     break;
                 }
+
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
         }
+        catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+
+        }
+
     }
 
 

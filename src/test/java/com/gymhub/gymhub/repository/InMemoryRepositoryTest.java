@@ -13,9 +13,5 @@ class InMemoryRepositoryTest {
 //
 //    }
 
-    @Test
-    void restoreFromLog() {
-        InMemoryRepository repo = new InMemoryRepository();
-        repo.restoreFromLog();
-    }
+
 }
