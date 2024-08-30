@@ -4,12 +4,15 @@ package com.gymhub.gymhub.controller;
 import com.gymhub.gymhub.components.CookieManager;
 import com.gymhub.gymhub.in_memory.SessionStorage;
 import com.gymhub.gymhub.repository.MemberRepository;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -97,6 +100,7 @@ public class AuthController {
             @RequestBody LoginRequestDTO loginRequestDTO,
             HttpServletResponse response) {
         return authService.authenticateUser(response, loginRequestDTO);
+
     }
 
     @Operation(summary = "Log users out", description = "Authenticate a user and returns a JWT Token")
@@ -121,18 +125,25 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(summary = "Get User Profile", description = "Get the profile of the authenticated user")
+    @Operation(
+            summary = "Get User Profile",
+            description = "Get the profile of the authenticated user",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "User profile fetched successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping(value = "/profile", produces = "application/json")
-    public ResponseEntity<?> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
+    public ResponseEntity<?> getUserProfile(
+
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
         // Fetch the user from the database using the username from UserDetails
-        String username = userDetails.getUsername();
+        String username = authentication.getName();
         Member member = memberRepository.findMemberByUserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

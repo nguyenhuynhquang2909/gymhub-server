@@ -81,6 +81,7 @@ public class AuthService {
         //Create a new session
         Long userId = tokenProvider.getClaimsFromJwt(jwt).get("userId", Long.class);
         UUID sessionID = sessionStorage.createNewSession(userId);
+        System.out.println("Session ID: " + sessionID);
         Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
         sessionCookie.setHttpOnly(true);
         sessionCookie.setSecure(true);

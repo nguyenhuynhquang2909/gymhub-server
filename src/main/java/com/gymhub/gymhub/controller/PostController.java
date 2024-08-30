@@ -43,8 +43,8 @@ public class PostController {
     @GetMapping("/thread-{id}")
     public List<PostResponseDTO> getPostsInsideAThread(
             HttpServletResponse response,
-            HttpServletRequest request,
-            @RequestHeader("Cookie") String cookies,
+//            HttpServletRequest request,
+//            @RequestHeader("Cookie") String cookies,
             @PathVariable Long id,
             @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
