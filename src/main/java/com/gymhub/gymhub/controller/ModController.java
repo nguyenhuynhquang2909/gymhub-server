@@ -1,8 +1,10 @@
 package com.gymhub.gymhub.controller;
 
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
+import com.gymhub.gymhub.mapper.ModeratorMapper;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.mapper.ThreadMapper;
 import com.gymhub.gymhub.repository.PostRepository;
@@ -35,19 +37,23 @@ public class ModController {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
+    private ModeratorMapper moderatorMapper;
+
     @Operation(description = "This operation returns mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<ModeratorRequestAndResponseDTO> getMod(@RequestBody ModeratorRequestAndResponseDTO modDTO) {
+    public ResponseEntity<ModeratorRequestAndResponseDTO> getMod(@RequestParam String modUsername) {
         try {
-            String modUsername = modDTO.getUsername();
-            ModeratorRequestAndResponseDTO response = (ModeratorRequestAndResponseDTO) customUserDetailsService.loadUserByUsername(modUsername);
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(modUsername);
+            ModeratorRequestAndResponseDTO response = moderatorMapper.customUserDetailToDTO (userDetails);
             return ResponseEntity.ok(response); // 200 OK
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
         }
     }
+
 
     @Operation(description = "This operation updates mod profile information",
             tags = "Mod Profile Page")
