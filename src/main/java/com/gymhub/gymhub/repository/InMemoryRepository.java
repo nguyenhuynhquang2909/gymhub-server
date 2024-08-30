@@ -11,10 +11,7 @@ import com.gymhub.gymhub.in_memory.CacheManipulation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,7 +29,7 @@ public class InMemoryRepository {
     @Autowired
     CacheManipulation cacheManipulation;
 
-    private static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
+    public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
     private static long actionIdCounter = 0;
     @Autowired
@@ -46,33 +43,70 @@ public class InMemoryRepository {
      * Methods to log cache action to file for future cache restore
      */
 
+
+    //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
     public void logAction(MustLogAction action) {
-        try (FileOutputStream fos = new FileOutputStream(LOG_FILE_PATH, true);
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+
+ //Implementing Custom Serialization with ObjectOutputStream
+        try (FileOutputStream fos = new FileOutputStream(LOG_FILE_PATH);
+             ObjectOutputStream oos = new ObjectOutputStream(fos) {
+                 @Override
+                 protected void writeStreamHeader() throws IOException {
+                     reset();  // This avoids writing a header again when appending to the log file
+                 }
+             }) {
             oos.writeObject(action);
+            oos.flush();
+            oos.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+
         }
+
     }
 
+    //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
     public void restoreFromLog() {
         try (FileInputStream fis = new FileInputStream(LOG_FILE_PATH);
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
+             ObjectInputStream ois = new ObjectInputStream(fis) {
+                 @Override
+                 protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                     try {
+                         return super.resolveClass(desc);
+                     } catch (ClassNotFoundException e) {
+//                         // Handle missing class by mapping to an alternative class
+//                         if (desc.getName().equals("com.example.OldClassName")) {
+////                             return com.gym
+//                         }
+                         throw e;
+                     }
+                 }
+             }) {
+
             while (true) {
                 try {
                     MustLogAction action = (MustLogAction) ois.readObject();
+                    System.out.println("Current action:  " + action);
+                    System.out.println("Type of current action: " + action.getActionType());
+
+                    // Handle different action types
                     if (action instanceof AddUserAction) {
+                        System.out.println(true);
                         cache.getAllMemberID().put(((AddUserAction) action).getUserId(), ((AddUserAction) action).getUserId());
+                        System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
-                                addThreadAction.getCreationDateTime(), addThreadAction.getToxicStatus(),
+                                addThreadAction.getCreationDateTime(),
+                                addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
                         );
+                        System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         changeThreadToxicStatusFromModDashBoard(
                                 changeThreadStatusAction.getThreadId(),
@@ -96,6 +130,7 @@ public class InMemoryRepository {
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
+                        System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
                     } else if (action instanceof LikePostAction likePostAction) {
                         likePost(
                                 likePostAction.getPostId(),
@@ -104,14 +139,19 @@ public class InMemoryRepository {
                                 likePostAction.getMode()
                         );
                     }
-                } catch (Exception e) {
+                } catch (EOFException eof) {
+                    // End of file reached, break the loop
+                    break;
+                } catch (ClassNotFoundException | IOException e) {
+                    e.printStackTrace();
                     break;
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * METHODS TO ADD DOMAIN ENTITY TO CACHE

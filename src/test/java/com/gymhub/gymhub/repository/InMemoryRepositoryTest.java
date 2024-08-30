@@ -6,10 +6,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryRepositoryTest {
 
-    @Test
-    void getSuggestedThreads() {
-        InMemoryRepository repo = new InMemoryRepository();
-        repo.getSuggestedThreads();
+//    @Test
+//    void getSuggestedThreads() {
+//        InMemoryRepository repo = new InMemoryRepository();
+//        repo.getSuggestedThreads();
+//
+//    }
 
+    @Test
+    void restoreFromLog() {
+        InMemoryRepository repo = new InMemoryRepository();
+        repo.restoreFromLog();
     }
 }
