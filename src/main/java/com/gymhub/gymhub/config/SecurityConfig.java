@@ -39,7 +39,8 @@ public class SecurityConfig {
                                 "/post/like/",
                                 "/post/report/",
                                 //"/thread/new/",
-                                "/thread/report/").authenticated()
+                                "/thread/report/",
+                                "/auth/profile").authenticated()
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session
