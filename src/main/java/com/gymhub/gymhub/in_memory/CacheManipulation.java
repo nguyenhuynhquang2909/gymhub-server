@@ -100,7 +100,7 @@ public class CacheManipulation {
         // Add the post to the user's list of posts
         cache.getPostListByUser().get(userId).add(postId);
         return true;
-        }
+    }
 
 
 
@@ -156,4 +156,4 @@ public class CacheManipulation {
 
 
 
-    }
+}

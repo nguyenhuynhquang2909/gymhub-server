@@ -47,8 +47,8 @@ public class GymhubApplication {
 	ThreadRepository threadRepository;
 	@Autowired
 	PostRepository postRepository;
-    @Autowired
-    private OrderedFormContentFilter formContentFilter;
+	@Autowired
+	private OrderedFormContentFilter formContentFilter;
 	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
 	public static void main(String[] args) {
@@ -61,18 +61,18 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	//@PostConstruct
+	@PostConstruct
 	private void restoreCache(){
 		inMemoryRepository.restoreFromLog();
 		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
 		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
 
-}
+	}
 
 
 
-	@PostConstruct
+//	@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 //		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
@@ -160,6 +160,7 @@ public class GymhubApplication {
 						System.out.println("Deserialized: " + obj);
 					} catch (EOFException e){
 						System.out.println("Finished read action");
+						break;
 					}
 
 
@@ -174,6 +175,6 @@ public class GymhubApplication {
 
 	}
 
-	
+
 
 }
