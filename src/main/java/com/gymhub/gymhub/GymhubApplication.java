@@ -17,11 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.web.servlet.filter.OrderedFormContentFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 @SpringBootApplication
@@ -40,7 +40,9 @@ public class GymhubApplication {
 	ThreadRepository threadRepository;
 	@Autowired
 	PostRepository postRepository;
-	
+    @Autowired
+    private OrderedFormContentFilter formContentFilter;
+
 	public static void main(String[] args) {
 		SpringApplication.run(GymhubApplication.class, args);
 	}
@@ -84,7 +86,23 @@ public class GymhubApplication {
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 // Print cache contents to verify
 		System.out.println("Cache Contents:");
-		System.out.println("Para" + cache.getParametersForAllThreads());
+//		System.out.println("Para" + cache.getParametersForAllThreads());
+
+//		System.out.println("All posts by  thread id and toxic status " + cache.getPostListByThreadIdAndToxicStatus());
+		System.out.println("All threads by category and toxic status " );
+		for (Map.Entry<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> categoryEntry : cache.getThreadListByCategoryAndToxicStatus().entrySet()) {
+			ThreadCategoryEnum category = categoryEntry.getKey();
+			HashMap<Integer, LinkedList<Long>> statusMap = categoryEntry.getValue();
+
+			for (Map.Entry<Integer, LinkedList<Long>> statusEntry : statusMap.entrySet()) {
+				Integer status = statusEntry.getKey();
+				LinkedList<Long> threadIds = statusEntry.getValue();
+
+				for (Long threadId : threadIds) {
+					System.out.println("Category: " + category + ", Status: " + status + ", Thread ID: " + threadId);
+				}
+			}
+		}
 
 
 

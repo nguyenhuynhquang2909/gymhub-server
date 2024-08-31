@@ -231,6 +231,7 @@ public class InMemoryRepository {
                 pendingThreadsByCategory.put(category, pendingStatusMap);
             }
         }
+        System.out.println("pending threads by category " + pendingThreadsByCategory);
 
         return pendingThreadsByCategory;
     }
@@ -253,6 +254,7 @@ public class InMemoryRepository {
                 pendingPostsByThread.put(threadId, pendingStatusMap);
             }
         }
+        System.out.println("pendingPostsByThread " + pendingPostsByThread);
 
         return pendingPostsByThread;
     }
