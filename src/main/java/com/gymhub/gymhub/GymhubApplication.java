@@ -61,7 +61,7 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	//@PostConstruct
+	@PostConstruct
 	private void restoreCache(){
 		inMemoryRepository.restoreFromLog();
 		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
@@ -160,6 +160,7 @@ public class GymhubApplication {
 						System.out.println("Deserialized: " + obj);
 					} catch (EOFException e){
 						System.out.println("Finished read action");
+						break;
 					}
 
 
