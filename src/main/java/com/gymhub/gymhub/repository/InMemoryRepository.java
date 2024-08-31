@@ -39,51 +39,46 @@ public class InMemoryRepository {
     @Autowired
     PostRepository postRepository;
 
+    ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(LOG_FILE_PATH));
+
+    public InMemoryRepository() throws IOException {
+    }
+
     /**
      * Methods to log cache action to file for future cache restore
      */
 
-
-    //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
-    public void logAction(MustLogAction action) {
-
- //Implementing Custom Serialization with ObjectOutputStream
-        try (FileOutputStream fos = new FileOutputStream(LOG_FILE_PATH);
-             ObjectOutputStream oos = new ObjectOutputStream(fos) {
-                 @Override
-                 protected void writeStreamHeader() throws IOException {
-                     reset();  // This avoids writing a header again when appending to the log file
-                 }
-             }) {
-            oos.writeObject(action);
-            oos.flush();
-            oos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-
+// Custom ObjectOutputStream to prevent writing a new header when appending
+    class AppendableObjectOutputStream extends ObjectOutputStream {
+        public AppendableObjectOutputStream(OutputStream out) throws IOException {
+            super(out);
         }
 
+        @Override
+        protected void writeStreamHeader() throws IOException {
+            // Prevent writing a new header when appending
+            reset();
+        }
     }
 
+    //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
+    //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
+    public void logAction(MustLogAction action) {
+//
+        try {
+            objectOutputStream.writeObject(action);
+            objectOutputStream.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
+    //overwrite object input stream to read actions object from log file (custom deserialization)
+// Restore from log
     public void restoreFromLog() {
         try (FileInputStream fis = new FileInputStream(LOG_FILE_PATH);
-             ObjectInputStream ois = new ObjectInputStream(fis) {
-                 @Override
-                 protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-                     try {
-                         return super.resolveClass(desc);
-                     } catch (ClassNotFoundException e) {
-//                         // Handle missing class by mapping to an alternative class
-//                         if (desc.getName().equals("com.example.OldClassName")) {
-////                             return com.gym
-//                         }
-                         throw e;
-                     }
-                 }
-             }) {
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
 
             while (true) {
                 try {
@@ -93,9 +88,7 @@ public class InMemoryRepository {
 
                     // Handle different action types
                     if (action instanceof AddUserAction) {
-                        System.out.println(true);
                         cache.getAllMemberID().put(((AddUserAction) action).getUserId(), ((AddUserAction) action).getUserId());
-                        System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
@@ -106,7 +99,6 @@ public class InMemoryRepository {
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
                         );
-                        System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         changeThreadToxicStatusFromModDashBoard(
                                 changeThreadStatusAction.getThreadId(),
@@ -130,7 +122,6 @@ public class InMemoryRepository {
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
-                        System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
                     } else if (action instanceof LikePostAction likePostAction) {
                         likePost(
                                 likePostAction.getPostId(),
@@ -151,7 +142,6 @@ public class InMemoryRepository {
             e.printStackTrace();
         }
     }
-
 
     /**
      * METHODS TO ADD DOMAIN ENTITY TO CACHE
