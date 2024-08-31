@@ -1,6 +1,8 @@
 package com.gymhub.gymhub.repository;
 
 import com.gymhub.gymhub.actions.*;
+import com.gymhub.gymhub.components.CustomOutputStream;
+import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
@@ -24,14 +26,14 @@ import java.util.concurrent.SubmissionPublisher;
 @Repository
 public class InMemoryRepository {
     //
+    public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
+
     @Autowired
     Cache cache;
+
     @Autowired
     CacheManipulation cacheManipulation;
 
-    public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
-
-    private static long actionIdCounter = 0;
     @Autowired
     ThreadRepository threadRepository;
 
@@ -39,56 +41,60 @@ public class InMemoryRepository {
     @Autowired
     PostRepository postRepository;
 
-    ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(LOG_FILE_PATH));
+    CustomOutputStream customOutputStream;
+    ObjectOutputStream objectOutputStream;
 
-    public InMemoryRepository() throws IOException {
-    }
+
 
     /**
      * Methods to log cache action to file for future cache restore
      */
 
-// Custom ObjectOutputStream to prevent writing a new header when appending
-    class AppendableObjectOutputStream extends ObjectOutputStream {
-        public AppendableObjectOutputStream(OutputStream out) throws IOException {
-            super(out);
-        }
 
-        @Override
-        protected void writeStreamHeader() throws IOException {
-            // Prevent writing a new header when appending
-            reset();
-        }
-    }
-
-    //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
     //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
     public void logAction(MustLogAction action) {
-//
-        try {
-            objectOutputStream.writeObject(action);
-            objectOutputStream.flush();
+
+ //Implementing Custom Serialization with ObjectOutputStream
+        try{;
+            File file = new File(LOG_FILE_PATH);
+            if (file.exists()){
+               try(FileOutputStream fos = new FileOutputStream(file, true)){
+                   customOutputStream = new CustomOutputStream(fos);
+                   customOutputStream.writeObject(action);
+               }
+
+            }
+            else {
+                file.createNewFile();
+                try (FileOutputStream fos = new FileOutputStream(file, true)) {
+                    objectOutputStream = new ObjectOutputStream(fos);
+                    objectOutputStream.writeObject(action);
+                    objectOutputStream.close();
+                }
+
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
+
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
-    //overwrite object input stream to read actions object from log file (custom deserialization)
-// Restore from log
     public void restoreFromLog() {
-        try (FileInputStream fis = new FileInputStream(LOG_FILE_PATH);
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
+        try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
 
-            while (true) {
+            while (true){
                 try {
-                    MustLogAction action = (MustLogAction) ois.readObject();
+                    MustLogAction action = (MustLogAction) ios.readObject();
                     System.out.println("Current action:  " + action);
                     System.out.println("Type of current action: " + action.getActionType());
-
                     // Handle different action types
                     if (action instanceof AddUserAction) {
+                        System.out.println(true);
                         cache.getAllMemberID().put(((AddUserAction) action).getUserId(), ((AddUserAction) action).getUserId());
+                        System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         addThreadToCache(
                                 addThreadAction.getThreadId(),
@@ -99,6 +105,7 @@ public class InMemoryRepository {
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
                         );
+                        System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         changeThreadToxicStatusFromModDashBoard(
                                 changeThreadStatusAction.getThreadId(),
@@ -122,6 +129,7 @@ public class InMemoryRepository {
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
+                        System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
                     } else if (action instanceof LikePostAction likePostAction) {
                         likePost(
                                 likePostAction.getPostId(),
@@ -130,18 +138,21 @@ public class InMemoryRepository {
                                 likePostAction.getMode()
                         );
                     }
-                } catch (EOFException eof) {
-                    // End of file reached, break the loop
-                    break;
-                } catch (ClassNotFoundException | IOException e) {
-                    e.printStackTrace();
+                } catch (EOFException e){
+                    System.out.println("Finished Reading");
                     break;
                 }
+
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
         }
+        catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+
+        }
+
     }
+
 
     /**
      * METHODS TO ADD DOMAIN ENTITY TO CACHE

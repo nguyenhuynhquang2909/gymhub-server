@@ -3,6 +3,7 @@ package com.gymhub.gymhub;
 import com.gymhub.gymhub.actions.AddThreadAction;
 import com.gymhub.gymhub.actions.AddUserAction;
 import com.gymhub.gymhub.actions.MustLogAction;
+import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.ForumAccount;
 
 import com.gymhub.gymhub.domain.Member;
@@ -22,12 +23,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.web.servlet.filter.OrderedFormContentFilter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.*;
 import java.util.*;
 
-import static com.gymhub.gymhub.repository.InMemoryRepository.LOG_FILE_PATH;
 
 
 @SpringBootApplication
@@ -36,7 +37,6 @@ import static com.gymhub.gymhub.repository.InMemoryRepository.LOG_FILE_PATH;
 @EntityScan(basePackages = "com.gymhub.gymhub.domain")
 
 public class GymhubApplication {
-
 	@Autowired
 	Cache cache;
 	@Autowired
@@ -49,28 +49,11 @@ public class GymhubApplication {
 	PostRepository postRepository;
     @Autowired
     private OrderedFormContentFilter formContentFilter;
+	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
 	public static void main(String[] args) {
 		SpringApplication.run(GymhubApplication.class, args);
 	}
-
-	private void readAction() {
-		try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
-			System.out.println("Starting read action");
-			while (true) {
-				try {
-					MustLogAction obj = (MustLogAction) in.readObject();
-					System.out.println("Deserialized: " + obj);
-				} catch (EOFException eof) {
-					// End of file reached
-					break;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 
 
 	//later on: replace cacheFill with InMemoryRepositiory.restoreFromLog
@@ -78,10 +61,10 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-@PostConstruct
+	//@PostConstruct
 	private void restoreCache(){
 		inMemoryRepository.restoreFromLog();
-	System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
+		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
 		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
 
@@ -89,8 +72,8 @@ public class GymhubApplication {
 
 
 
-//	@PostConstruct
-	private void cacheFill(){
+	@PostConstruct
+	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 //		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
 //		System.out.println("Mock thread list" + mockThreadList.size());
@@ -148,6 +131,8 @@ public class GymhubApplication {
 
 
 
+
+
 		// Assuming you have methods to retrieve cached data
 		//System.out.println("Thread list with user ID "+ cache.getThreadListByUser());
 		//Long userId = 1L; // Replace with the actual user ID you want to query
@@ -158,8 +143,34 @@ public class GymhubApplication {
 
 
 
-		//read log file (call method)
-readAction();
+		//read log file (call method
+//		readAndPrintLoggedActions();
+		readAction();
+	}
+
+	private void readAction() {
+		System.out.println("Starting read action");
+		ObjectInputStream ios;
+		try {
+			ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH));
+			while (true) {
+				try {
+					try {
+						MustLogAction obj = (MustLogAction) ios.readObject();
+						System.out.println("Deserialized: " + obj);
+					} catch (EOFException e){
+						System.out.println("Finished read action");
+					}
+
+
+				}catch (ClassNotFoundException e){
+					e.printStackTrace();
+				}
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+
 
 	}
 
