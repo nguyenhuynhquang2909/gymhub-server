@@ -3,12 +3,14 @@ package com.gymhub.gymhub;
 import com.gymhub.gymhub.actions.AddThreadAction;
 import com.gymhub.gymhub.actions.AddUserAction;
 import com.gymhub.gymhub.actions.MustLogAction;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.ForumAccount;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.AiRequestBody;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -49,6 +51,8 @@ public class GymhubApplication {
 	PostRepository postRepository;
     @Autowired
     private OrderedFormContentFilter formContentFilter;
+	@Autowired
+	private AiHandler aiHandler;
 	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
 	public static void main(String[] args) {
@@ -61,18 +65,19 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-//	@PostConstruct
-//	private void restoreCache(){
-//		inMemoryRepository.restoreFromLog();
-////		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
-////		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-////		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
-//
-//}
-
-
-
 	@PostConstruct
+	private void restoreCache(){
+;		inMemoryRepository.restoreFromLog();
+		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
+		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
+		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
+		System.out.println(aiHandler.postDataToLocalHost(new AiRequestBody("You are a fat disgusting pig. Fatasses like you are waste of precious space")));
+
+}
+
+
+
+	//@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 //		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
