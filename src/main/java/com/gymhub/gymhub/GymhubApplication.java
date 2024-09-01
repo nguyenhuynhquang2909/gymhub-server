@@ -61,14 +61,14 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	@PostConstruct
-	private void restoreCache(){
-		inMemoryRepository.restoreFromLog();
-//		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
-//		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-//		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
-
-}
+//	@PostConstruct
+//	private void restoreCache(){
+//		inMemoryRepository.restoreFromLog();
+////		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
+////		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
+////		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
+//
+//}
 
 
 

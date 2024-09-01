@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MemberSequence {
-    private Long userId;
+    private Long userId = 1L;
 
     public synchronized boolean incrementing(){
         userId++;

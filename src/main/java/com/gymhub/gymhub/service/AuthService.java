@@ -74,16 +74,15 @@ public class AuthService {
         //Save Token in the cookie
         Cookie cookie = new Cookie("AuthenticationToken", jwt);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge((int) jwtExpiration / 1000);
         response.addCookie(cookie);
         //Create a new session
         Long userId = tokenProvider.getClaimsFromJwt(jwt).get("userId", Long.class);
         UUID sessionID = sessionStorage.createNewSession(userId);
+        System.out.println("Session ID: " + sessionID);
         Cookie sessionCookie = new Cookie("SessionID", sessionID.toString());
         sessionCookie.setHttpOnly(true);
-        sessionCookie.setSecure(true);
         sessionCookie.setPath("/");
         sessionCookie.setMaxAge(60 * 60);
         response.addCookie(sessionCookie);

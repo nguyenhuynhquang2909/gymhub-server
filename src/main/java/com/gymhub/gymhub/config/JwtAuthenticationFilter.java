@@ -34,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     CookieManager cookieManager;
 
     private List<AntPathRequestMatcher> protectedUrls = List.of(
+            new AntPathRequestMatcher("/auth/profile"),
             new AntPathRequestMatcher("/post/new/**"),
             new AntPathRequestMatcher("/post/update/**"),
             new AntPathRequestMatcher("/post/like/**"),
@@ -48,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         //String jwt = getJwtFromRequest(request);
         Cookie[] cookies = request.getCookies();
+        cookieManager.setCookies(cookies);
         String jwt = cookieManager.getCookieValue("AuthenticationToken");
         if (jwt != null && tokenProvider.validateToken(jwt)) {
             String username = tokenProvider.getUserNameFromJWT(jwt);
@@ -55,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("User authenticated: " + username);
         }
 
         filterChain.doFilter(request, response);
