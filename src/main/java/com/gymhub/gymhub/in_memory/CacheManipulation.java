@@ -52,6 +52,8 @@ public class CacheManipulation {
         cache.getThreadListByCategoryAndToxicStatus().get(category).computeIfAbsent(toxicStatusBooleanNumber, k -> new LinkedList<>());
         cache.getThreadListByCategoryAndToxicStatus().get(category).get(toxicStatusBooleanNumber).add(threadId);
 
+        // Initialize thread list by user if necessary
+        cache.getThreadListByUser().computeIfAbsent(authorId, k -> new HashSet<>());
         cache.getThreadListByUser().get(authorId).add(threadId);
 
         // Initialize post list for this thread by toxic status
@@ -97,8 +99,8 @@ public class CacheManipulation {
         // Store the post parameters in the cache
         cache.getParametersForAllPosts().put(postId, postParaMap);
 
-        // Add the post to the user's list of posts
-        cache.getPostListByUser().get(userId).add(postId);
+        // Add the post to the user's list of posts, ensuring the list is initialized
+        cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
         return true;
     }
 
