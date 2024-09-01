@@ -93,13 +93,12 @@ public class InMemoryRepository {
                     // Handle different action types
                     if (action instanceof AddUserAction) {
                         System.out.println(true);
-                        cache.getAllMemberID().put(((AddUserAction) action).getUserId(), ((AddUserAction) action).getUserId());
+                        cacheManipulation.addUserToCache(((AddUserAction) action).getUserId());
                         System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
                     } else if (action instanceof AddThreadAction addThreadAction) {
-                        addThreadToCache(
+                        cacheManipulation.addThreadToCache(
                                 addThreadAction.getThreadId(),
                                 addThreadAction.getCategory(),
-                                addThreadAction.getCreationDateTime(),
                                 addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
@@ -107,21 +106,21 @@ public class InMemoryRepository {
                         );
                         System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
-                        changeThreadToxicStatusFromModDashBoard(
+                        cacheManipulation.changeThreadToxicStatus(
                                 changeThreadStatusAction.getThreadId(),
                                 changeThreadStatusAction.getCategory(),
                                 changeThreadStatusAction.getToxicStatus(),
                                 changeThreadStatusAction.getReason()
                         );
                     } else if (action instanceof ChangePostStatusAction changePostStatusAction) {
-                        changePostToxicStatusFromModDashboard(
+                        cacheManipulation.changePostToxicStatus(
                                 changePostStatusAction.getPostId(),
                                 changePostStatusAction.getThreadId(),
                                 changePostStatusAction.getToxicStatus(),
                                 changePostStatusAction.getReason()
                         );
                     } else if (action instanceof AddPostAction addPostAction) {
-                        addPostToCache(
+                        cacheManipulation.addPostToCache(
                                 addPostAction.getPostId(),
                                 addPostAction.getThreadId(),
                                 addPostAction.getUserId(),
@@ -131,7 +130,7 @@ public class InMemoryRepository {
                         );
                         System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
                     } else if (action instanceof LikePostAction likePostAction) {
-                        likePost(
+                        cacheManipulation.likePost(
                                 likePostAction.getPostId(),
                                 likePostAction.getUserId(),
                                 likePostAction.getThreadId(),
