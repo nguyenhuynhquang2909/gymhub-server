@@ -18,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +43,12 @@ public class PostService {
 
     @Autowired
     private PostSequence postSequence;
+
+    @Autowired
+    private Cache cache;
+
+    @Autowired
+    private TitleService titleService;
 
     private long actionIdCounter = 0;
 
@@ -125,4 +134,76 @@ public class PostService {
 
         return result;
     }
+
+    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
+        long postId = postRequestDTO.getPostId();
+        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+        long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
+
+        // Get the set of posts the member has liked
+        Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
+
+        // Check if the member has already liked the post
+        if (likedPosts.contains(postId)) {
+            return false; // Already liked, so do nothing
+        }
+
+        // Like the post
+        likedPosts.add(postId);
+        cache.getPostLikeListByUser().put(memberId, likedPosts);
+
+        // Update the like count in the cache
+        ConcurrentHashMap<String, Object> postParams = cache.getParametersForAllPosts().get(postId);
+        int currentLikeCount = (int) postParams.getOrDefault("LikeCount", 0);
+        postParams.put("LikeCount", currentLikeCount + 1);
+
+        // Update the post owner's title based on the new total like count
+        Member postOwner = memberRepository.findById(postOwnerId)
+                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
+        int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
+        // Set the new title based on total likes
+        TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
+        postOwner.setTitle(newTitle.name());
+        memberRepository.save(postOwner);
+
+        return true; // Operation succeeded
+    }
+
+
+    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
+        long postId = postRequestDTO.getPostId();
+        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+        long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
+
+        // Get the set of posts the member has liked
+        Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
+
+        // Check if the member has not liked the post yet
+        if (!likedPosts.contains(postId)) {
+            return false; // Not liked, so nothing to undo
+        }
+
+        // Unlike the post
+        likedPosts.remove(postId);
+        cache.getPostLikeListByUser().put(memberId, likedPosts);
+
+        // Update the like count in the cache
+        ConcurrentHashMap<String, Object> postParams = cache.getParametersForAllPosts().get(postId);
+        int currentLikeCount = (int) postParams.getOrDefault("LikeCount", 0);
+        postParams.put("LikeCount", Math.max(0, currentLikeCount - 1)); // Decrease like count, ensuring it doesn't go below 0
+
+        // Update the post owner's title based on the new total like count
+        Member postOwner = memberRepository.findById(postOwnerId)
+                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
+        int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
+        // Set the new title based on total likes
+        TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
+        postOwner.setTitle(newTitle.name());
+        memberRepository.save(postOwner);
+
+        return true; // Operation succeeded
+    }
+
+
+
 }

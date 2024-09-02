@@ -155,7 +155,7 @@ public class ThreadController {
 
     @Operation(description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)", tags = "Thread Page")
     @PatchMapping("/update/{threadID}")
-    public ResponseEntity<Void> updateThreadTitle(
+    public ResponseEntity<Void> updateThread(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
             @RequestBody ThreadRequestDTO threadRequestDTO,

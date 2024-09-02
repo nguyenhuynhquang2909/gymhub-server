@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 @Getter
 @Setter
-@Schema(description = "This includes all the member-related field to be included in server's response")
+@Schema(description = "This includes all the member-related field to be included in client request body")
 public class MemberRequestDTO {
+    @Schema(description = "The member Id")
+    private  Long id;
 
 
     @Schema(description = "The username of an account")
@@ -33,5 +35,9 @@ public class MemberRequestDTO {
     }
 
     public MemberRequestDTO() {
+    }
+
+
+    public MemberRequestDTO(Long id) {
     }
 }

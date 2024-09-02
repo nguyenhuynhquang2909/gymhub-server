@@ -12,7 +12,8 @@ import lombok.Setter;
 public class PostRequestDTO {
     @Schema(description = "Id of the post")
     private Long postId;
-
+    @Schema(description = "Id of the post's owner")
+    private Long ownerId;
 
 
     @Schema(description = "Content of the post")
@@ -24,8 +25,9 @@ public class PostRequestDTO {
     @Schema(description = "Id of the thread the post belongs to")
     private Long threadId;
 
-    public PostRequestDTO(Long postId, Long authorId, String content, String encodedImage, Long threadId) {
+    public PostRequestDTO(Long postId, Long ownerId, String content, String encodedImage, Long threadId) {
         this.postId = postId;
+        this.ownerId = ownerId;
         this.content = content;
         this.encodedImage = encodedImage;
         this.threadId = threadId;

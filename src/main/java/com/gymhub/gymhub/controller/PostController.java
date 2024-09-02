@@ -133,22 +133,7 @@ public class PostController {
         }
     }
 
-    @Operation(description = "This operation increments or decrements the like count of a post", tags = "Thread Page")
-    @PatchMapping("/like/post-{postId}")
-    public ResponseEntity<Void> changePostLike(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "The id of the post whose like count is to be changed", required = true)
-            @PathVariable Long postId,
-            @RequestBody IncreDecreDTO body) {
 
-        try {
-            // Existing code or logic here
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
     @PatchMapping("/update/post-{id}")
@@ -173,7 +158,7 @@ public class PostController {
     }
 
     @Operation(description = "This operation reports a post to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report")
+    @PatchMapping("/report/post-{id}")
     public ResponseEntity<String> reportPost(
             @RequestBody PostRequestDTO postRequestDTO,
             @RequestParam String reason) {
@@ -188,6 +173,55 @@ public class PostController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to report post due to server error."); // 500 Internal Server Error
+        }
+    }
+
+
+    @Operation(description = "This operation likes a post by a member", tags = "Thread Page")
+    @PatchMapping("/like/post-{id}")
+    public ResponseEntity<Void> likePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PostRequestDTO postRequestDTO) {
+
+        try {
+            // Create a MemberRequestDTO from the authenticated user's details
+            MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
+
+            // Call the likePost method in the service
+            boolean success = postService.likePost(postRequestDTO, memberRequestDTO);
+
+            if (success) {
+                return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was liked successfully
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if the post was already liked
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error if something went wrong
+        }
+    }
+
+    @Operation(description = "This operation unlikes a post by a member", tags = "Thread Page")
+    @PatchMapping("/unlike/post-{id}")
+    public ResponseEntity<Void> unlikePost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PostRequestDTO postRequestDTO) {
+
+        try {
+            // Create a MemberRequestDTO from the authenticated user's details
+            MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
+
+            // Call the unlikePost method in the service
+            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO);
+
+            if (success) {
+                return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was unliked successfully
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if the post was not liked before
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error if something went wrong
         }
     }
 }
