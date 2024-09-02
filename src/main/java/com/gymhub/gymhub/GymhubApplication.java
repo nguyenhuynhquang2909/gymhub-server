@@ -49,8 +49,8 @@ public class GymhubApplication {
 	ThreadRepository threadRepository;
 	@Autowired
 	PostRepository postRepository;
-    @Autowired
-    private OrderedFormContentFilter formContentFilter;
+	@Autowired
+	private OrderedFormContentFilter formContentFilter;
 	@Autowired
 	private AiHandler aiHandler;
 	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
@@ -67,17 +67,19 @@ public class GymhubApplication {
 
 	@PostConstruct
 	private void restoreCache(){
-;		inMemoryRepository.restoreFromLog();
+		;		inMemoryRepository.restoreFromLog();
 		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
-		System.out.println(aiHandler.postDataToLocalHost(new AiRequestBody("You are a fat disgusting pig. Fatasses like you are waste of precious space")));
+		System.out.println("Posts in cache: " + cache.getParametersForAllPosts());
+		//Run the AI script files, then comment out this line to test the AI model
 
-}
+//		System.out.println(aiHandler.postDataToLocalHost(new AiRequestBody("You are a fat disgusting pig. Fatasses like you are waste of precious space")));
+
+	}
 
 
 
-	//@PostConstruct
+//	@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 //		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
@@ -180,6 +182,6 @@ public class GymhubApplication {
 
 	}
 
-	
+
 
 }
