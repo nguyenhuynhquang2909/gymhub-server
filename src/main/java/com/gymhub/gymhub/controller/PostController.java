@@ -112,11 +112,10 @@ public class PostController {
     }
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
-    @PostMapping("/new/thread-{threadId}")
+    @PostMapping("/new")
     public ResponseEntity<Void> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
-            @PathVariable Long threadId,
             @RequestBody PostRequestDTO post) {
 
         try {

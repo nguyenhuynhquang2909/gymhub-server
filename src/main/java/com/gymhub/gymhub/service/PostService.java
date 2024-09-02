@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
@@ -43,6 +44,8 @@ public class PostService {
 
     @Autowired
     private PostSequence postSequence;
+    @Autowired
+    private AiHandler aiHandler;
 
     @Autowired
     private Cache cache;
@@ -77,11 +80,26 @@ public class PostService {
                     .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
 
             Post post = postMapper.postRequestToPost(postRequestDTO, author, thread);
+            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+            double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
+            ToxicStatusEnum tempToxicEnum;
+            boolean tempResolveStatus;
+            String tempReason;
 
-            // Temporary setup for the post before AI analysis
-            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-            boolean tempResolveStatus = false;
-            String tempReason = "";
+
+            if (predictionVal >= 0.5) {
+                // Temporary setup for the post before AI analysis
+                tempToxicEnum = ToxicStatusEnum.PENDING;
+                tempResolveStatus = true;
+                tempReason = "Body Shaming";
+            }
+            else {
+                // Temporary setup for the post before AI analysis
+                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+                tempResolveStatus = false;
+                tempReason = "";
+            }
+
 
             // Add post to cache
             inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);

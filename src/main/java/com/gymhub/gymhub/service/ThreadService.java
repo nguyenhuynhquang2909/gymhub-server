@@ -1,5 +1,7 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.components.AiHandler;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
@@ -42,6 +44,9 @@ public class ThreadService {
     private ThreadSequence threadSequence;
 
     @Autowired TagService tagService;
+
+    @Autowired
+    private AiHandler aiHandler;
 
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
@@ -143,10 +148,16 @@ public class ThreadService {
     public void createThread(Long memberId, ThreadRequestDTO threadRequestDTO) {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         long id = threadSequence.getUserId();
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
         thread.setOwner(owner);
+        AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
+        double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
+        ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+        if (predictionVal >= 0.5) {
+            tempToxicEnum = ToxicStatusEnum.PENDING;
+        }
+        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
 
         // Save the thread to the database
         threadRepository.save(thread);
