@@ -68,48 +68,40 @@ public class PostService {
                 .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
-
     public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
         try {
-            long id = postSequence.getUserId();
+            long id = this.postSequence.getUserId();
             postRequestDTO.setPostId(id);
-
-            Member author = memberRepository.findById(memberID)
-                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-            Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
-                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
-
-            Post post = postMapper.postRequestToPost(postRequestDTO, author, thread);
+            Member author = (Member)this.memberRepository.findById(memberID).orElseThrow(() -> {
+                return new IllegalArgumentException("Author not found");
+            });
+            Thread thread = (Thread)this.threadRepository.findById(postRequestDTO.getThreadId()).orElseThrow(() -> {
+                return new IllegalArgumentException("Thread not found");
+            });
+            Post post = this.postMapper.postRequestToPost(postRequestDTO, author, thread);
             AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
-            double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
+            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
             ToxicStatusEnum tempToxicEnum;
             boolean tempResolveStatus;
             String tempReason;
-
-
             if (predictionVal >= 0.5) {
-                // Temporary setup for the post before AI analysis
                 tempToxicEnum = ToxicStatusEnum.PENDING;
                 tempResolveStatus = true;
                 tempReason = "Body Shaming";
-            }
-            else {
-                // Temporary setup for the post before AI analysis
+            } else {
                 tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
                 tempResolveStatus = false;
                 tempReason = "";
             }
 
-
-            // Add post to cache
-            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
-
-            postRepository.save(post);
-            return true; // Operation succeeded
-        } catch (Exception e) {
-            return false; // Operation failed due to exception
+            this.inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
+            this.postRepository.save(post);
+            return true;
+        } catch (Exception var14) {
+            return false;
         }
     }
+
 
 
     public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
