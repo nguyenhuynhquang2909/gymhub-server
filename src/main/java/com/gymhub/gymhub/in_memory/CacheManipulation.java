@@ -102,7 +102,7 @@ public class CacheManipulation {
         // Add the post to the user's list of posts, ensuring the list is initialized
         cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
         return true;
-        }
+    }
 
 
 
@@ -158,4 +158,4 @@ public class CacheManipulation {
 
 
 
-    }
+}

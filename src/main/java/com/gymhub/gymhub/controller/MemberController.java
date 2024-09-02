@@ -38,9 +38,9 @@ public class MemberController {
 
     @Operation(description = "This operation returns member information", tags = "Member Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<MemberResponseDTO> getMember(@PathVariable Long id) {
+    public ResponseEntity<MemberResponseDTO> getMember(@RequestParam String memberUsername) {
         try {
-            MemberResponseDTO memberResponseDTO = (MemberResponseDTO) customUserDetailsService.loadUserByUsername(id.toString());
+            MemberResponseDTO memberResponseDTO = (MemberResponseDTO) customUserDetailsService.loadUserByUsername(memberUsername);
             return ResponseEntity.ok(memberResponseDTO); // 200 OK
         } catch (UsernameNotFoundException e) {
             e.printStackTrace();

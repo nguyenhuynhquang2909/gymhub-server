@@ -54,14 +54,14 @@ public class InMemoryRepository {
     //overwrite object output stream class to append (write and keep old data lines) action objects into log file (custom serialization)
     public void logAction(MustLogAction action) {
 
- //Implementing Custom Serialization with ObjectOutputStream
+        //Implementing Custom Serialization with ObjectOutputStream
         try{;
             File file = new File(LOG_FILE_PATH);
             if (file.exists()){
-               try(FileOutputStream fos = new FileOutputStream(file, true)){
-                   customOutputStream = new CustomOutputStream(fos);
-                   customOutputStream.writeObject(action);
-               }
+                try(FileOutputStream fos = new FileOutputStream(file, true)){
+                    customOutputStream = new CustomOutputStream(fos);
+                    customOutputStream.writeObject(action);
+                }
 
             }
             else {
@@ -781,11 +781,11 @@ public class InMemoryRepository {
             ConcurrentHashMap<String, Object> threadParameters = cache.getParametersForAllThreads().get(threadId);
             // Return the resolveStatus if it exists, otherwise return null
             int resolveStatusInt =  (int) threadParameters.getOrDefault("ResolveStatus", false);
-          if (resolveStatusInt == 1){
-              return  true;
-          }else {
-              return false;
-          }
+            if (resolveStatusInt == 1){
+                return  true;
+            }else {
+                return false;
+            }
 
         } else {
             // If the thread ID is not found, return null or throw an exception based on your requirements
