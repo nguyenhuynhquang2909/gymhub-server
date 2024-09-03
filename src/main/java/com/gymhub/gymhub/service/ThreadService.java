@@ -182,6 +182,12 @@ public class ThreadService {
                 return false; // User is not authorized to update this thread
             }
 
+            AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
+            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+            if (predictionVal >= 0.5){
+                //Removing the id of the post from the non_toxic map
+                inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(),  threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+            }
             thread.setTitle(threadRequestDTO.getTitle());
 
             // Remove all existing tags from the thread
