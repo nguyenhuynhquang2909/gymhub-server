@@ -113,6 +113,15 @@ public class PostService {
                 return false; // User is not authorized to update this post
             }
             //CALL AI API
+            AiRequestBody aiRequestBody = new AiRequestBody(updatePostContentDTO.getContent());
+            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+            if (predictionVal >= 0.5){
+                //Removing the id of the post from the non_toxic map
+                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostContentDTO.getPostId(), updatePostContentDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+            }
+            else {
+
+            }
             post.setContent(updatePostContentDTO.getContent());
 
             Image updatedImage = post.getImage();
