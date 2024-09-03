@@ -3,12 +3,14 @@ package com.gymhub.gymhub;
 import com.gymhub.gymhub.actions.AddThreadAction;
 import com.gymhub.gymhub.actions.AddUserAction;
 import com.gymhub.gymhub.actions.MustLogAction;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.ForumAccount;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.AiRequestBody;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import com.gymhub.gymhub.in_memory.Cache;
@@ -47,8 +49,10 @@ public class GymhubApplication {
 	ThreadRepository threadRepository;
 	@Autowired
 	PostRepository postRepository;
-    @Autowired
-    private OrderedFormContentFilter formContentFilter;
+	@Autowired
+	private OrderedFormContentFilter formContentFilter;
+	@Autowired
+	private AiHandler aiHandler;
 	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
 	public static void main(String[] args) {
@@ -63,12 +67,17 @@ public class GymhubApplication {
 
 	@PostConstruct
 	private void restoreCache(){
-		inMemoryRepository.restoreFromLog();
+
+		;		inMemoryRepository.restoreFromLog();
 		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
-		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
-}
+		System.out.println("Posts in cache: " + cache.getParametersForAllPosts());
+		//Run the AI script files, then comment out this line to test the AI model
+
+//		System.out.println(aiHandler.postDataToLocalHost(new AiRequestBody("You are a fat disgusting pig. Fatasses like you are waste of precious space")));
+
+	}
+
 
 
 
@@ -175,6 +184,6 @@ public class GymhubApplication {
 
 	}
 
-	
+
 
 }

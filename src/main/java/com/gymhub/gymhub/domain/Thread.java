@@ -37,7 +37,7 @@ public class Thread extends ForumUnit {
 
     @ManyToMany
     @JoinTable(
-            name = "ThreadTag",
+            name = "thread_tag",  // Match the table name with your database schema
             joinColumns = @JoinColumn(name = "thread_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )

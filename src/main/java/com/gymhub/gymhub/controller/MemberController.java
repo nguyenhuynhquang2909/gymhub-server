@@ -1,8 +1,10 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.config.CustomUserDetails;
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
+import com.gymhub.gymhub.mapper.MemberMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
 import com.gymhub.gymhub.service.MemberService;
@@ -36,11 +38,16 @@ public class MemberController {
     @Autowired
     private InMemoryRepository inMemoryRepository;
 
+    @Autowired
+    private MemberMapper memberMapper;
+
     @Operation(description = "This operation returns member information", tags = "Member Profile Page")
     @GetMapping("/{id}")
     public ResponseEntity<MemberResponseDTO> getMember(@RequestParam String memberUsername) {
         try {
-            MemberResponseDTO memberResponseDTO = (MemberResponseDTO) customUserDetailsService.loadUserByUsername(memberUsername);
+            Member member = (Member) customUserDetailsService.loadUserByUsername(memberUsername);
+            MemberResponseDTO memberResponseDTO = memberMapper.memberToMemberResponseDTO(member);
+
             return ResponseEntity.ok(memberResponseDTO); // 200 OK
         } catch (UsernameNotFoundException e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
@@ -18,7 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +44,14 @@ public class PostService {
 
     @Autowired
     private PostSequence postSequence;
+    @Autowired
+    private AiHandler aiHandler;
+
+    @Autowired
+    private Cache cache;
+
+    @Autowired
+    private TitleService titleService;
 
     private long actionIdCounter = 0;
 
@@ -56,33 +68,40 @@ public class PostService {
                 .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
-
     public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
         try {
-            long id = postSequence.getUserId();
+            long id = this.postSequence.getUserId();
             postRequestDTO.setPostId(id);
+            Member author = (Member)this.memberRepository.findById(memberID).orElseThrow(() -> {
+                return new IllegalArgumentException("Author not found");
+            });
+            Thread thread = (Thread)this.threadRepository.findById(postRequestDTO.getThreadId()).orElseThrow(() -> {
+                return new IllegalArgumentException("Thread not found");
+            });
+            Post post = this.postMapper.postRequestToPost(postRequestDTO, author, thread);
+            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+            ToxicStatusEnum tempToxicEnum;
+            boolean tempResolveStatus;
+            String tempReason;
+            if (predictionVal >= 0.5) {
+                tempToxicEnum = ToxicStatusEnum.PENDING;
+                tempResolveStatus = true;
+                tempReason = "Body Shaming";
+            } else {
+                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+                tempResolveStatus = false;
+                tempReason = "";
+            }
 
-            Member author = memberRepository.findById(memberID)
-                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-            Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
-                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
-
-            Post post = postMapper.postRequestToPost(postRequestDTO, author, thread);
-
-            // Temporary setup for the post before AI analysis
-            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-            boolean tempResolveStatus = false;
-            String tempReason = "";
-
-            // Add post to cache
-            inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
-
-            postRepository.save(post);
-            return true; // Operation succeeded
-        } catch (Exception e) {
-            return false; // Operation failed due to exception
+            this.inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
+            this.postRepository.save(post);
+            return true;
+        } catch (Exception var14) {
+            return false;
         }
     }
+
 
 
     public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
@@ -125,4 +144,76 @@ public class PostService {
 
         return result;
     }
+
+    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
+        long postId = postRequestDTO.getPostId();
+        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+        long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
+
+        // Get the set of posts the member has liked
+        Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
+
+        // Check if the member has already liked the post
+        if (likedPosts.contains(postId)) {
+            return false; // Already liked, so do nothing
+        }
+
+        // Like the post
+        likedPosts.add(postId);
+        cache.getPostLikeListByUser().put(memberId, likedPosts);
+
+        // Update the like count in the cache
+        ConcurrentHashMap<String, Object> postParams = cache.getParametersForAllPosts().get(postId);
+        int currentLikeCount = (int) postParams.getOrDefault("LikeCount", 0);
+        postParams.put("LikeCount", currentLikeCount + 1);
+
+        // Update the post owner's title based on the new total like count
+        Member postOwner = memberRepository.findById(postOwnerId)
+                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
+        int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
+        // Set the new title based on total likes
+        TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
+        postOwner.setTitle(newTitle.name());
+        memberRepository.save(postOwner);
+
+        return true; // Operation succeeded
+    }
+
+
+    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
+        long postId = postRequestDTO.getPostId();
+        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+        long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
+
+        // Get the set of posts the member has liked
+        Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
+
+        // Check if the member has not liked the post yet
+        if (!likedPosts.contains(postId)) {
+            return false; // Not liked, so nothing to undo
+        }
+
+        // Unlike the post
+        likedPosts.remove(postId);
+        cache.getPostLikeListByUser().put(memberId, likedPosts);
+
+        // Update the like count in the cache
+        ConcurrentHashMap<String, Object> postParams = cache.getParametersForAllPosts().get(postId);
+        int currentLikeCount = (int) postParams.getOrDefault("LikeCount", 0);
+        postParams.put("LikeCount", Math.max(0, currentLikeCount - 1)); // Decrease like count, ensuring it doesn't go below 0
+
+        // Update the post owner's title based on the new total like count
+        Member postOwner = memberRepository.findById(postOwnerId)
+                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
+        int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
+        // Set the new title based on total likes
+        TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
+        postOwner.setTitle(newTitle.name());
+        memberRepository.save(postOwner);
+
+        return true; // Operation succeeded
+    }
+
+
+
 }

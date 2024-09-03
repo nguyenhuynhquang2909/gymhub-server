@@ -1,5 +1,7 @@
 package com.gymhub.gymhub.service;
 
+import com.gymhub.gymhub.components.AiHandler;
+import com.gymhub.gymhub.components.AiHandler;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
@@ -12,6 +14,7 @@ import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.gymhub.gymhub.domain.Tag;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,6 +42,11 @@ public class ThreadService {
 
     @Autowired
     private ThreadSequence threadSequence;
+
+    @Autowired TagService tagService;
+
+    @Autowired
+    private AiHandler aiHandler;
 
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
@@ -143,10 +151,21 @@ public class ThreadService {
         long id = threadSequence.getUserId();
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
         thread.setOwner(owner);
-
+        AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
+        double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+        if (predictionVal >= 0.5) {
+            tempToxicEnum = ToxicStatusEnum.PENDING;
+        }
         inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
+
+        // Save the thread to the database
         threadRepository.save(thread);
+
+        // Add tags to the thread
+        for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
+            tagService.addTagToThread(thread.getId(), tagName);
+        }
     }
 
     public boolean reportThread(ThreadRequestDTO threadRequestDTO, String reason) {
@@ -164,10 +183,21 @@ public class ThreadService {
             }
 
             thread.setTitle(threadRequestDTO.getTitle());
-            thread.setTags(threadRequestDTO.getTags());
+
+            // Remove all existing tags from the thread
+            for (String tagName : thread.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
+                tagService.deleteTagFromThread(thread.getId(), tagName);
+            }
+
+            // Add new tags to the thread
+            for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
+                tagService.addTagToThread(thread.getId(), tagName);
+            }
+
             threadRepository.save(thread);
             return true; // Operation succeeded
         } catch (Exception e) {
+            e.printStackTrace();
             return false; // Operation failed due to exception
         }
     }
