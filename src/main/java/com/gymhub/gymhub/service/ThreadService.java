@@ -129,14 +129,14 @@ public class ThreadService {
 
             if (thread != null) {
                 ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread);
-                threadResponseDTO.setLikeCount((Integer) threadParams.get("LikeCount"));
-                threadResponseDTO.setViewCount((Integer) threadParams.get("ViewCount"));
-                threadResponseDTO.setPostCount((Integer) threadParams.get("PostCount"));
-                threadResponseDTO.setCreationDateTime((Long) threadParams.get("CreationDate"));
-                ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.get("toxicStatus"));
+                threadResponseDTO.setLikeCount((Integer) threadParams.getOrDefault("LikeCount", 0));
+                threadResponseDTO.setViewCount((Integer) threadParams.getOrDefault("ViewCount", 0));
+                threadResponseDTO.setPostCount((Integer) threadParams.getOrDefault("PostCount", 0));
+                threadResponseDTO.setCreationDateTime((Long) threadParams.getOrDefault("CreationDate", System.currentTimeMillis()));
+                ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.getOrDefault("toxicStatus", 0));
                 threadResponseDTO.setToxicStatus(toxicStatus);
-                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("ResolveStatus"));
-                threadResponseDTO.setReason((String) threadParams.get("Reason"));
+                threadResponseDTO.setResolveStatus((Integer) threadParams.getOrDefault("ResolveStatus", 0) == 1);
+                threadResponseDTO.setReason((String) threadParams.getOrDefault("Reason", "No reason provided"));
 
                 threadResponseDTOList.add(threadResponseDTO);
             }

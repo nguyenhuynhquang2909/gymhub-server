@@ -674,7 +674,14 @@ public class InMemoryRepository {
             // Retrieve the parameter map for the post
             ConcurrentHashMap<String, Object> postParameters = cache.getParametersForAllPosts().get(postId);
             // Return the resolveStatus if it exists, otherwise return null
-            return (boolean) postParameters.getOrDefault("ResolveStatus", false);
+            Object resolvedStatusObj = postParameters.getOrDefault("ResolveStatus", false);
+            if (resolvedStatusObj instanceof Integer) {
+                return (Integer) resolvedStatusObj == 1;
+            } else if (resolvedStatusObj instanceof Boolean) {
+                return (Boolean) resolvedStatusObj;
+            } else {
+                throw new RuntimeException("Unexpected type for ResolveStatus");
+            }
         } else {
             throw new RuntimeException("postId " + postId + " not found");
         }

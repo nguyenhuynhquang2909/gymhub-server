@@ -84,6 +84,7 @@ public class SessionStorage {
      * @return
      */
     public boolean addThreadToThreadView(UUID sessionId, Long threadId){
+        sessionThreadViews.computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>());
         if (!sessionThreadViews.get(sessionId).containsKey(threadId)){
             sessionThreadViews.get(sessionId).put(threadId, System.currentTimeMillis());
             int currentViews = (int) cache.getParametersForAllThreads().get(threadId).get("ViewCount");
