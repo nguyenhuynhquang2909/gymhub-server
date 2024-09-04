@@ -7,6 +7,7 @@ import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -108,6 +109,7 @@ public class ThreadController {
         }
     }
 
+    @Operation(summary = "Create a new thread", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/new")
     public ResponseEntity<String> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
