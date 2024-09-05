@@ -27,12 +27,12 @@ public class Post extends ForumUnit {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "thread_id", nullable = false, updatable = false)
+    @JoinColumn(name = "thread_id", nullable = false, updatable = true)
     private Thread thread;
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false, updatable = false)
+    @JoinColumn(name = "author_id", nullable = false, updatable = true)
     private Member author;
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -74,13 +74,17 @@ public class PostService {
     public boolean createPost(PostRequestDTO postRequestDTO) {
         try {
             long postId = postSequence.getNextPostId();
+            System.out.println("Creating post with Post ID: " + postId);
+            Long ownerId = postRequestDTO.getOwnerId();
             // Validate the member
-            Member author = memberRepository.findById(postRequestDTO.getOwnerId())
+            Member author = memberRepository.findById(ownerId)
                     .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-
+            System.out.println("Found author: " + author.getId());
             // Validate the thread
-            Thread thread = threadRepository.findById(postRequestDTO.getThreadId())
+            Long threadId = postRequestDTO.getThreadId();
+            Thread thread = threadRepository.findById(threadId)
                     .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+            System.out.println("Found thread: " + thread.getId());
             // Handle encoded image if present
             Image image = null;
             if (postRequestDTO.getEncodedImage() != null && !postRequestDTO.getEncodedImage().isEmpty()) {
@@ -90,6 +94,7 @@ public class PostService {
             }
             Post post = new Post(postId,LocalDateTime.now(), postRequestDTO.getContent(), image, author, thread);
             postRepository.save(post);
+            System.out.println("Post saved successfully with ID: " + post.getId() + ", Author: " + post.getAuthor().getId() + ", Thread: " + post.getThread().getId());
 //            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
 //            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
 //            ToxicStatusEnum tempToxicEnum;
