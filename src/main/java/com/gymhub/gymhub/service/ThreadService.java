@@ -48,6 +48,13 @@ public class ThreadService {
     @Autowired
     private AiHandler aiHandler;
 
+
+    public ThreadResponseDTO getAThreadByThreadId (Long threadId) {
+        Thread thread =   threadRepository.findById(threadId).orElseThrow(()->new RuntimeException("Thread not found"));
+        return threadMapper.toThreadResponseDTO(thread);
+    }
+
+
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
         HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
