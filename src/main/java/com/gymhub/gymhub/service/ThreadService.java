@@ -171,8 +171,8 @@ public class ThreadService {
         threadRepository.save(thread);
 
         // Add tags to the thread
-        for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-            tagService.addTagToThread(thread.getId(), tagName);
+        for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
+            tagService.addTagToThread(thread.getId(), tagId);
         }
     }
 
@@ -199,13 +199,11 @@ public class ThreadService {
             thread.setTitle(threadRequestDTO.getTitle());
 
             // Remove all existing tags from the thread
-            for (String tagName : thread.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-                tagService.deleteTagFromThread(thread.getId(), tagName);
-            }
+           thread.getTags().clear();
 
-            // Add new tags to the thread
-            for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-                tagService.addTagToThread(thread.getId(), tagName);
+            // Add new tags to the thread by tag IDs
+            for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
+                tagService.addTagToThread(thread.getId(), tagId);
             }
 
             threadRepository.save(thread);
