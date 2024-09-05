@@ -79,20 +79,23 @@ public class PostService {
                 return new IllegalArgumentException("Thread not found");
             });
             Post post = this.postMapper.postRequestToPost(postRequestDTO, author, thread);
-            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
-            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-            ToxicStatusEnum tempToxicEnum;
-            boolean tempResolveStatus;
-            String tempReason;
-            if (predictionVal >= 0.5) {
-                tempToxicEnum = ToxicStatusEnum.PENDING;
-                tempResolveStatus = true;
-                tempReason = "Body Shaming";
-            } else {
-                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-                tempResolveStatus = false;
-                tempReason = "";
-            }
+//            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+//            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+//            ToxicStatusEnum tempToxicEnum;
+//            boolean tempResolveStatus;
+//            String tempReason;
+//            if (predictionVal >= 0.5) {
+//                tempToxicEnum = ToxicStatusEnum.PENDING;
+//                tempResolveStatus = true;
+//                tempReason = "Body Shaming";
+//            } else {
+//                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+//                tempResolveStatus = false;
+//                tempReason = "";
+//            }
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            boolean tempResolveStatus = false;
+            String tempReason = "";
 
             this.inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
             this.postRepository.save(post);
@@ -113,15 +116,15 @@ public class PostService {
                 return false; // User is not authorized to update this post
             }
             //CALL AI API
-            AiRequestBody aiRequestBody = new AiRequestBody(updatePostContentDTO.getContent());
-            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-            if (predictionVal >= 0.5){
-                //Removing the id of the post from the non_toxic map
-                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostContentDTO.getPostId(), updatePostContentDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
-            }
-            else {
-
-            }
+//            AiRequestBody aiRequestBody = new AiRequestBody(updatePostContentDTO.getContent());
+//            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+//            if (predictionVal >= 0.5){
+//                //Removing the id of the post from the non_toxic map
+//                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostContentDTO.getPostId(), updatePostContentDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+//            }
+//            else {
+//
+//            }
             post.setContent(updatePostContentDTO.getContent());
 
             Image updatedImage = post.getImage();
