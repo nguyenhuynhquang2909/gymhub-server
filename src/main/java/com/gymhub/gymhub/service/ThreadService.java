@@ -153,27 +153,33 @@ public class ThreadService {
     }
 
     public void createThread(Long memberId, ThreadRequestDTO threadRequestDTO) {
-        Member owner = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        long id = threadSequence.getUserId();
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
-        thread.setOwner(owner);
+        try {
+            Member owner = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            long id = threadSequence.getUserId();
+            Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
+            thread.setOwner(owner);
 //        AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
 //        double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
 //        ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
 //        if (predictionVal >= 0.5) {
 //           ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.PENDING;
 //        }
-        ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
 
-        // Save the thread to the database
-        threadRepository.save(thread);
+            // Save the thread to the database
+            threadRepository.save(thread);
 
-        // Add tags to the thread
-        for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
-            tagService.addTagToThread(thread.getId(), tagId);
+            // Add tags to the thread
+            for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
+                tagService.addTagToThread(thread.getId(), tagId);
+            }
         }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public boolean reportThread(ThreadRequestDTO threadRequestDTO, String reason) {

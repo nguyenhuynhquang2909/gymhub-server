@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 )
 public class Post extends ForumUnit {
 
+    @Id
+    @Column(name = "id")
+    private Long id;
+
     @Column(name = "content", nullable = false, updatable = true)
     private String content;
 
@@ -40,6 +44,20 @@ public class Post extends ForumUnit {
         this.image = image;
     }
 
-    public Post(LocalDateTime now, String content, Image image, Member author, Thread thread) {
+    public Post(LocalDateTime creationDate, String content, Image image, Member author, Thread thread) {
+        super(creationDate);
+        this.content = content;
+        this.image = image;
+        this.author = author;
+        this.thread = thread;
     }
+    public Post(Long id, LocalDateTime creationDate, String content, Image image, Member author, Thread thread) {
+        super(creationDate);
+        this.id = id; // Manually assign the ID using PostSequence
+        this.content = content;
+        this.image = image;
+        this.author = author;
+        this.thread = thread;
+    }
+
 }

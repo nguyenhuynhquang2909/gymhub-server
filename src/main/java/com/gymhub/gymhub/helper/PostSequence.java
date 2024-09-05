@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PostSequence {
-    private Long postId;
+    private Long postId = 1L;
 
     public synchronized boolean incrementing(){
         postId++;
@@ -14,5 +14,9 @@ public class PostSequence {
     public Long getUserId() {
         incrementing();
         return postId--;
+    }
+    public Long getNextPostId() {
+        incrementing();
+        return postId;
     }
 }
