@@ -152,6 +152,7 @@ public class ModService {
                 bannedMemberDTOs.add(bannedMemberDTO);
             }
         }
+        System.out.println("banned Members: " + bannedMemberDTOs);
         return bannedMemberDTOs;
     }
 
