@@ -30,27 +30,23 @@ public class PostMapper {
         dto.setId(post.getId());
         dto.setCreationDateTime(post.getCreationDateTime());
 
+        // Set counts from cache (check for null values and provide default values)
+        Integer likeCount = inMemoryRepository.getPostLikeCountByPostId(post.getId());
+        Integer viewCount = inMemoryRepository.getPostViewCountByPostId(post.getId());
+
         // Set counts from cache (assuming cache methods are available)
-        dto.setLikeCount(inMemoryRepository.getPostLikeCountByPostId(post.getId()));
-        dto.setViewCount(inMemoryRepository.getPostViewCountByPostId(post.getId()));
+        dto.setLikeCount(likeCount != null ? likeCount: 0);
+        dto.setViewCount(viewCount != null ? viewCount: 0);
 
         // Set status fields from cache
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByPostId(post.getId()));
-        Integer toxicStatusInt = inMemoryRepository.getToxicStatusByPostId(post.getId()).ordinal();
-        if (toxicStatusInt != null) {
-            if (toxicStatusInt == 1){
-                dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
-            }
-            if (toxicStatusInt == 0){
-                dto.setToxicStatus(ToxicStatusEnum.PENDING);
-            }
-            if (toxicStatusInt == -1){
-                dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
-            }
-
-        }else {
+        ToxicStatusEnum toxicStatus = inMemoryRepository.getToxicStatusByPostId(post.getId());
+        if (toxicStatus != null) {
+            dto.setToxicStatus(toxicStatus);
+        } else {
             dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
         }
+
 
 
 

@@ -1,17 +1,20 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.config.CustomUserDetails;
+import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.service.ThreadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -30,6 +33,27 @@ public class ThreadController {
 
     @Autowired
     private MemberRepository memberRepository;
+
+
+
+
+
+    @Operation(description = "This operation returns a thread by its id", tags = "Thread Request Handlers, Thread Page")
+    @GetMapping("/{id}")
+    public ResponseEntity<ThreadResponseDTO> getThreadByThreadId(@PathVariable("id") Long id) {
+        try {
+            ThreadResponseDTO threadResponseDTO = threadService.getAThreadByThreadId(id);
+            return ResponseEntity.ok(threadResponseDTO); // 200 OK
+        } catch (UsernameNotFoundException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+
 
     @Operation(description = "This method returns all the thread ordered by relevant/trending score and top 10 threads ordered by the creation date of the latest post", tags = "Homepage")
     @GetMapping("/suggested")
@@ -108,6 +132,7 @@ public class ThreadController {
         }
     }
 
+    @Operation(summary = "Create a new thread", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/new")
     public ResponseEntity<String> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,

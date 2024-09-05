@@ -48,6 +48,13 @@ public class ThreadService {
     @Autowired
     private AiHandler aiHandler;
 
+
+    public ThreadResponseDTO getAThreadByThreadId (Long threadId) {
+        Thread thread =   threadRepository.findById(threadId).orElseThrow(()->new RuntimeException("Thread not found"));
+        return threadMapper.toThreadResponseDTO(thread);
+    }
+
+
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
         HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
@@ -129,14 +136,14 @@ public class ThreadService {
 
             if (thread != null) {
                 ThreadResponseDTO threadResponseDTO = threadMapper.toThreadResponseDTO(thread);
-                threadResponseDTO.setLikeCount((Integer) threadParams.get("LikeCount"));
-                threadResponseDTO.setViewCount((Integer) threadParams.get("ViewCount"));
-                threadResponseDTO.setPostCount((Integer) threadParams.get("PostCount"));
-                threadResponseDTO.setCreationDateTime((Long) threadParams.get("CreationDate"));
-                ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.get("toxicStatus"));
+                threadResponseDTO.setLikeCount((Integer) threadParams.getOrDefault("LikeCount", 0));
+                threadResponseDTO.setViewCount((Integer) threadParams.getOrDefault("ViewCount", 0));
+                threadResponseDTO.setPostCount((Integer) threadParams.getOrDefault("PostCount", 0));
+                threadResponseDTO.setCreationDateTime((Long) threadParams.getOrDefault("CreationDate", System.currentTimeMillis()));
+                ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.getOrDefault("toxicStatus", 0));
                 threadResponseDTO.setToxicStatus(toxicStatus);
-                threadResponseDTO.setResolveStatus((Boolean) threadParams.get("ResolveStatus"));
-                threadResponseDTO.setReason((String) threadParams.get("Reason"));
+                threadResponseDTO.setResolveStatus((Integer) threadParams.getOrDefault("ResolveStatus", 0) == 1);
+                threadResponseDTO.setReason((String) threadParams.getOrDefault("Reason", "No reason provided"));
 
                 threadResponseDTOList.add(threadResponseDTO);
             }
@@ -151,20 +158,21 @@ public class ThreadService {
         long id = threadSequence.getUserId();
         Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
         thread.setOwner(owner);
-        AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
-        double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
+//        AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
+//        double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
+//        ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+//        if (predictionVal >= 0.5) {
+//           ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.PENDING;
+//        }
         ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-        if (predictionVal >= 0.5) {
-            tempToxicEnum = ToxicStatusEnum.PENDING;
-        }
         inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
 
         // Save the thread to the database
         threadRepository.save(thread);
 
         // Add tags to the thread
-        for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-            tagService.addTagToThread(thread.getId(), tagName);
+        for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
+            tagService.addTagToThread(thread.getId(), tagId);
         }
     }
 
@@ -182,22 +190,20 @@ public class ThreadService {
                 return false; // User is not authorized to update this thread
             }
 
-            AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
-            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-            if (predictionVal >= 0.5){
-                //Removing the id of the post from the non_toxic map
-                inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(),  threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
-            }
+//            AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
+//            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+//            if (predictionVal >= 0.5){
+//                //Removing the id of the post from the non_toxic map
+//                inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(),  threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+//            }
             thread.setTitle(threadRequestDTO.getTitle());
 
             // Remove all existing tags from the thread
-            for (String tagName : thread.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-                tagService.deleteTagFromThread(thread.getId(), tagName);
-            }
+           thread.getTags().clear();
 
-            // Add new tags to the thread
-            for (String tagName : threadRequestDTO.getTags().stream().map(Tag::getTagName).collect(Collectors.toList())) {
-                tagService.addTagToThread(thread.getId(), tagName);
+            // Add new tags to the thread by tag IDs
+            for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
+                tagService.addTagToThread(thread.getId(), tagId);
             }
 
             threadRepository.save(thread);

@@ -38,17 +38,19 @@ public class TagService {
 
 
 
-    public void addTagToThread(Long threadId, String tagName) {
+    public void addTagToThread(Long threadId, Long tagId) {
         Optional<Thread> threadOptional = threadRepository.findById(threadId);
         if (!threadOptional.isPresent()) {
             throw new RuntimeException("Thread not found");
         }
 
         Thread thread = threadOptional.get();
-        Tag tag = tagRepository.findByTagName(tagName);
-        if (tag == null) {
-            throw new RuntimeException("Tag not found");
+        Optional<Tag> tagOptional = tagRepository.findById(tagId);
+        if (!tagOptional.isPresent()) {
+            throw new RuntimeException("Tag not found wih id: " + tagId);
         }
+
+        Tag tag = tagOptional.get();
 
         thread.getTags().add(tag);
         threadRepository.save(thread);
