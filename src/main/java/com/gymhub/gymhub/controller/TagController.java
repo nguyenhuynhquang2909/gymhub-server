@@ -1,11 +1,14 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.domain.Tag;
+import com.gymhub.gymhub.dto.TagResponseDTO;
 import com.gymhub.gymhub.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -15,6 +18,20 @@ public class TagController {
 
     @Autowired
     private TagService tagService;
+
+
+
+    @GetMapping("/allTags")
+    public List<TagResponseDTO> getAllTags() {
+        try {
+            return tagService.getAllTags();
+        } catch (Exception e) {
+            e.printStackTrace();  // Print stack trace for debugging
+            return (List<TagResponseDTO>) new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);  // Return 500 error if something goes wrong
+        }
+    }
+
+
 
     @PostMapping("/create")
     public ResponseEntity<?> createTag(@RequestParam String tagName) {

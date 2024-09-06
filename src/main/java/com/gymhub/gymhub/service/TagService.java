@@ -2,12 +2,16 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.domain.Tag;
 import com.gymhub.gymhub.domain.Thread;
+import com.gymhub.gymhub.dto.TagResponseDTO;
+import com.gymhub.gymhub.mapper.TagMapper;
 import com.gymhub.gymhub.repository.TagRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
@@ -16,6 +20,18 @@ public class TagService {
     private TagRepository tagRepository;
     @Autowired
     private ThreadRepository threadRepository;
+
+
+
+
+    public List<TagResponseDTO> getAllTags() {
+        List<Tag> tags = tagRepository.findAll();
+        return tags.stream()
+                .map(TagMapper::convertToDResponseTO) // Call the static method using the class name
+                .collect(Collectors.toList());
+    }
+
+
 
     public Tag createTag(String tagName) {
         Tag tag = new Tag(tagName);
