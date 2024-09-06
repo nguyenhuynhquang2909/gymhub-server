@@ -119,7 +119,7 @@ public class PostController {
             @RequestBody PostRequestDTO post) {
 
         try {
-            boolean success = postService.createPost(userDetails.getId(), post);
+            boolean success = postService.createPost(post);
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully

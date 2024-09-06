@@ -59,21 +59,20 @@ public class PostResponseDTO {
     private String name;
 
     @Schema(description = "Encoded image (Base64) associated with the post")
-    private String encodedImage;
+    private byte[] encodedImage;
 
     @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC" )
     private String reason;
 
-
-    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, String authorName, String authorId, String authorAvatar, String name, String encodedImage, String reason) {
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String authorAvatar, String name, byte[] encodedImage, String reason) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
-        this.viewCount = viewCount;
         this.toxicStatus = toxicStatus;
         this.resolveStatus = resolveStatus;
         this.beenLiked = beenLiked;
         this.postCount = postCount;
+        this.viewCount = viewCount;
         this.authorName = authorName;
         this.authorId = authorId;
         this.authorAvatar = authorAvatar;

@@ -14,9 +14,9 @@ public class UpdatePostContentMapper {
         post.setContent(updatePostContentDTO.getContent());
 
         // Update the image if provided
-        if (updatePostContentDTO.getEncodedImage() != null && !updatePostContentDTO.getEncodedImage().isEmpty()) {
+        if (updatePostContentDTO.getEncodedImage() != null && !(updatePostContentDTO.getEncodedImage().length > 0)) {
             // Assuming only one image is allowed
-            String encodedImage = updatePostContentDTO.getEncodedImage().get(0);
+            byte[] encodedImage = updatePostContentDTO.getEncodedImage();
 
             // If a post already has an image, update it, otherwise create a new one
             if (post.getImage() != null) {

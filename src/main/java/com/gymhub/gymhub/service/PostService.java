@@ -2,6 +2,7 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.components.AiHandler;
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
@@ -17,8 +18,10 @@ import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +53,8 @@ public class PostService {
     @Autowired
     private Cache cache;
 
+
+
     @Autowired
     private TitleService titleService;
 
@@ -68,17 +73,30 @@ public class PostService {
                 .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
-    public boolean createPost(Long memberID, PostRequestDTO postRequestDTO) {
+    public boolean createPost(PostRequestDTO postRequestDTO) {
         try {
-            long id = this.postSequence.getUserId();
-            postRequestDTO.setPostId(id);
-            Member author = (Member)this.memberRepository.findById(memberID).orElseThrow(() -> {
-                return new IllegalArgumentException("Author not found");
-            });
-            Thread thread = (Thread)this.threadRepository.findById(postRequestDTO.getThreadId()).orElseThrow(() -> {
-                return new IllegalArgumentException("Thread not found");
-            });
-            Post post = this.postMapper.postRequestToPost(postRequestDTO, author, thread);
+            long postId = postSequence.getNextPostId();
+            System.out.println("Creating post with Post ID: " + postId);
+            Long ownerId = postRequestDTO.getOwnerId();
+            // Validate the member
+            Member author = memberRepository.findById(ownerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+            System.out.println("Found author: " + author.getId());
+            // Validate the thread
+            Long threadId = postRequestDTO.getThreadId();
+            Thread thread = threadRepository.findById(threadId)
+                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+            System.out.println("Found thread: " + thread.getId());
+            // Handle encoded image if present
+            Image image = null;
+            if (postRequestDTO.getEncodedImage() != null && !(postRequestDTO.getEncodedImage().length > 0)) {
+                image = new Image();
+                image.setEncodedImage(postRequestDTO.getEncodedImage());
+                // Optionally save the image to its repository if needed
+            }
+            Post post = new Post(postId,LocalDateTime.now(), postRequestDTO.getContent(), image, author, thread);
+            postRepository.save(post);
+            System.out.println("Post saved successfully with ID: " + post.getId() + ", Author: " + post.getAuthor().getId() + ", Thread: " + post.getThread().getId());
 //            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
 //            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
 //            ToxicStatusEnum tempToxicEnum;
@@ -92,19 +110,18 @@ public class PostService {
 //                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
 //                tempResolveStatus = false;
 //                tempReason = "";
-//            }
-            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+          ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
             boolean tempResolveStatus = false;
             String tempReason = "";
 
-            this.inMemoryRepository.addPostToCache(postRequestDTO.getPostId(), postRequestDTO.getThreadId(), memberID, tempToxicEnum, tempResolveStatus, tempReason);
-            this.postRepository.save(post);
+            this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), postRequestDTO.getOwnerId(), tempToxicEnum, tempResolveStatus, tempReason);
+
             return true;
-        } catch (Exception var14) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
-
 
 
     public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
@@ -125,23 +142,28 @@ public class PostService {
 //            else {
 //
 //            }
+            // Set the new content
             post.setContent(updatePostContentDTO.getContent());
 
-            Image updatedImage = post.getImage();
-            if (updatedImage == null) {
-                updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
-                updatedImage.setPost(post);
-                post.setImage(updatedImage);
+            // Handle the image
+            Image updatedImage = post.getImage(); //Get the post current image
+            if (updatedImage == null) { //case for null image
+
             } else {
-                updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                byte[] imageBytes = updatedImage.getEncodedImage();
+
+                updatedImage.setEncodedImage(imageBytes);
             }
 
+            // Save the updated post
             postRepository.save(post);
             return true; // Operation succeeded
         } catch (IllegalArgumentException | SecurityException e) {
             return false; // Operation failed due to exception
         }
     }
+
+
 
 
     public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {

@@ -62,13 +62,13 @@ public class PostMapper {
 
         // Set content and image fields
         dto.setName(post.getContent());
-        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Handle possible null image
+        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null);
 
         return dto;
     }
 
     public Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
-        Image image = new Image(postRequestDTO. getEncodedImage().getBytes());
+        Image image = new Image(postRequestDTO. getEncodedImage());
         Post post = new Post(
                 LocalDateTime.now(),
                 postRequestDTO.getContent(),
