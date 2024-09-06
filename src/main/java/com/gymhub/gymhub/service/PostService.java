@@ -53,6 +53,8 @@ public class PostService {
     @Autowired
     private Cache cache;
 
+
+
     @Autowired
     private TitleService titleService;
 
@@ -87,7 +89,7 @@ public class PostService {
             System.out.println("Found thread: " + thread.getId());
             // Handle encoded image if present
             Image image = null;
-            if (postRequestDTO.getEncodedImage() != null && !postRequestDTO.getEncodedImage().isEmpty()) {
+            if (postRequestDTO.getEncodedImage() != null && !(postRequestDTO.getEncodedImage().length > 0)) {
                 image = new Image();
                 image.setEncodedImage(postRequestDTO.getEncodedImage());
                 // Optionally save the image to its repository if needed
@@ -122,7 +124,6 @@ public class PostService {
     }
 
 
-
     public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
         try {
             Post post = postRepository.findById(updatePostContentDTO.getPostId())
@@ -141,23 +142,28 @@ public class PostService {
 //            else {
 //
 //            }
+            // Set the new content
             post.setContent(updatePostContentDTO.getContent());
 
-            Image updatedImage = post.getImage();
-            if (updatedImage == null) {
-                updatedImage = new Image(String.valueOf(updatePostContentDTO.getEncodedImage()));
-                updatedImage.setPost(post);
-                post.setImage(updatedImage);
+            // Handle the image
+            Image updatedImage = post.getImage(); //Get the post current image
+            if (updatedImage == null) { //case for null image
+
             } else {
-                updatedImage.setEncodedImage(String.valueOf(updatePostContentDTO.getEncodedImage()));
+                byte[] imageBytes = updatedImage.getEncodedImage();
+
+                updatedImage.setEncodedImage(imageBytes);
             }
 
+            // Save the updated post
             postRepository.save(post);
             return true; // Operation succeeded
         } catch (IllegalArgumentException | SecurityException e) {
             return false; // Operation failed due to exception
         }
     }
+
+
 
 
     public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {

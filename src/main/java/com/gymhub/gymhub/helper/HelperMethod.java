@@ -2,6 +2,7 @@ package com.gymhub.gymhub.helper;
 
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 
+import java.util.Base64;
 import java.util.UUID;
 
 public class HelperMethod {
@@ -39,6 +40,13 @@ public class HelperMethod {
             default:
                 throw new RuntimeException("Invalid toxic status value: " + toxicStatusBooleanValue);
         }
+    }
+    // Helper method to decode Base64-encoded image
+    public static byte[] decodeBase64Image(String encodedImage) {
+        if (encodedImage == null || encodedImage.isEmpty()) {
+            return null; // Return null if no image is provided
+        }
+        return Base64.getDecoder().decode(encodedImage);
     }
 
 }

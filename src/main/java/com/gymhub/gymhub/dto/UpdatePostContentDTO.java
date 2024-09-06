@@ -22,13 +22,12 @@ public class UpdatePostContentDTO {
     @Schema(description = "New Content")
     private String content;
     @Schema(description = "New images encoded as Strings")
-    private List<String> encodedImage;
+    private byte[] encodedImage;
 
 
-    public UpdatePostContentDTO(Long postId, Long threadId, String content, List<String> encodedImage) {
+    public UpdatePostContentDTO(Long postId, Long threadId, String content, byte[] encodedImage) {
         this.postId = postId;
         this.threadId = threadId;
-
         this.content = content;
         this.encodedImage = encodedImage;
     }

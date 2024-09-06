@@ -20,12 +20,12 @@ public class PostRequestDTO {
     private String content;
 
     @Schema(description = "Encoded image included in the post content as a String")
-    private String encodedImage; // Changed to a single String for one image
+    private byte[] encodedImage; // Changed to a single String for one image
 
     @Schema(description = "Id of the thread the post belongs to")
     private Long threadId;
 
-    public PostRequestDTO(Long postId, Long ownerId, String content, String encodedImage, Long threadId) {
+    public PostRequestDTO(Long postId, Long ownerId, String content, byte[] encodedImage, Long threadId) {
         this.postId = postId;
         this.ownerId = ownerId;
         this.content = content;

@@ -35,8 +35,10 @@ public class Post extends ForumUnit {
     @JoinColumn(name = "author_id", nullable = false, updatable = true)
     private Member author;
 
-    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Ensure that the image can be null by setting optional = true
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
     private Image image;
+
 
     public Post(LocalDateTime creationDate, String content, Image image) {
         super(creationDate);

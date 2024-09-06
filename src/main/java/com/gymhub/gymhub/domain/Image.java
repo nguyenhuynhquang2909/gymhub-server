@@ -16,22 +16,22 @@ public class Image {
     @Column(name = "image_id")
     private Long id;
 
+
     @Column(name = "image", nullable = false, updatable = true)
-    private String encodedImage;
+    @Lob // Use @Lob for large binary data
+    private byte[] encodedImage;
 
     @OneToOne
     @JoinColumn(name = "post_id", nullable = false, unique = true, updatable = false) // Ensures post_id is unique
     private Post post;
 
-    public Image(String encodedImage) {
+    public Image(byte[] encodedImage) {
         this.encodedImage = encodedImage;
     }
 
-    public Image(byte[] bytes) {
-        this.encodedImage = new String(bytes); // Converts bytes to String
-    }
-
-    public String getEncodedImage() {
-        return encodedImage;
+    public Image(Long id, byte[] encodedImage, Post post) {
+        this.id = id;
+        this.encodedImage = encodedImage;
+        this.post = post;
     }
 }
