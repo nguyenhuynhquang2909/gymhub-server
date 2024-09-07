@@ -18,13 +18,10 @@ import java.util.Base64;
 
 @Component
 public class PostMapper {
-  @Autowired
-    private  InMemoryRepository inMemoryRepository;
+    @Autowired
+    private InMemoryRepository inMemoryRepository;
 
-
-
-
-
+    // Convert Post entity to PostResponseDTO
     public PostResponseDTO postToPostResponseDTO(Post post) {
         PostResponseDTO dto = new PostResponseDTO();
 
@@ -54,23 +51,28 @@ public class PostMapper {
         dto.setAuthorName(post.getAuthor().getUserName());
         dto.setAuthorId(post.getAuthor().getId().toString());
 
-
-
         // Set content and image fields
         dto.setName(post.getContent());
 
-        // Directly set the encodedImage byte[] without Base64 conversion
+        // Convert byte[] to Base64 string for the frontend
         if (post.getImage() != null && post.getImage().getEncodedImage() != null) {
-            dto.setEncodedImage(post.getImage().getEncodedImage());
+            String base64Image = Base64.getEncoder().encodeToString(post.getImage().getEncodedImage()); // Convert byte[] to Base64 string
+            dto.setEncodedImage(base64Image); // Set the Base64 string in the response DTO
         }
 
         return dto;
     }
 
 
-
+    // Convert PostRequestDTO to Post entity
     public Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
-        Image image = new Image(postRequestDTO. getEncodedImage());
+        Image image = null;
+
+        if (postRequestDTO.getEncodedImage() != null && !postRequestDTO.getEncodedImage().isEmpty()) {
+            byte[] decodedImage = Base64.getDecoder().decode(postRequestDTO.getEncodedImage()); // Decode Base64 to byte[]
+            image = new Image(decodedImage);
+        }
+
         Post post = new Post(
                 LocalDateTime.now(),
                 postRequestDTO.getContent(),
@@ -78,20 +80,27 @@ public class PostMapper {
                 author,
                 thread
         );
-        image.setPost(post); // Set the post reference in the image
+
+        if (image != null) {
+            image.setPost(post); // Set the post reference in the image
+        }
+
         return post;
     }
 
-    public  PostRequestDTO postToPostRequestDTO(Post post) {
+    // Convert Post entity to PostRequestDTO
+    public PostRequestDTO postToPostRequestDTO(Post post) {
         PostRequestDTO dto = new PostRequestDTO();
         dto.setPostId(post.getId()); // Set the post ID
         dto.setContent(post.getContent()); // Set the content
-        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null); // Set the encoded image if it exists
+        // Convert byte[] to Base64 string if image exists
+        dto.setEncodedImage(post.getImage() != null ? Base64.getEncoder().encodeToString(post.getImage().getEncodedImage()) : null);
         dto.setThreadId(post.getThread().getId()); // Set the thread ID
         return dto;
     }
 
-    public  PendingPostDTO postToPendingPostDTO(Post post) {
+    // Convert Post entity to PendingPostDTO (for internal purposes)
+    public PendingPostDTO postToPendingPostDTO(Post post) {
         if (post == null) {
             return null;
         }
@@ -103,6 +112,4 @@ public class PostMapper {
 
         return new PendingPostDTO(postID, authorUsername, content, reason);
     }
-
-
 }

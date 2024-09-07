@@ -3,6 +3,9 @@ package com.gymhub.gymhub.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Base64;
+
 @Getter
 @Setter
 @Schema(description = "This includes all the member-related field to be included in client request body")
@@ -20,13 +23,14 @@ public class MemberRequestDTO {
     @Schema(description = "A short description of the user")
     private String bio;
 
-    @Schema(description = "Avatar of the user encoded as String by base64")
+    @Schema(description = "Avatar of the user by base64 encoded to String")
     private String stringAvatar;
 
     @Schema(description = "The password of an account")
     private String password;
 
-    public MemberRequestDTO( String userName, String email, String bio, String stringAvatar, String password) {
+    public MemberRequestDTO(Long id, String userName, String email, String bio, String stringAvatar, String password) {
+        this.id = id;
         this.userName = userName;
         this.email = email;
         this.bio = bio;
