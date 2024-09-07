@@ -22,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,31 +74,32 @@ public class PostService {
                 .map(postMapper::postToPostResponseDTO)
                 .collect(Collectors.toList());
     }
+
+
     public boolean createPost(PostRequestDTO postRequestDTO) {
         try {
             long postId = postSequence.getNextPostId();
-            System.out.println("Creating post with Post ID: " + postId);
             Long ownerId = postRequestDTO.getOwnerId();
+
             // Validate the member
             Member author = memberRepository.findById(ownerId)
                     .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-            System.out.println("Found author: " + author.getId());
+
             // Validate the thread
             Long threadId = postRequestDTO.getThreadId();
             Thread thread = threadRepository.findById(threadId)
                     .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
-            System.out.println("Found thread: " + thread.getId());
-            // Handle encoded image if present
+
+            // Handle the encoded image
             Image image = null;
-            if (postRequestDTO.getEncodedImage() != null && !(postRequestDTO.getEncodedImage().length > 0)) {
+            if (postRequestDTO.getEncodedImage() != null && !postRequestDTO.getEncodedImage().isEmpty()) {
                 image = new Image();
-                image.setEncodedImage(postRequestDTO.getEncodedImage());
-                // Optionally save the image to its repository if needed
+                // Decode Base64 string to byte[]
+                byte[] decodedImage = Base64.getDecoder().decode(postRequestDTO.getEncodedImage());
+                image.setEncodedImage(decodedImage);
             }
-            Post post = new Post(postId,LocalDateTime.now(), postRequestDTO.getContent(), image, author, thread);
-            postRepository.save(post);
-            System.out.println("Post saved successfully with ID: " + post.getId() + ", Author: " + post.getAuthor().getId() + ", Thread: " + post.getThread().getId());
-//            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+            //   CallAI PAI
+            //            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
 //            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
 //            ToxicStatusEnum tempToxicEnum;
 //            boolean tempResolveStatus;
@@ -110,10 +112,15 @@ public class PostService {
 //                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
 //                tempResolveStatus = false;
 //                tempReason = "";
-          ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+
+            // Create the post
+            Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), image, author, thread);
+            postRepository.save(post);
+
+            // Cache post information (if necessary)
+            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
             boolean tempResolveStatus = false;
             String tempReason = "";
-
             this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), postRequestDTO.getOwnerId(), tempToxicEnum, tempResolveStatus, tempReason);
 
             return true;
@@ -123,14 +130,14 @@ public class PostService {
         }
     }
 
-
     public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
         try {
             Post post = postRepository.findById(updatePostContentDTO.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
+            // Validate if the user is authorized to update this post
             if (!post.getAuthor().getId().equals(memberId)) {
-                return false; // User is not authorized to update this post
+                return false;
             }
             //CALL AI API
 //            AiRequestBody aiRequestBody = new AiRequestBody(updatePostContentDTO.getContent());
@@ -142,26 +149,32 @@ public class PostService {
 //            else {
 //
 //            }
-            // Set the new content
+
+            // Update post content
             post.setContent(updatePostContentDTO.getContent());
 
-            // Handle the image
-            Image updatedImage = post.getImage(); //Get the post current image
-            if (updatedImage == null) { //case for null image
-
-            } else {
-                byte[] imageBytes = updatedImage.getEncodedImage();
-
-                updatedImage.setEncodedImage(imageBytes);
+            // Handle the image update
+            Image updatedImage = post.getImage(); // Get the current image, if any
+            if (updatePostContentDTO.getEncodedImage() != null && !updatePostContentDTO.getEncodedImage().isEmpty()) {
+                if (updatedImage == null) {
+                    updatedImage = new Image();
+                    post.setImage(updatedImage);
+                }
+                // Decode Base64 string to byte[]
+                byte[] decodedImage = Base64.getDecoder().decode(updatePostContentDTO.getEncodedImage());
+                updatedImage.setEncodedImage(decodedImage);
             }
 
             // Save the updated post
             postRepository.save(post);
-            return true; // Operation succeeded
+            return true;
         } catch (IllegalArgumentException | SecurityException e) {
-            return false; // Operation failed due to exception
+            e.printStackTrace();
+            return false;
         }
     }
+
+
 
 
 
