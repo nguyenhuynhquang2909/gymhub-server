@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
+
 @Component
 public class PostMapper {
   @Autowired
@@ -23,49 +25,49 @@ public class PostMapper {
 
 
 
-    public  PostResponseDTO postToPostResponseDTO(Post post) {
+    public PostResponseDTO postToPostResponseDTO(Post post) {
         PostResponseDTO dto = new PostResponseDTO();
 
         // Set basic fields
         dto.setId(post.getId());
         dto.setCreationDateTime(post.getCreationDateTime());
 
-        // Set counts from cache (check for null values and provide default values)
+        // Set counts from cache
         Integer likeCount = inMemoryRepository.getPostLikeCountByPostId(post.getId());
         Integer viewCount = inMemoryRepository.getPostViewCountByPostId(post.getId());
 
-        // Set counts from cache (assuming cache methods are available)
-        dto.setLikeCount(likeCount != null ? likeCount: 0);
-        dto.setViewCount(viewCount != null ? viewCount: 0);
+        dto.setLikeCount(likeCount != null ? likeCount : 0);
+        dto.setViewCount(viewCount != null ? viewCount : 0);
 
         // Set status fields from cache
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByPostId(post.getId()));
         ToxicStatusEnum toxicStatus = inMemoryRepository.getToxicStatusByPostId(post.getId());
-        if (toxicStatus != null) {
-            dto.setToxicStatus(toxicStatus);
-        } else {
-            dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
-        }
-
-
-
+        dto.setToxicStatus(toxicStatus != null ? toxicStatus : ToxicStatusEnum.NOT_TOXIC);
 
         dto.setBeenLiked(inMemoryRepository.checkIfAPostHasBeenLikedByAMemberId(post.getId(), post.getAuthor().getId()));
         dto.setReason(inMemoryRepository.getReasonByPostId(post.getId()));
+
         // Set additional post-related fields
         dto.setPostCount(inMemoryRepository.getPostCountOfAThreadByThreadId(post.getThread().getId()));
 
         // Set author information
         dto.setAuthorName(post.getAuthor().getUserName());
         dto.setAuthorId(post.getAuthor().getId().toString());
-        dto.setAuthorAvatar(post.getAuthor().getStringAvatar());
+
+
 
         // Set content and image fields
         dto.setName(post.getContent());
-        dto.setEncodedImage(post.getImage() != null ? post.getImage().getEncodedImage() : null);
+
+        // Directly set the encodedImage byte[] without Base64 conversion
+        if (post.getImage() != null && post.getImage().getEncodedImage() != null) {
+            dto.setEncodedImage(post.getImage().getEncodedImage());
+        }
 
         return dto;
     }
+
+
 
     public Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {
         Image image = new Image(postRequestDTO. getEncodedImage());

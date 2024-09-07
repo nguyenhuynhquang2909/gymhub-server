@@ -15,17 +15,21 @@ import java.util.Date;
 public class MemberMapper {
 
     @Autowired
-    private  InMemoryRepository inMemoryRepository;
+    private InMemoryRepository inMemoryRepository;
 
-    public  MemberResponseDTO memberToMemberResponseDTO(Member member) {
-
+    public MemberResponseDTO memberToMemberResponseDTO(Member member) {
         MemberResponseDTO dto = new MemberResponseDTO();
         dto.setId(member.getId());
         dto.setUserName(member.getUserName());
         dto.setEmail(member.getEmail());
         dto.setTitle(member.getTitle());
         dto.setBio(member.getBio());
-        dto.setStringAvatar(Base64.getEncoder().encodeToString(member.getAvatar()));
+
+        // Convert avatar from byte[] to Base64 and set it
+        if (member.getAvatar() != null) {
+            dto.setAvatar(Base64.getEncoder().encode(member.getAvatar())); // convert byte[] to Base64
+        }
+
         dto.setJoinDate(member.getJoinDate());
         dto.setLikeCount(inMemoryRepository.getMemberTotalLikeCountByMemberId(member.getId()));
         dto.setPostCount(inMemoryRepository.getMemberTotalPostCountByMemberId(member.getId()));
@@ -38,39 +42,22 @@ public class MemberMapper {
         return dto;
     }
 
-
-    public  MemberRequestDTO memberToMemberRequestDTO(Member member) {
+    public MemberRequestDTO memberToMemberRequestDTO(Member member) {
         MemberRequestDTO dto = new MemberRequestDTO();
-
         dto.setUserName(member.getUserName());
         dto.setEmail(member.getEmail());
         dto.setPassword(member.getPassword());
         dto.setBio(member.getBio());
-        dto.setStringAvatar(Base64.getEncoder().encodeToString(member.getAvatar()));
+
+        // Convert avatar from byte[] to Base64 string for request DTO
+        if (member.getAvatar() != null) {
+            dto.setStringAvatar(Base64.getEncoder().encodeToString(member.getAvatar()));
+        }
+
         return dto;
     }
 
-    /**
-    public  Member memberRequestToMember(MemberRequestDTO memberRequestDTO, String encodedPassword) {
-        byte[] avatar = Base64.getDecoder().decode(memberRequestDTO.getStringAvatar());
-        return new Member(
-                memberRequestDTO.getUserName(),
-                encodedPassword, // Encode the password before setting it
-                memberRequestDTO.getEmail(),
-                (java.sql.Date) new Date(System.currentTimeMillis())
-        );
-    }
-     **/
-    /**
-     * Maps a Member entity and related ban information to a BannedMemberDTO.
-     *
-     * @param member The Member entity to be mapped.
-     * @param bannedUntil The date until the member is banned.
-     * @param reason The reason for the ban.
-     * @return The BannedMemberDTO containing member and ban details.
-     */
-
-    public  BannedMemberDTO memberToBannedMemberDTO(Member member, Long bannedUntil, String reason) {
+    public BannedMemberDTO memberToBannedMemberDTO(Member member, Long bannedUntil, String reason) {
         Date banUntilDate = new Date(bannedUntil);
         return new BannedMemberDTO(
                 member.getId(),
