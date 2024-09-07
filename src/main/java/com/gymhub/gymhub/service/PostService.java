@@ -2,13 +2,11 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.components.AiHandler;
-import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
-import com.gymhub.gymhub.helper.HelperMethod;
 import com.gymhub.gymhub.helper.PostSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
@@ -17,8 +15,6 @@ import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -130,9 +126,9 @@ public class PostService {
         }
     }
 
-    public boolean updatePost(Long memberId, UpdatePostContentDTO updatePostContentDTO) {
+    public boolean updatePost(Long memberId, UpdatePostRequestDTO updatePostRequestDTO) {
         try {
-            Post post = postRepository.findById(updatePostContentDTO.getPostId())
+            Post post = postRepository.findById(updatePostRequestDTO.getPostId())
                     .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
             // Validate if the user is authorized to update this post
@@ -140,28 +136,28 @@ public class PostService {
                 return false;
             }
             //CALL AI API
-//            AiRequestBody aiRequestBody = new AiRequestBody(updatePostContentDTO.getContent());
+//            AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
 //            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
 //            if (predictionVal >= 0.5){
 //                //Removing the id of the post from the non_toxic map
-//                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostContentDTO.getPostId(), updatePostContentDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+//                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
 //            }
 //            else {
 //
 //            }
 
             // Update post content
-            post.setContent(updatePostContentDTO.getContent());
+            post.setContent(updatePostRequestDTO.getContent());
 
             // Handle the image update
             Image updatedImage = post.getImage(); // Get the current image, if any
-            if (updatePostContentDTO.getEncodedImage() != null && !updatePostContentDTO.getEncodedImage().isEmpty()) {
+            if (updatePostRequestDTO.getEncodedImage() != null && !updatePostRequestDTO.getEncodedImage().isEmpty()) {
                 if (updatedImage == null) {
                     updatedImage = new Image();
                     post.setImage(updatedImage);
                 }
                 // Decode Base64 string to byte[]
-                byte[] decodedImage = Base64.getDecoder().decode(updatePostContentDTO.getEncodedImage());
+                byte[] decodedImage = Base64.getDecoder().decode(updatePostRequestDTO.getEncodedImage());
                 updatedImage.setEncodedImage(decodedImage);
             }
 

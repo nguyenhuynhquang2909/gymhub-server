@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Getter
 @Setter
@@ -57,13 +58,13 @@ public class PostResponseDTO {
     @Schema(description = "Content of the thread")
     private String name;
 
-    @Schema(description = "Encoded image (Base64) associated with the post")
-    private byte[] encodedImage;
+    @Schema(description = "Encoded image (Base64 toString) associated with the post")
+    private String encodedImage;
 
     @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC")
     private String reason;
 
-    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId,  String name, byte[] encodedImage, String reason) {
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String name, String encodedImage, String reason) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -74,7 +75,6 @@ public class PostResponseDTO {
         this.viewCount = viewCount;
         this.authorName = authorName;
         this.authorId = authorId;
-
         this.name = name;
         this.encodedImage = encodedImage;
         this.reason = reason;

@@ -27,7 +27,9 @@ public class MemberMapper {
 
         // Convert avatar from byte[] to Base64 and set it
         if (member.getAvatar() != null) {
-            dto.setAvatar(Base64.getEncoder().encode(member.getAvatar())); // convert byte[] to Base64
+            // Convert byte[] to Base64 string
+            String base64Avatar = Base64.getEncoder().encodeToString(member.getAvatar());
+            dto.setAvatar(base64Avatar); // Set the Base64-encoded string in the DTO
         }
 
         dto.setJoinDate(member.getJoinDate());
@@ -41,6 +43,7 @@ public class MemberMapper {
 
         return dto;
     }
+
 
     public MemberRequestDTO memberToMemberRequestDTO(Member member) {
         MemberRequestDTO dto = new MemberRequestDTO();

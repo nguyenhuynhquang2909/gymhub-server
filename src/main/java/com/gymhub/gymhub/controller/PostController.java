@@ -6,7 +6,6 @@ import com.gymhub.gymhub.config.JwtTokenProvider;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.SessionStorage;
 import com.gymhub.gymhub.service.PostService;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -140,7 +139,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,
-            @RequestBody UpdatePostContentDTO body) {
+            @RequestBody UpdatePostRequestDTO body) {
 
         try {
             boolean success = postService.updatePost(userDetails.getId(), body);

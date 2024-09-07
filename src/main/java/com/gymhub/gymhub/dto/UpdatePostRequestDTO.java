@@ -5,13 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @Schema(description = "Contains the post's new content and images")
-public class UpdatePostContentDTO {
+public class UpdatePostRequestDTO {
 
     @Schema(description = "Post's  ID")
     private Long postId;
@@ -25,7 +23,7 @@ public class UpdatePostContentDTO {
     private String encodedImage;
 
 
-    public UpdatePostContentDTO(Long postId, Long threadId, String content, String encodedImage) {
+    public UpdatePostRequestDTO(Long postId, Long threadId, String content, String encodedImage) {
         this.postId = postId;
         this.threadId = threadId;
         this.content = content;

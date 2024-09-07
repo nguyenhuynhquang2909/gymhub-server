@@ -56,11 +56,13 @@ public class PostMapper {
 
         // Convert byte[] to Base64 string for the frontend
         if (post.getImage() != null && post.getImage().getEncodedImage() != null) {
-            dto.setEncodedImage(Base64.getEncoder().encodeToString(post.getImage().getEncodedImage()).getBytes()); // Convert byte[] to Base64 string
+            String base64Image = Base64.getEncoder().encodeToString(post.getImage().getEncodedImage()); // Convert byte[] to Base64 string
+            dto.setEncodedImage(base64Image); // Set the Base64 string in the response DTO
         }
 
         return dto;
     }
+
 
     // Convert PostRequestDTO to Post entity
     public Post postRequestToPost(PostRequestDTO postRequestDTO, Member author, Thread thread) {

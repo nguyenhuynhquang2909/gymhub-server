@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
 
@@ -29,8 +30,8 @@ public class MemberResponseDTO {
     @Schema(description = "A short description of the user")
     private String bio;
 
-    @Schema(description = "Avatar of the user encoded as bytea")
-    private byte[] avatar;
+    @Schema(description = "Avatar of the user encoded as Base64 toString")
+    private String avatar;
 
     @Schema(description = "The date when the user signed up")
     private Date joinDate;
@@ -56,7 +57,7 @@ public class MemberResponseDTO {
     @Schema(description = "The date when the member ban is lifted. Null if member is not in the ban list")
     private Date banUntilDate;
 
-    public MemberResponseDTO(Long id, String userName, String email, String title, String bio, byte[] avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
+    public MemberResponseDTO(Long id, String userName, String email, String title, String bio, String avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
         this.id = id;
         this.userName = userName;
         this.email = email;
