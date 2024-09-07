@@ -28,11 +28,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private InMemoryRepository inMemoryRepository;
+
     @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
     private ModeratorRepository moderatorRepository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username.startsWith("mod_")) {
@@ -44,33 +46,50 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
     }
 
-    private UserDetails loadMemberByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findMemberByUserName(username).
-                orElseThrow(() -> new UsernameNotFoundException("Member Not Found with username: " + username));
+    private CustomUserDetails loadMemberByUsername(String username) throws UsernameNotFoundException {
+        Member member = memberRepository.findMemberByUserName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Member Not Found with username: " + username));
+
+        // Create CustomUserDetails with Member entity
         CustomUserDetails userDetails = new CustomUserDetails();
+        userDetails.setId(member.getId());
         userDetails.setUsername(member.getUserName());
         userDetails.setPassword(member.getPassword());
-        userDetails.setId(member.getId());
-        userDetails.setEnabled(inMemoryRepository.checkBanStatus(member.getId()));
+        userDetails.setEnabled(inMemoryRepository.checkBanStatus(member.getId())); // Check if banned
+
+        // Add authorities
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         userDetails.setAuthorities(authorities);
 
+        // Set the Member entity in the CustomUserDetails
+        userDetails.setMember(member);
+
         return userDetails;
     }
 
-    private UserDetails loadModeratorByUsername(String username) throws UsernameNotFoundException {
+    private CustomUserDetails loadModeratorByUsername(String username) throws UsernameNotFoundException {
         Moderator mod = moderatorRepository.findModByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Moderator Not Found with username: " + username));
+
+        // Create CustomUserDetails with Moderator entity
         CustomUserDetails userDetails = new CustomUserDetails();
+        userDetails.setId(mod.getId());
         userDetails.setUsername(mod.getUserName());
         userDetails.setPassword(mod.getPassword());
-        userDetails.setId(mod.getId());
+
+        // Add authorities
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_MODERATOR"));
         userDetails.setAuthorities(authorities);
+
+        // Set the Moderator entity in the CustomUserDetails
+        userDetails.setModerator(mod);
+
         return userDetails;
     }
-
-
 }
+
+
+
+

@@ -1,6 +1,5 @@
 package com.gymhub.gymhub.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,8 +29,8 @@ public class MemberResponseDTO {
     @Schema(description = "A short description of the user")
     private String bio;
 
-    @Schema(description = "Avatar of the user encoded as String by base64")
-    private String stringAvatar;
+    @Schema(description = "Avatar of the user encoded as bytea")
+    private byte[] avatar;
 
     @Schema(description = "The date when the user signed up")
     private Date joinDate;
@@ -57,13 +56,13 @@ public class MemberResponseDTO {
     @Schema(description = "The date when the member ban is lifted. Null if member is not in the ban list")
     private Date banUntilDate;
 
-    public MemberResponseDTO(Long id, String userName, String email, String title, String bio, String stringAvatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
+    public MemberResponseDTO(Long id, String userName, String email, String title, String bio, byte[] avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
         this.id = id;
         this.userName = userName;
         this.email = email;
         this.title = title;
         this.bio = bio;
-        this.stringAvatar = stringAvatar;
+        this.avatar = avatar;
         this.joinDate = joinDate;
         this.likeCount = likeCount;
         this.postCount = postCount;

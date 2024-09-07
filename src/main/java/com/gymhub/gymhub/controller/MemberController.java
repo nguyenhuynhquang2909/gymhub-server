@@ -45,7 +45,13 @@ public class MemberController {
     @GetMapping("/{id}")
     public ResponseEntity<MemberResponseDTO> getMember(@RequestParam String memberUsername) {
         try {
-            Member member = (Member) customUserDetailsService.loadUserByUsername(memberUsername);
+            // Load the user details
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(memberUsername);
+
+            // Extract the Member object from CustomUserDetails
+            Member member = userDetails.getMember();  // Assuming your CustomUserDetails has a getMember() method
+
+            // Map Member to MemberResponseDTO
             MemberResponseDTO memberResponseDTO = memberMapper.memberToMemberResponseDTO(member);
 
             return ResponseEntity.ok(memberResponseDTO); // 200 OK

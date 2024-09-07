@@ -27,8 +27,8 @@ public class PostResponseDTO {
     private int likeCount;
 
     /**
-    @Schema(description = "View count of the post")
-    private int viewCount;
+     * @Schema(description = "View count of the post")
+     * private int viewCount;
      **/
 
     @Schema(description = "The current toxicStatus of the post")
@@ -52,8 +52,7 @@ public class PostResponseDTO {
     @Schema(description = "Id of the author of the thread")
     private String authorId;
 
-    @Schema(description = "Encoded avatar (Base64) of the author of the thread")
-    private String authorAvatar;
+
 
     @Schema(description = "Content of the thread")
     private String name;
@@ -61,10 +60,10 @@ public class PostResponseDTO {
     @Schema(description = "Encoded image (Base64) associated with the post")
     private byte[] encodedImage;
 
-    @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC" )
+    @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC")
     private String reason;
 
-    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String authorAvatar, String name, byte[] encodedImage, String reason) {
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId,  String name, byte[] encodedImage, String reason) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -75,7 +74,7 @@ public class PostResponseDTO {
         this.viewCount = viewCount;
         this.authorName = authorName;
         this.authorId = authorId;
-        this.authorAvatar = authorAvatar;
+
         this.name = name;
         this.encodedImage = encodedImage;
         this.reason = reason;
