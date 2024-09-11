@@ -74,4 +74,20 @@ public class PostMapper {
     }
 
 
+    // Convert Post entity to PendingPostDTO (for internal purposes)
+    public PendingPostDTO postToPendingPostDTO(Post post) {
+        if (post == null) {
+            return null;
+        }
+
+        Long postID = post.getId();
+        String authorUsername = post.getAuthor() != null ? post.getAuthor().getUserName() : null;
+        String content = post.getContent();
+        String reason = inMemoryRepository.getReasonByPostId(postID);
+
+        return new PendingPostDTO(postID, authorUsername, content, reason);
+    }
 }
+
+
+
