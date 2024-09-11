@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @EntityGraph(value = "Post.author", type = EntityGraph.EntityGraphType.LOAD)
+
+    @EntityGraph(value = "Post.full", type = EntityGraph.EntityGraphType.FETCH)
     List<Post> findAll();
 
     List<Post> findByThreadId(Long threadId);

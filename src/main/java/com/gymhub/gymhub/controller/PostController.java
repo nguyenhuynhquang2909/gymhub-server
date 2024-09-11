@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -115,10 +116,10 @@ public class PostController {
     public ResponseEntity<Void> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
-            @RequestBody PostRequestDTO post) {
-
+            @RequestBody PostRequestDTO post,
+            @RequestParam List<MultipartFile> files) {
         try {
-            boolean success = postService.createPost(post);
+            boolean success = postService.createPost(post, files);
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
@@ -134,15 +135,15 @@ public class PostController {
 
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
-    @PatchMapping("/update/post-{id}")
+    @PatchMapping("/update/post")
     public ResponseEntity<Void> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the post to be updated", required = true)
-            @PathVariable Long id,
-            @RequestBody UpdatePostRequestDTO body) {
+            @RequestBody UpdatePostRequestDTO body,
+            @RequestParam List<MultipartFile> files) {
 
         try {
-            boolean success = postService.updatePost(userDetails.getId(), body);
+            boolean success = postService.updatePost(userDetails.getId(), body, files);
 
             if (success) {
                 return ResponseEntity.ok().build(); // 200 OK if the update was successful

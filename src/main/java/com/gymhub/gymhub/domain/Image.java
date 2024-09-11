@@ -12,16 +12,15 @@ import lombok.Setter;
 @Table(name = "images")
 public class Image {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @Column(name = "image", nullable = false, updatable = true)
     @Lob // Use @Lob for large binary data
     private byte[] encodedImage;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "post_id", nullable = false, unique = true, updatable = false) // Ensures post_id is unique
     private Post post;
 

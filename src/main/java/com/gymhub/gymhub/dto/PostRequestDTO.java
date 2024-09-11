@@ -19,17 +19,13 @@ public class PostRequestDTO {
     @Schema(description = "Content of the post")
     private String content;
 
-    @Schema(description = "Encoded image included in the post content as base64")
-    private String encodedImage; // Base64-encoded string
-
     @Schema(description = "Id of the thread the post belongs to")
     private Long threadId;
 
-    public PostRequestDTO(Long postId, Long ownerId, String content, String encodedImage, Long threadId) {
+    public PostRequestDTO(Long postId, Long ownerId, String content, Long threadId) {
         this.postId = postId;
         this.ownerId = ownerId;
         this.content = content;
-        this.encodedImage = encodedImage;
         this.threadId = threadId;
     }
 }
