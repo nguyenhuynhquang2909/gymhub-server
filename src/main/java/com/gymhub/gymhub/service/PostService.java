@@ -90,6 +90,7 @@ public class PostService {
             //   CallAI PAI
             AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
             double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+            System.out.println(predictionVal);
             ToxicStatusEnum tempToxicEnum;
             boolean tempResolveStatus;
             String tempReason;
