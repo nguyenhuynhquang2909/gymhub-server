@@ -2,6 +2,7 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.components.AiHandler;
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
@@ -12,6 +13,7 @@ import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,10 +73,10 @@ public class PostService {
     }
 
     @Transactional
-    public boolean createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files) {
+    public boolean createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) {
         try {
             long postId = postSequence.getNextPostId();
-            Long ownerId = postRequestDTO.getOwnerId();
+            Long ownerId = ((CustomUserDetails)user).getId();
 
             // Validate the member
             Member author = memberRepository.findById(ownerId)
@@ -118,7 +120,7 @@ public class PostService {
             }
 
             postRepository.save(post);
-            this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), postRequestDTO.getOwnerId(), tempToxicEnum, tempResolveStatus, tempReason);
+            this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), ownerId, tempToxicEnum, tempResolveStatus, tempReason);
             return true;
         }
         catch (Exception e) {
@@ -179,8 +181,7 @@ public class PostService {
         }
     }
 
-    public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {
-        long postId = postRequestDTO.getPostId();
+    public boolean reportPost(PostRequestDTO postRequestDTO, String reason, Long postId) {
         long threadId = postRequestDTO.getThreadId();
 
         boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, ToxicStatusEnum.PENDING, reason);
@@ -192,9 +193,7 @@ public class PostService {
         return result;
     }
 
-    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
-        long postId = postRequestDTO.getPostId();
-        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
 
         // Get the set of posts the member has liked
@@ -227,11 +226,8 @@ public class PostService {
     }
 
 
-    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
-        long postId = postRequestDTO.getPostId();
-        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
-
         // Get the set of posts the member has liked
         Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
 

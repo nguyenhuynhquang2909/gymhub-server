@@ -119,7 +119,7 @@ public class PostController {
             @RequestBody PostRequestDTO post,
             @RequestParam List<MultipartFile> files) {
         try {
-            boolean success = postService.createPost(post, files);
+            boolean success = postService.createPost(post, files, userDetails);
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
@@ -135,15 +135,16 @@ public class PostController {
 
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
-    @PatchMapping("/update/post")
+    @PatchMapping("/update/{id}")
     public ResponseEntity<Void> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
             @Parameter(description = "The id of the post to be updated", required = true)
             @RequestBody UpdatePostRequestDTO body,
             @RequestParam List<MultipartFile> files) {
 
         try {
-            boolean success = postService.updatePost(userDetails.getId(), body, files);
+            boolean success = postService.updatePost(userDetails.getId(), body, files, id);
 
             if (success) {
                 return ResponseEntity.ok().build(); // 200 OK if the update was successful
@@ -160,10 +161,11 @@ public class PostController {
     @PatchMapping("/report/post-{id}")
     public ResponseEntity<String> reportPost(
             @RequestBody PostRequestDTO postRequestDTO,
+            @PathVariable Long id,
             @RequestParam String reason) {
 
         try {
-            boolean success = postService.reportPost(postRequestDTO, reason);
+            boolean success = postService.reportPost(postRequestDTO, reason, id);
             if (success) {
                 return ResponseEntity.ok("Post reported successfully."); // 200 OK
             } else {
@@ -180,6 +182,7 @@ public class PostController {
     @PatchMapping("/like/post-{id}")
     public ResponseEntity<Void> likePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
             @RequestBody PostRequestDTO postRequestDTO) {
 
         try {
@@ -187,7 +190,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the likePost method in the service
-            boolean success = postService.likePost(postRequestDTO, memberRequestDTO);
+            boolean success = postService.likePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was liked successfully
@@ -204,6 +207,7 @@ public class PostController {
     @PatchMapping("/unlike/post-{id}")
     public ResponseEntity<Void> unlikePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
             @RequestBody PostRequestDTO postRequestDTO) {
 
         try {
@@ -211,7 +215,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the unlikePost method in the service
-            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO);
+            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was unliked successfully
