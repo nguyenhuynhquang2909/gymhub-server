@@ -144,7 +144,7 @@ public class PostController {
             @RequestParam List<MultipartFile> files) {
 
         try {
-            boolean success = postService.updatePost(userDetails.getId(), body, files, id);
+            boolean success = postService.updatePost(userDetails.getId(), body, files);
 
             if (success) {
                 return ResponseEntity.ok().build(); // 200 OK if the update was successful

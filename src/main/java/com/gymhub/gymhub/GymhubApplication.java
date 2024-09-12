@@ -13,6 +13,9 @@ import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.AiRequestBody;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
+import com.gymhub.gymhub.helper.MemberSequence;
+import com.gymhub.gymhub.helper.PostSequence;
+import com.gymhub.gymhub.helper.ThreadSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.PostRepository;
@@ -53,6 +56,14 @@ public class GymhubApplication {
 	private OrderedFormContentFilter formContentFilter;
 	@Autowired
 	private AiHandler aiHandler;
+	@Autowired
+	private PostSequence postSequence;
+	@Autowired
+	private ThreadSequence threadSequence;
+	@Autowired
+	private MemberSequence memberSequence;
+
+
 	public static final String LOG_FILE_PATH = "src/main/resources/logs/cache-actions.log";
 
 	public static void main(String[] args) {
@@ -65,23 +76,20 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	@PostConstruct
+	//@PostConstruct
 	private void restoreCache(){
 
-		;		inMemoryRepository.restoreFromLog();
+		inMemoryRepository.restoreFromLog();
 		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
 		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
 		System.out.println("Posts in cache: " + cache.getParametersForAllPosts());
-		//Run the AI script files, then comment out this line to test the AI model
-
-//		System.out.println(aiHandler.postDataToLocalHost(new AiRequestBody("You are a fat disgusting pig. Fatasses like you are waste of precious space")));
+		System.out.println("Current Post Sequence: "+ postSequence.getPostId());
+		System.out.println("Current Thread Sequence: "+ threadSequence.getThreadId());
+		System.out.println("Current Member Sequence: "+ memberSequence.getUserId());
 
 	}
 
-
-
-
-//	@PostConstruct
+	@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 //		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
@@ -95,6 +103,7 @@ public class GymhubApplication {
 //			System.out.println("Looping through list of members");
 			inMemoryRepository.addUserToCache (iterator.next().getId());
 		}
+		readAction();
 
 		List<Thread> threads = threadRepository.findAll();
 		Iterator<Thread> iterator2 = threads.iterator();
@@ -103,6 +112,7 @@ public class GymhubApplication {
 			Thread thread = iterator2.next();
 			inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), thread.getCreationDateTime(),ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
 		}
+		readAction();
 
 
 		List<Post> posts = postRepository.findAll();
@@ -114,47 +124,14 @@ public class GymhubApplication {
 			//System.out.println();
 			inMemoryRepository.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(),  ToxicStatusEnum.NOT_TOXIC, false, "");
 		}
+		readAction();
 
 		System.out.println("Cache Initialization: Done");
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 // Print cache contents to verify
 		System.out.println("Cache Contents:");
-//		System.out.println("Para" + cache.getParametersForAllThreads());
-
-//		System.out.println("All posts by  thread id and toxic status " + cache.getPostListByThreadIdAndToxicStatus());
-		System.out.println("All threads by category and toxic status " );
-		for (Map.Entry<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> categoryEntry : cache.getThreadListByCategoryAndToxicStatus().entrySet()) {
-			ThreadCategoryEnum category = categoryEntry.getKey();
-			HashMap<Integer, LinkedList<Long>> statusMap = categoryEntry.getValue();
-
-			for (Map.Entry<Integer, LinkedList<Long>> statusEntry : statusMap.entrySet()) {
-				Integer status = statusEntry.getKey();
-				LinkedList<Long> threadIds = statusEntry.getValue();
-
-				for (Long threadId : threadIds) {
-					System.out.println("Category: " + category + ", Status: " + status + ", Thread ID: " + threadId);
-				}
-			}
-		}
 
 
-
-
-
-
-		// Assuming you have methods to retrieve cached data
-		//System.out.println("Thread list with user ID "+ cache.getThreadListByUser());
-		//Long userId = 1L; // Replace with the actual user ID you want to query
-//		System.out.println("Threads in cache: " + cache.getParametersForAllThreads()); // Assuming getParametersForAllThreads() returns a map of threads
-//		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
-//		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-//		System.out.println("Posts in cache: " + cache.getParametersForAllPosts()); // Assuming getPosts() returns all posts in cache
-
-
-
-		//read log file (call method
-//		readAndPrintLoggedActions();
-//		readAction();
 	}
 
 	private void readAction() {

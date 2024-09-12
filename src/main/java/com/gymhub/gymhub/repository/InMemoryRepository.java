@@ -2,11 +2,13 @@ package com.gymhub.gymhub.repository;
 
 import com.gymhub.gymhub.actions.*;
 import com.gymhub.gymhub.components.CustomOutputStream;
-import com.gymhub.gymhub.components.Stream;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
+import com.gymhub.gymhub.helper.MemberSequence;
+import com.gymhub.gymhub.helper.PostSequence;
+import com.gymhub.gymhub.helper.ThreadSequence;
 import com.gymhub.gymhub.in_memory.BanInfo;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.in_memory.CacheManipulation;
@@ -37,9 +39,17 @@ public class InMemoryRepository {
     @Autowired
     ThreadRepository threadRepository;
 
-
     @Autowired
     PostRepository postRepository;
+
+    @Autowired
+    PostSequence postSequence;
+
+    @Autowired
+    ThreadSequence threadSequence;
+
+    @Autowired
+    MemberSequence userSequence;
 
     CustomOutputStream customOutputStream;
     ObjectOutputStream objectOutputStream;
@@ -89,8 +99,18 @@ public class InMemoryRepository {
                 try {
                     MustLogAction action = (MustLogAction) ios.readObject();
                     System.out.println("Current action:  " + action);
-                    System.out.println("Type of current action: " + action.getActionType());
                     // Handle different action types
+                    if (action instanceof IncrementingSequenceAction){
+                        if (((IncrementingSequenceAction) action).getType() == SequenceType.POST){
+                            postSequence.incrementing();
+                        }
+                        else if (((IncrementingSequenceAction) action).getType() == SequenceType.THREAD){
+                            threadSequence.incrementing();
+                        }
+                        else if (((IncrementingSequenceAction) action).getType() == SequenceType.USER){
+                            userSequence.incrementing();
+                        }
+                    }
                     if (action instanceof AddUserAction) {
                         System.out.println(true);
                         cacheManipulation.addUserToCache(((AddUserAction) action).getUserId());
@@ -137,6 +157,7 @@ public class InMemoryRepository {
                                 likePostAction.getMode()
                         );
                     }
+
                 } catch (EOFException e){
                     System.out.println("Finished Reading");
                     break;
@@ -162,7 +183,9 @@ public class InMemoryRepository {
     public boolean addUserToCache(long userId) {
         if (cacheManipulation.addUserToCache(userId)){
             AddUserAction action = new AddUserAction(userId);
+            IncrementingSequenceAction incrementingSequenceAction = new IncrementingSequenceAction(SequenceType.USER);
             logAction(action);
+            logAction(incrementingSequenceAction);
             return true;
         }
         return false;
@@ -173,7 +196,9 @@ public class InMemoryRepository {
         if (cacheManipulation.addPostToCache(postId, threadId, userId, toxicStatus, resolveStatus, reason)) {
             // Log the action
             AddPostAction action = new AddPostAction(threadId, postId, userId, toxicStatus, resolveStatus, reason);
+            IncrementingSequenceAction sequenceAction = new IncrementingSequenceAction(SequenceType.POST);
             logAction(action);
+            logAction(sequenceAction);
 
             return true;
         }
@@ -186,7 +211,10 @@ public class InMemoryRepository {
         if (cacheManipulation.addThreadToCache(threadId, category, toxicStatus, authorId, resolveStatus, reason)) {
             // Log the action
             AddThreadAction action = new AddThreadAction(threadId, category, creationDateTime,  toxicStatus, authorId, resolveStatus, reason);
+            IncrementingSequenceAction sequenceAction = new IncrementingSequenceAction(SequenceType.THREAD);
             logAction(action);
+            logAction(sequenceAction);
+
             return true;
         }
         return false;

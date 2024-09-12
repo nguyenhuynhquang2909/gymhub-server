@@ -19,9 +19,8 @@ public class AddThreadAction extends MustLogAction {
 
 
 
-    public AddThreadAction(long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
+    public AddThreadAction(Long threadId, ThreadCategoryEnum category, LocalDateTime creationDateTime, ToxicStatusEnum toxicStatus, long authorId, boolean resolveStatus, String reason) {
         super();
-        this.actionType = "Add Thread";
         this.threadId = threadId;
         this.category = category;
         this.creationDateTime = creationDateTime;

@@ -6,7 +6,6 @@ public class AddUserAction extends MustLogAction {
 
     public AddUserAction(long userId) {
         super();
-        this.actionType = "Add Users";
         this.userId = userId;
     }
 

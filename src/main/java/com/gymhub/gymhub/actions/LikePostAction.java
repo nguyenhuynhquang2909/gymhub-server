@@ -8,7 +8,6 @@ public class LikePostAction extends MustLogAction {
     private int mode;
     public LikePostAction(long postId, long userId, long threadId, int mode) {
         super();
-        this.actionType = "Like Post";
         this.postId = postId;
         this.userId = userId;
         this.threadId = threadId;

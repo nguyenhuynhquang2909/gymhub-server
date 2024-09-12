@@ -17,7 +17,6 @@ public class ChangePostStatusAction extends MustLogAction {
 
     public ChangePostStatusAction(long postId, long threadId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         super();
-        this.actionType = "Change Post Status";
         this.postId = postId;
         this.threadId = threadId;
         this.toxicStatus = toxicStatus;

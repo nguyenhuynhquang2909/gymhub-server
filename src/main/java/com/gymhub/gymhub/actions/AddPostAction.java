@@ -16,7 +16,6 @@ public class AddPostAction extends MustLogAction {
 
     public AddPostAction(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         super();
-        this.actionType = "Add Post";
         this.threadId = threadId;
         this.postId = postId;
         this.userId = userId;
