@@ -98,7 +98,6 @@ public class CacheManipulation {
 
         // Store the post parameters in the cache
         cache.getParametersForAllPosts().put(postId, postParaMap);
-
         // Add the post to the user's list of posts, ensuring the list is initialized
         cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
         return true;

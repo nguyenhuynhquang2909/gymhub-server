@@ -57,7 +57,6 @@ public class PostService {
     @Autowired
     private TitleService titleService;
 
-    private long actionIdCounter = 0;
 
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
@@ -76,6 +75,7 @@ public class PostService {
     @Transactional
     public ToxicStatusEnum createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) throws IOException {
         long postId = postSequence.getNextPostId();
+        System.out.println(postId);
         Long ownerId = ((CustomUserDetails)user).getId();
 
         // Validate the member
@@ -115,7 +115,7 @@ public class PostService {
             images.add(image);
             imageRepository.save(image);
         }
-        this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), ownerId, tempToxicEnum, tempResolveStatus, tempReason);
+        this.inMemoryRepository.addPostToCache(postRequestDTO.getThreadId(), postId, ownerId, tempToxicEnum, tempResolveStatus, tempReason);
         return tempToxicEnum;
     }
 

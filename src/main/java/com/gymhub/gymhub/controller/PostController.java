@@ -46,12 +46,7 @@ public class PostController {
     public List<PostResponseDTO> getPostsInsideAThread(
             HttpServletResponse response,
             HttpServletRequest request,
-//            @RequestHeader("Cookie") String cookies,
-            @PathVariable Long id,
-            @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
-            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-            @Parameter(description = "The next page to be fetched", required = false)
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+            @PathVariable Long id) {
 
         try {
             Cookie[] cookies = request.getCookies();
@@ -74,7 +69,8 @@ public class PostController {
                     sessionStorage.addThreadToThreadView(sessionID, id);
                 }
                 return postService.getPostsByThreadId(id);
-            } else { // User is logged in
+            }
+            else { // User is logged in
                 Long userID = jwtTokenProvider.getClaimsFromJwt(token).get("userID", Long.class);
                 if (cookieManager.getCookieValue("SessionID") == null) { // No session ID in cookie
                     sessionID = sessionStorage.createNewSession(userID);
