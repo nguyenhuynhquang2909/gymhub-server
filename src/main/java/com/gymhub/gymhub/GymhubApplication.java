@@ -76,12 +76,13 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	//@PostConstruct
+	@PostConstruct
 	private void restoreCache(){
 		inMemoryRepository.restoreFromLog();
+
 	}
 
-	@PostConstruct
+	//@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 		List<Member> members = memberRepository.findAll();
