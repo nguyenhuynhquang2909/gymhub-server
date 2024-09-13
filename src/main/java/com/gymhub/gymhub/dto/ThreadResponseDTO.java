@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,7 +20,7 @@ public class ThreadResponseDTO {
 
     @Setter
     @Schema(description = "The date and time the thread is created")
-    private Long creationDateTime;
+    private LocalDateTime creationDateTime;
 
     @Setter
     @Transient
@@ -65,7 +67,7 @@ public class ThreadResponseDTO {
     private String reason;
 
 
-    public ThreadResponseDTO(Long id, Long creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;

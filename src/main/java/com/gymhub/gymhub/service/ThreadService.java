@@ -19,6 +19,7 @@ import com.gymhub.gymhub.domain.Tag;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -140,7 +141,14 @@ public class ThreadService {
                 threadResponseDTO.setLikeCount((Integer) threadParams.getOrDefault("LikeCount", 0));
                 threadResponseDTO.setViewCount((Integer) threadParams.getOrDefault("ViewCount", 0));
                 threadResponseDTO.setPostCount((Integer) threadParams.getOrDefault("PostCount", 0));
-                threadResponseDTO.setCreationDateTime((Long) threadParams.getOrDefault("CreationDate", System.currentTimeMillis()));
+                Object creationDateObj = threadParams.getOrDefault("CreationDate", System.currentTimeMillis());
+                if (creationDateObj instanceof Long) {
+                    long creationDateMillis = (Long) creationDateObj;
+                    LocalDateTime creationDateTime = LocalDateTime.ofEpochSecond(creationDateMillis / 1000,0, ZoneOffset.UTC);
+                    threadResponseDTO.setCreationDateTime(creationDateTime);
+                } else {
+                    threadResponseDTO.setCreationDateTime(LocalDateTime.now());
+                }
                 ToxicStatusEnum toxicStatus = HelperMethod.convertBooleanToxicStatusToStringValue((Integer) threadParams.getOrDefault("toxicStatus", 0));
                 threadResponseDTO.setToxicStatus(toxicStatus);
                 threadResponseDTO.setResolveStatus((Integer) threadParams.getOrDefault("ResolveStatus", 0) == 1);
@@ -157,7 +165,8 @@ public class ThreadService {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         long id = threadSequence.getUserId();
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now());
+        LocalDateTime creationDate = LocalDateTime.now();
+        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), creationDate);
         thread.setOwner(owner);
         AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
         double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
