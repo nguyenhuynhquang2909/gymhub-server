@@ -76,12 +76,12 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	@PostConstruct
+	//@PostConstruct
 	private void restoreCache(){
 		inMemoryRepository.restoreFromLog();
 	}
 
-	//@PostConstruct
+	@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 		List<Member> members = memberRepository.findAll();
@@ -106,8 +106,6 @@ public class GymhubApplication {
 			Post post = iterator3.next();
 			inMemoryRepository.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(),  ToxicStatusEnum.NOT_TOXIC, false, "");
 		}
-		readAction();
-
 		System.out.println("Cache Initialization: Done");
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
 

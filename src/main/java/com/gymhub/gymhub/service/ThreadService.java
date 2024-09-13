@@ -59,8 +59,6 @@ public class ThreadService {
     public HashMap<String, List<ThreadResponseDTO>> get10SuggestedThreads() {
         // Get the suggested threads cache hashmap from the in-memory repository
         HashMap<String, TreeMap<BigDecimal, HashMap<String, Number>>> suggestedThreads = inMemoryRepository.getSuggestedThreads();
-        System.out.println("10 suggested threads: " + suggestedThreads);
-
         // Collect all thread IDs from the suggested threads cache into a List
         List<Long> allThreadIds = new ArrayList<>();
         for (TreeMap<BigDecimal, HashMap<String, Number>> threadMaps : suggestedThreads.values()) {
@@ -69,16 +67,12 @@ public class ThreadService {
                 allThreadIds.add(threadId);
             }
         }
-
         // Fetch all threads in a single query
         List<Thread> threads = threadRepository.findAllByIdsWithOwner(allThreadIds);
         Map<Long, Thread> threadMap = threads.stream().collect(Collectors.toMap(Thread::getId, thread -> thread));
-
         // Prepare the return collection
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
-
         // Process each suggested thread
-
         for (String key : suggestedThreads.keySet()) {
             List<ThreadResponseDTO> threadList = new LinkedList<>();
             for (HashMap<String, Number> map : suggestedThreads.get(key).values()) {
