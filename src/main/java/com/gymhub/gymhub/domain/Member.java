@@ -1,6 +1,7 @@
 package com.gymhub.gymhub.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gymhub.gymhub.dto.TitleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
@@ -15,8 +16,9 @@ import java.sql.Date;
 @Schema(description = "Normal users of the forum")
 public class Member extends ForumAccount {
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "title", nullable = false, length = 20, unique = false, updatable = true)
-    private String title;
+    private TitleEnum title;
 
     @Setter
     @Column(name = "bio", nullable = true, length = 200, unique = false, updatable = true)

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 
 @Getter
@@ -16,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(description = "This defines all post-related fields to be sent to clients")
 public class PostResponseDTO {
-
+//post info part
     @Schema(description = "Id of the post")
     private Long id;
 
@@ -55,7 +54,7 @@ public class PostResponseDTO {
     private String authorId;
 
     @Schema(description = "Content of the thread")
-    private String name;
+    private String content;
 
     @Schema(description = "Encoded image (Base64 toString) associated with the post")
     private List<String> encodedImage;
@@ -63,8 +62,13 @@ public class PostResponseDTO {
     @Schema(description = "The reason for the post's current toxic status. Null if toxic status = NOT-TOXIC")
     private String reason;
 
-    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName,
-                           String authorId, String name, List<String> encodedImage, String reason) {
+    //member info part
+
+    private String username;
+    private TitleEnum title;
+    private String memberAvatar;
+
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String content, List<String> encodedImage, String reason, String username, TitleEnum title, String memberAvatar) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -75,8 +79,11 @@ public class PostResponseDTO {
         this.viewCount = viewCount;
         this.authorName = authorName;
         this.authorId = authorId;
-        this.name = name;
+        this.content = content;
         this.encodedImage = encodedImage;
         this.reason = reason;
+        this.username = username;
+        this.title = title;
+        this.memberAvatar = memberAvatar;
     }
 }
