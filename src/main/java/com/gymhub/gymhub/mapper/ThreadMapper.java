@@ -19,7 +19,7 @@ public class ThreadMapper {
         dto.setId(thread.getId());
 
         // Convert LocalDateTime to Long (epoch seconds)
-        dto.setCreationDateTime(thread.getCreationDateTime().toEpochSecond(ZoneOffset.UTC));
+        dto.setCreationDateTime(thread.getCreationDateTime());
         // Set ThreadResponseDTO fields from cache
         dto.setPostCount(inMemoryRepository.getPostCountOfAThreadByThreadId(thread.getId()));
         dto.setLikeCount(inMemoryRepository.getLikeCountByThreadId(thread.getId()));
