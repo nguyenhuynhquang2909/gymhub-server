@@ -115,6 +115,7 @@ public class PostService {
             for (MultipartFile file : files) {
                 System.out.println(file.getBytes() instanceof byte[]);
                 Image image = new Image();
+                image.setPost(post);
                 image.setEncodedImage(file.getBytes());
                 images.add(image);
                 imageRepository.save(image);
