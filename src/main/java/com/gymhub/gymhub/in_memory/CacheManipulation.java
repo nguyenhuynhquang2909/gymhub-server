@@ -40,8 +40,8 @@ public class CacheManipulation {
         threadParaMap.put("CreationDate", System.currentTimeMillis());
         threadParaMap.put("ResolveStatus", resolveStatus ? 1 : 0);
         threadParaMap.put("Reason", reason);
+        threadParaMap.put("PostCreationDate", System.currentTimeMillis());
         int toxicStatusBooleanNumber = HelperMethod.convertStringToxicStatusToBooleanValue(toxicStatus);
-
         threadParaMap.put("ToxicStatus", toxicStatusBooleanNumber);
 
         // Add thread parameters to the cache
@@ -98,7 +98,6 @@ public class CacheManipulation {
 
         // Store the post parameters in the cache
         cache.getParametersForAllPosts().put(postId, postParaMap);
-
         // Add the post to the user's list of posts, ensuring the list is initialized
         cache.getPostListByUser().computeIfAbsent(userId, k -> new HashSet<>()).add(postId);
         return true;

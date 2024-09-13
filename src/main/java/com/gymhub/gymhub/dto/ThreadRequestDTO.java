@@ -14,28 +14,19 @@ import java.util.Set;
 @Schema(description = "This defines all thread-related fields that clients need to send in request body")
 public class ThreadRequestDTO {
 
-    @Schema(description = "The id of the thread")
-    private Long id;
-
-
     @Schema(description = "The title of the thread")
     private String title;
 
     @Schema(description = "The category the thread belongs to (FLEXING, ADVISE, SUPPLEMENT) ")
     private ThreadCategoryEnum category;
 
-    private LocalDateTime creationDateTime;
-
-
     @Schema(description = "The group of tags that the thread belong to ")
-    private Set<Tag> tags;
+    private Set<Long> tagSet;
 
-    public ThreadRequestDTO(Long id, String title, ThreadCategoryEnum category, LocalDateTime creationDateTime, Set<Tag> tags) {
-        this.id = id;
+    public ThreadRequestDTO(String title, ThreadCategoryEnum category, Set<Long> tagSet) {
         this.title = title;
         this.category = category;
-        this.creationDateTime = creationDateTime;
-        this.tags = tags;
+        this.tagSet = tagSet;
     }
 
     public ThreadRequestDTO() {

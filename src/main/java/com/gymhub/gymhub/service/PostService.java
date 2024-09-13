@@ -2,6 +2,7 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.actions.ChangePostStatusAction;
 import com.gymhub.gymhub.components.AiHandler;
+import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Image;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.domain.Post;
@@ -10,24 +11,25 @@ import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.helper.PostSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
-import com.gymhub.gymhub.repository.InMemoryRepository;
-import com.gymhub.gymhub.repository.PostRepository;
-import com.gymhub.gymhub.repository.ThreadRepository;
-import com.gymhub.gymhub.repository.MemberRepository;
+import com.gymhub.gymhub.repository.*;
+import com.gymhub.gymhub.service.CustomException.UnauthorizedUserException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class PostService {
 
+    @Autowired
+    private ImageRepository imageRepository;
     @Autowired
     private PostRepository postRepository;
 
@@ -55,7 +57,6 @@ public class PostService {
     @Autowired
     private TitleService titleService;
 
-    private long actionIdCounter = 0;
 
     public List<PostResponseDTO> getPostsByThreadId(Long threadId) {
         List<Post> posts = postRepository.findByThreadId(threadId);
@@ -71,112 +72,98 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ToxicStatusEnum createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) throws IOException {
+        long postId = postSequence.getNextPostId();
+        System.out.println(postId);
+        Long ownerId = ((CustomUserDetails)user).getId();
 
-    public boolean createPost(PostRequestDTO postRequestDTO) {
-        try {
-            long postId = postSequence.getNextPostId();
-            Long ownerId = postRequestDTO.getOwnerId();
-
-            // Validate the member
-            Member author = memberRepository.findById(ownerId)
-                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-
-            // Validate the thread
-            Long threadId = postRequestDTO.getThreadId();
-            Thread thread = threadRepository.findById(threadId)
-                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
-
-            // Handle the encoded image
-            Image image = null;
-            if (postRequestDTO.getEncodedImage() != null && !postRequestDTO.getEncodedImage().isEmpty()) {
-                image = new Image();
-                // Decode Base64 string to byte[]
-                byte[] decodedImage = Base64.getDecoder().decode(postRequestDTO.getEncodedImage());
-                image.setEncodedImage(decodedImage);
-            }
-            //   CallAI PAI
-            //            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
-//            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-//            ToxicStatusEnum tempToxicEnum;
-//            boolean tempResolveStatus;
-//            String tempReason;
-//            if (predictionVal >= 0.5) {
-//                tempToxicEnum = ToxicStatusEnum.PENDING;
-//                tempResolveStatus = true;
-//                tempReason = "Body Shaming";
-//            } else {
-//                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-//                tempResolveStatus = false;
-//                tempReason = "";
-
+        // Validate the member
+        Member author = memberRepository.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        // Validate the thread
+        Long threadId = postRequestDTO.getThreadId();
+        Thread thread = threadRepository.findById(threadId)
+                .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+        //   CallAI PAI
+        AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+        double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+        System.out.println(predictionVal);
+        ToxicStatusEnum tempToxicEnum;
+        boolean tempResolveStatus;
+        String tempReason;
+        if (predictionVal >= 0.5) {
+            tempToxicEnum = ToxicStatusEnum.PENDING;
+            tempResolveStatus = true;
+            tempReason = "Body Shaming";
+        } else {
+            tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            tempResolveStatus = false;
+            tempReason = "";
             // Create the post
-            Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), image, author, thread);
-            postRepository.save(post);
-
-            // Cache post information (if necessary)
-            ToxicStatusEnum tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-            boolean tempResolveStatus = false;
-            String tempReason = "";
-            this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), postRequestDTO.getOwnerId(), tempToxicEnum, tempResolveStatus, tempReason);
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
+        Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), author, thread);
+
+        postRepository.save(post);
+
+        // Handle the encoded image
+        List<Image> images = new LinkedList<>();
+        for (MultipartFile file : files) {
+            Image image = new Image();
+            image.setPost(post);
+            image.setEncodedImage(file.getBytes());
+            images.add(image);
+            imageRepository.save(image);
+        }
+        this.inMemoryRepository.addPostToCache(postRequestDTO.getThreadId(), postId, ownerId, tempToxicEnum, tempResolveStatus, tempReason);
+        return tempToxicEnum;
     }
 
-    public boolean updatePost(Long memberId, UpdatePostRequestDTO updatePostRequestDTO) {
-        try {
-            Post post = postRepository.findById(updatePostRequestDTO.getPostId())
-                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+    @Transactional
+    public ToxicStatusEnum updatePost(Long userId, UpdatePostRequestDTO updatePostRequestDTO, List<MultipartFile> files) throws IOException, UnauthorizedUserException {
+        Post post = postRepository.findById(updatePostRequestDTO.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-            // Validate if the user is authorized to update this post
-            if (!post.getAuthor().getId().equals(memberId)) {
-                return false;
+        if (post.getAuthor().getId() != userId) {
+            throw new UnauthorizedUserException("You are not allowed to update this post");
+        }
+        // Update post content
+        post.setContent(updatePostRequestDTO.getContent());
+        if (files == null || files.isEmpty()) {
+            imageRepository.deleteByPostId(updatePostRequestDTO.getPostId());
+        }
+        else {
+            Set<byte[]> byteArraySet = new HashSet<>();
+            for (Image image : post.getImages()) {
+                byteArraySet.add(image.getEncodedImage());
             }
-            //CALL AI API
-//            AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
-//            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-//            if (predictionVal >= 0.5){
-//                //Removing the id of the post from the non_toxic map
-//                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
-//            }
-//            else {
-//
-//            }
-
-            // Update post content
-            post.setContent(updatePostRequestDTO.getContent());
-
-            // Handle the image update
-            Image updatedImage = post.getImage(); // Get the current image, if any
-            if (updatePostRequestDTO.getEncodedImage() != null && !updatePostRequestDTO.getEncodedImage().isEmpty()) {
-                if (updatedImage == null) {
-                    updatedImage = new Image();
-                    post.setImage(updatedImage);
+            for (MultipartFile file : files) {
+                int orginalLength = byteArraySet.size();
+                byteArraySet.add(file.getBytes());
+                if (orginalLength != byteArraySet.size()) {
+                    Image image = new Image();
+                    image.setEncodedImage(file.getBytes());
+                    image.setPost(post);
+                    imageRepository.save(image);
+                    post.getImages().add(image);
                 }
-                // Decode Base64 string to byte[]
-                byte[] decodedImage = Base64.getDecoder().decode(updatePostRequestDTO.getEncodedImage());
-                updatedImage.setEncodedImage(decodedImage);
             }
-
-            // Save the updated post
-            postRepository.save(post);
-            return true;
-        } catch (IllegalArgumentException | SecurityException e) {
-            e.printStackTrace();
-            return false;
         }
+        // Save the updated post
+        postRepository.save(post);
+        //CALL AI API
+        AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
+        double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+        ToxicStatusEnum currentToxicStatusEnum = ToxicStatusEnum.NOT_TOXIC;
+        if (predictionVal >= 0.5){
+            currentToxicStatusEnum = ToxicStatusEnum.PENDING;
+            //Removing the id of the post from the non_toxic map
+            inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), currentToxicStatusEnum, "Potentially Body Shaming");
+        }
+        return currentToxicStatusEnum;
     }
 
-
-
-
-
-
-    public boolean reportPost(PostRequestDTO postRequestDTO, String reason) {
-        long postId = postRequestDTO.getPostId();
+    public boolean reportPost(PostRequestDTO postRequestDTO, String reason, Long postId) {
         long threadId = postRequestDTO.getThreadId();
 
         boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, ToxicStatusEnum.PENDING, reason);
@@ -188,9 +175,7 @@ public class PostService {
         return result;
     }
 
-    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
-        long postId = postRequestDTO.getPostId();
-        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
 
         // Get the set of posts the member has liked
@@ -223,11 +208,8 @@ public class PostService {
     }
 
 
-    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO) {
-        long postId = postRequestDTO.getPostId();
-        long postOwnerId = postRequestDTO.getOwnerId(); // Post owner's ID
+    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
-
         // Get the set of posts the member has liked
         Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
 

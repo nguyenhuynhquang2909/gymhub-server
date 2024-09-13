@@ -6,17 +6,32 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "Post")
-@NamedEntityGraph(
-        name = "Post.author",
-        includeAllAttributes = true,
-        attributeNodes = @NamedAttributeNode("author")
-)
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "Post.author",
+                attributeNodes = @NamedAttributeNode("author"),
+                includeAllAttributes = true
+        ),
+        @NamedEntityGraph(
+                name = "Post.images",
+                attributeNodes = @NamedAttributeNode("images"),
+                includeAllAttributes = true
+        ),
+        @NamedEntityGraph(
+                name = "Post.full", // Fetch both author and images
+                attributeNodes = {
+                        @NamedAttributeNode("author"),
+                        @NamedAttributeNode("images")
+                }
+        )
+})
 public class Post extends ForumUnit {
 
     @Id
@@ -36,28 +51,36 @@ public class Post extends ForumUnit {
     private Member author;
 
     // Ensure that the image can be null by setting optional = true
-    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
-    private Image image;
+    @OneToMany(mappedBy = "post")
+    private Collection<Image> images;
 
 
-    public Post(LocalDateTime creationDate, String content, Image image) {
+    public Post(LocalDateTime creationDate, String content, Collection<Image> images) {
         super(creationDate);
         this.content = content;
-        this.image = image;
+        this.images = images;
     }
 
-    public Post(LocalDateTime creationDate, String content, Image image, Member author, Thread thread) {
+    public Post(LocalDateTime creationDate, String content, Collection<Image> images, Member author, Thread thread) {
         super(creationDate);
         this.content = content;
-        this.image = image;
+        this.images = images;
         this.author = author;
         this.thread = thread;
     }
-    public Post(Long id, LocalDateTime creationDate, String content, Image image, Member author, Thread thread) {
+    public Post(Long id, LocalDateTime creationDate, String content, Collection<Image> images, Member author, Thread thread) {
         super(creationDate);
         this.id = id; // Manually assign the ID using PostSequence
         this.content = content;
-        this.image = image;
+        this.images = images;
+        this.author = author;
+        this.thread = thread;
+    }
+    public Post(Long id, LocalDateTime creationDate, String content, Member author, Thread thread) {
+        super(creationDate);
+        this.id = id; // Manually assign the ID using PostSequence
+        this.content = content;
+        this.images = images;
         this.author = author;
         this.thread = thread;
     }

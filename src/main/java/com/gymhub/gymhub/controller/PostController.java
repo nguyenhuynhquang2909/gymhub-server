@@ -5,6 +5,7 @@ import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.config.JwtTokenProvider;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.SessionStorage;
+import com.gymhub.gymhub.service.CustomException.UnauthorizedUserException;
 import com.gymhub.gymhub.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,9 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,12 +46,7 @@ public class PostController {
     public List<PostResponseDTO> getPostsInsideAThread(
             HttpServletResponse response,
             HttpServletRequest request,
-//            @RequestHeader("Cookie") String cookies,
-            @PathVariable Long id,
-            @Parameter(description = "The number of threads to be returned in a single fetch", required = false)
-            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-            @Parameter(description = "The next page to be fetched", required = false)
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+            @PathVariable Long id) {
 
         try {
             Cookie[] cookies = request.getCookies();
@@ -71,7 +69,8 @@ public class PostController {
                     sessionStorage.addThreadToThreadView(sessionID, id);
                 }
                 return postService.getPostsByThreadId(id);
-            } else { // User is logged in
+            }
+            else { // User is logged in
                 Long userID = jwtTokenProvider.getClaimsFromJwt(token).get("userID", Long.class);
                 if (cookieManager.getCookieValue("SessionID") == null) { // No session ID in cookie
                     sessionID = sessionStorage.createNewSession(userID);
@@ -111,46 +110,38 @@ public class PostController {
     }
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
-    @PostMapping("/new")
-    public ResponseEntity<Void> createPost(
+    @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ToxicStatusEnum> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
-            @RequestBody PostRequestDTO post) {
-
+            @ModelAttribute PostRequestDTO post,
+            @RequestParam("uploadedFile") List<MultipartFile> files) {
         try {
-            boolean success = postService.createPost(post);
-
-            if (success) {
-                return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if there was an error
-            }
+            ToxicStatusEnum toxicity = postService.createPost(post, files, userDetails);
+            return new ResponseEntity<>(toxicity, HttpStatus.CREATED);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-
-
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
-    @PatchMapping("/update/post-{id}")
-    public ResponseEntity<Void> updatePost(
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<ToxicStatusEnum> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "The id of the post to be updated", required = true)
             @PathVariable Long id,
-            @RequestBody UpdatePostRequestDTO body) {
+            @Parameter(description = "The id of the post to be updated", required = true)
+            @RequestBody UpdatePostRequestDTO body,
+            @RequestParam List<MultipartFile> files) {
 
         try {
-            boolean success = postService.updatePost(userDetails.getId(), body);
-
-            if (success) {
-                return ResponseEntity.ok().build(); // 200 OK if the update was successful
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
-            }
+            ToxicStatusEnum statusEnum = postService.updatePost(userDetails.getId(), body, files);
+            return new ResponseEntity<>(statusEnum, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
+            if (e instanceof UnauthorizedUserException){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -159,10 +150,11 @@ public class PostController {
     @PatchMapping("/report/post-{id}")
     public ResponseEntity<String> reportPost(
             @RequestBody PostRequestDTO postRequestDTO,
+            @PathVariable Long id,
             @RequestParam String reason) {
 
         try {
-            boolean success = postService.reportPost(postRequestDTO, reason);
+            boolean success = postService.reportPost(postRequestDTO, reason, id);
             if (success) {
                 return ResponseEntity.ok("Post reported successfully."); // 200 OK
             } else {
@@ -179,6 +171,7 @@ public class PostController {
     @PatchMapping("/like/post-{id}")
     public ResponseEntity<Void> likePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
             @RequestBody PostRequestDTO postRequestDTO) {
 
         try {
@@ -186,7 +179,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the likePost method in the service
-            boolean success = postService.likePost(postRequestDTO, memberRequestDTO);
+            boolean success = postService.likePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was liked successfully
@@ -203,6 +196,7 @@ public class PostController {
     @PatchMapping("/unlike/post-{id}")
     public ResponseEntity<Void> unlikePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id,
             @RequestBody PostRequestDTO postRequestDTO) {
 
         try {
@@ -210,7 +204,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the unlikePost method in the service
-            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO);
+            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was unliked successfully

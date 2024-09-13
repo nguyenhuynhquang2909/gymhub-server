@@ -134,7 +134,7 @@ public class ThreadController {
 
     @Operation(summary = "Create a new thread", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/new")
-    public ResponseEntity<String> createNewThread(
+    public ResponseEntity<ToxicStatusEnum> createNewThread(
             @RequestBody ThreadRequestDTO threadRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -143,30 +143,27 @@ public class ThreadController {
             System.out.println("Before creating thread: Total threads = " + threadRepository.findAll().size());
 
             // Create a new thread
-            threadService.createThread(userDetails.getId(), threadRequest);
+            ToxicStatusEnum statusEnum = threadService.createThread(userDetails.getId(), threadRequest);
 
             // Log the size of the thread repository after creating the new thread
             System.out.println("After creating thread: Total threads = " + threadRepository.findAll().size());
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(statusEnum, HttpStatus.OK);
 
         } catch (Exception e) {
-            // Print the stack trace for debugging
             e.printStackTrace();
-
-            // Return a generic internal server error response
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while creating the thread. Please try again later.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @Operation(description = "This operation reports a thread to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report")
+    @PatchMapping("/report/{id}/{category}")
     public ResponseEntity<String> reportThread(
-            @RequestBody ThreadRequestDTO threadRequestDTO,
+            @PathVariable Long id,
+            @PathVariable ThreadCategoryEnum category,
             @RequestParam("reason") String reason) {
         try {
-            boolean success = threadService.reportThread(threadRequestDTO, reason);
+            boolean success = threadService.reportThread(reason, id, category);
             if (success) {
                 return ResponseEntity.ok("Thread reported successfully."); // 200 OK
             } else {
@@ -180,27 +177,19 @@ public class ThreadController {
 
     @Operation(description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)", tags = "Thread Page")
     @PatchMapping("/update/{threadID}")
-    public ResponseEntity<Void> updateThread(
+    public ResponseEntity<ToxicStatusEnum> updateThread(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
             @RequestBody ThreadRequestDTO threadRequestDTO,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         try {
-            // Set the threadID in the DTO
-            threadRequestDTO.setId(threadID);
+            ToxicStatusEnum statusEnum = threadService.updateThread(userDetails.getId(), threadRequestDTO, threadID);
+            return new ResponseEntity<>(statusEnum, HttpStatus.OK);
 
-            boolean success = threadService.updateThread(userDetails.getId(), threadRequestDTO);
-
-            if (success) {
-                return ResponseEntity.ok().build(); // 200 OK if the thread title was updated successfully
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
-            }
         } catch (Exception e) {
             // Print out the error message to the console
             e.printStackTrace();
-
             // Return a generic internal server error response
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }

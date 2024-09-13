@@ -31,8 +31,6 @@ public class TagService {
                 .collect(Collectors.toList());
     }
 
-
-
     public Tag createTag(String tagName) {
         Tag tag = new Tag(tagName);
         return tagRepository.save(tag);
@@ -54,13 +52,7 @@ public class TagService {
 
 
 
-    public void addTagToThread(Long threadId, Long tagId) {
-        Optional<Thread> threadOptional = threadRepository.findById(threadId);
-        if (!threadOptional.isPresent()) {
-            throw new RuntimeException("Thread not found");
-        }
-
-        Thread thread = threadOptional.get();
+    public void addTagToThread(Thread thread, Long tagId) {
         Optional<Tag> tagOptional = tagRepository.findById(tagId);
         if (!tagOptional.isPresent()) {
             throw new RuntimeException("Tag not found wih id: " + tagId);

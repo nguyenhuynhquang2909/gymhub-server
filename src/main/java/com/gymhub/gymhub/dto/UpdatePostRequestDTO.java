@@ -15,18 +15,14 @@ public class UpdatePostRequestDTO {
     private Long postId;
     @Schema(description = "Post's thread ID")
     private Long threadId;
-
-
     @Schema(description = "New Content")
     private String content;
-    @Schema(description = "New images encoded as Strings of base64")
-    private String encodedImage;
 
 
-    public UpdatePostRequestDTO(Long postId, Long threadId, String content, String encodedImage) {
+
+    public UpdatePostRequestDTO(Long postId, Long threadId, String content) {
         this.postId = postId;
         this.threadId = threadId;
         this.content = content;
-        this.encodedImage = encodedImage;
     }
 }
