@@ -108,18 +108,19 @@ public class PostService {
             }
             Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), author, thread);
 
+            postRepository.save(post);
 
             // Handle the encoded image
             List<Image> images = new LinkedList<>();
             for (MultipartFile file : files) {
+                System.out.println(file.getBytes() instanceof byte[]);
                 Image image = new Image();
                 image.setEncodedImage(file.getBytes());
-                image.setPost(post);
                 images.add(image);
                 imageRepository.save(image);
             }
 
-            postRepository.save(post);
+
             this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), ownerId, tempToxicEnum, tempResolveStatus, tempReason);
             return true;
         }

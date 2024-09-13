@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Getter
 public abstract class MustLogAction implements Serializable {
     private static final long serialVersionUID = 1L;
+    protected String actionType;
     protected long timestamp;
     public MustLogAction() {
         this.timestamp = System.currentTimeMillis();

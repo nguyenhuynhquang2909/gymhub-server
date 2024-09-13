@@ -19,6 +19,7 @@ package com.gymhub.gymhub.actions;
 
         public ChangeThreadStatusAction(long threadId, ThreadCategoryEnum category, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
             super();
+            this.actionType = "Change Thread Status";
             this.threadId = threadId;
             this.category = category;
             this.toxicStatus = toxicStatus;

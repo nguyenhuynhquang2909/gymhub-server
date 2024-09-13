@@ -76,31 +76,17 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
-	//@PostConstruct
+	@PostConstruct
 	private void restoreCache(){
-
 		inMemoryRepository.restoreFromLog();
-		System.out.println("Thread toxic Status " + cache.getThreadListByCategoryAndToxicStatus());
-		System.out.println("Post toxic Status " + cache.getPostListByThreadIdAndToxicStatus());
-		System.out.println("Posts in cache: " + cache.getParametersForAllPosts());
-		System.out.println("Current Post Sequence: "+ postSequence.getPostId());
-		System.out.println("Current Thread Sequence: "+ threadSequence.getThreadId());
-		System.out.println("Current Member Sequence: "+ memberSequence.getUserId());
-
 	}
 
-	@PostConstruct
+	//@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
-//		List<Thread> mockThreadList = threadRepository.findByCategory(ThreadCategoryEnum.ADVICE);
-//		System.out.println("Mock thread list" + mockThreadList.size());
-
 		List<Member> members = memberRepository.findAll();
-//		System.out.println("List of members " + members);
 		Iterator<Member> iterator = members.iterator();
-
 		while(iterator.hasNext()){
-//			System.out.println("Looping through list of members");
 			inMemoryRepository.addUserToCache (iterator.next().getId());
 		}
 		readAction();
@@ -108,7 +94,6 @@ public class GymhubApplication {
 		List<Thread> threads = threadRepository.findAll();
 		Iterator<Thread> iterator2 = threads.iterator();
 		while(iterator2.hasNext()){
-//			System.out.println("Looping through list of threads");
 			Thread thread = iterator2.next();
 			inMemoryRepository.addThreadToCache(thread.getId(), thread.getCategory(), thread.getCreationDateTime(),ToxicStatusEnum.NOT_TOXIC, thread.getOwner().getId(), false, "");
 		}
@@ -116,21 +101,15 @@ public class GymhubApplication {
 
 
 		List<Post> posts = postRepository.findAll();
-//		System.out.println("List of posts " + posts);
 		Iterator<Post> iterator3 = posts.iterator();
 		while(iterator3.hasNext()){
-//			System.out.println("Looping through list of posts");
 			Post post = iterator3.next();
-			//System.out.println();
 			inMemoryRepository.addPostToCache(post.getThread().getId(), post.getId(), post.getAuthor().getId(),  ToxicStatusEnum.NOT_TOXIC, false, "");
 		}
 		readAction();
 
 		System.out.println("Cache Initialization: Done");
 		System.out.println("Swagger UI is available at http://localhost:8080/swagger-ui/index.html");
-// Print cache contents to verify
-		System.out.println("Cache Contents:");
-
 
 	}
 

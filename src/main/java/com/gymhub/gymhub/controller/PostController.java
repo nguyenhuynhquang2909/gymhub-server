@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -112,12 +113,12 @@ public class PostController {
     }
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
-    @PostMapping("/new")
+    @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
-            @RequestBody PostRequestDTO post,
-            @RequestParam List<MultipartFile> files) {
+            @ModelAttribute PostRequestDTO post,
+            @RequestParam("uploadedFile") List<MultipartFile> files) {
         try {
             boolean success = postService.createPost(post, files, userDetails);
 

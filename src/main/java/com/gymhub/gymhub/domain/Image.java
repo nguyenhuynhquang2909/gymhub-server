@@ -16,17 +16,12 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "image", nullable = false, updatable = true)
-    @Lob // Use @Lob for large binary data
+    @Column(name = "image", nullable = true, updatable = true, columnDefinition="bytea")
     private byte[] encodedImage;
 
     @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false, unique = true, updatable = false) // Ensures post_id is unique
+    @JoinColumn(name = "post_id", nullable = true, updatable = false) // Ensures post_id is unique
     private Post post;
-
-    public Image(byte[] encodedImage) {
-        this.encodedImage = encodedImage;
-    }
 
     public Image(Long id, byte[] encodedImage, Post post) {
         this.id = id;

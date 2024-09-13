@@ -1,7 +1,10 @@
 package com.gymhub.gymhub.actions;
+import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import com.gymhub.gymhub.dto.ToxicStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,6 +19,7 @@ public class AddPostAction extends MustLogAction {
 
     public AddPostAction(long threadId, long postId, long userId, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
         super();
+        this.actionType = "Add Post";
         this.threadId = threadId;
         this.postId = postId;
         this.userId = userId;
