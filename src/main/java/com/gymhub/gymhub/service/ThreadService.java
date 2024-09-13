@@ -78,16 +78,22 @@ public class ThreadService {
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
 
         // Process each suggested thread
+
         for (String key : suggestedThreads.keySet()) {
             List<ThreadResponseDTO> threadList = new LinkedList<>();
             for (HashMap<String, Number> map : suggestedThreads.get(key).values()) {
-                Long threadId = (Long) map.get("ThreadID");
-                Thread thread = threadMap.get(threadId);
-                if (thread != null) {
-                    threadList.add(threadMapper.toThreadResponseDTO(thread));
-                } else {
-                    System.err.println("Thread not found with ID: " + threadId);
+                try{
+                    Long threadId = (Long) map.get("ThreadID");
+                    Thread thread = threadMap.get(threadId);
+                    if (thread != null) {
+                        threadList.add(threadMapper.toThreadResponseDTO(thread));
+                    } else {
+                        System.err.println("Thread not found with ID: " + threadId);
+                    }
+                }catch (NullPointerException e){
+                    System.out.println(map.toString());
                 }
+
             }
             returnCollection.put(key, threadList);
         }
@@ -157,7 +163,7 @@ public class ThreadService {
         Member owner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         long id = threadSequence.getUserId();
-        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now(), threadRequestDTO.getTags());
+        Thread thread = new Thread(id, threadRequestDTO.getTitle(), threadRequestDTO.getCategory(), LocalDateTime.now());
         thread.setOwner(owner);
         AiRequestBody aiRequestBody = new AiRequestBody(threadRequestDTO.getTitle());
         double predictionVal = aiHandler.postDataToLocalHost(aiRequestBody);
@@ -167,22 +173,22 @@ public class ThreadService {
         }
         inMemoryRepository.addThreadToCache(thread.getId(), threadRequestDTO.getCategory(), thread.getCreationDateTime(), tempToxicEnum, owner.getId(), false, "");
         // Save the thread to the database
-        threadRepository.save(thread);
         // Add tags to the thread
-        for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
-            tagService.addTagToThread(thread.getId(), tagId);
+        for (Long tagId: threadRequestDTO.getTagSet()) {
+            tagService.addTagToThread(thread, tagId);
         }
+        threadRepository.save(thread);
         return tempToxicEnum;
 
     }
 
-    public boolean reportThread(ThreadRequestDTO threadRequestDTO, String reason) {
-        return inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(), threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING,
+    public boolean reportThread(String reason, Long threadId, ThreadCategoryEnum categoryEnum) {
+        return inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadId, categoryEnum, ToxicStatusEnum.PENDING,
                 reason);
     }
 
-    public ToxicStatusEnum updateThread(Long memberId, ThreadRequestDTO threadRequestDTO) throws UnauthorizedUserException {
-        Thread thread = threadRepository.findById(threadRequestDTO.getId())
+    public ToxicStatusEnum updateThread(Long memberId, ThreadRequestDTO threadRequestDTO, Long threadId) throws UnauthorizedUserException {
+        Thread thread = threadRepository.findById(threadId)
                 .orElseThrow(() -> new RuntimeException("Thread not found"));
 
         if (!thread.getOwner().getId().equals(memberId)) {
@@ -195,16 +201,21 @@ public class ThreadService {
         if (predictionVal >= 0.5){
             //Removing the id of the post from the non_toxic map
             currentStatus = ToxicStatusEnum.PENDING;
-            inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadRequestDTO.getId(),  threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
+            inMemoryRepository.changeThreadToxicStatusForMemberReporting(threadId,  threadRequestDTO.getCategory(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
         }
         thread.setTitle(threadRequestDTO.getTitle());
 
         // Remove all existing tags from the thread
         thread.getTags().clear();
+        Set<Tag> existingTags = thread.getTags();
+        Set<Long> existingTagIds = existingTags.stream().
+                map(Tag::getId).collect(Collectors.toSet());
 
         // Add new tags to the thread by tag IDs
-        for (Long tagId : threadRequestDTO.getTags().stream().map(Tag::getId).collect(Collectors.toList())) {
-            tagService.addTagToThread(thread.getId(), tagId);
+        for (Long tagId : threadRequestDTO.getTagSet()) {
+            if (!existingTagIds.contains(tagId)) {
+                tagService.addTagToThread(thread, tagId);
+            }
         }
 
         threadRepository.save(thread);

@@ -54,29 +54,6 @@ public class ThreadMapper {
         return thread;
     }
 
-    public ThreadRequestDTO toThreadRequestDTO(Thread thread) {
-        // Initialize the DTO object
-        ThreadRequestDTO dto = new ThreadRequestDTO();
-
-        // Set the ID
-        dto.setId(thread.getId());
-
-        // Set the title
-        dto.setTitle(thread.getTitle());
-
-        // Set the category
-        dto.setCategory(thread.getCategory());
-
-        // Set the creation date
-        dto.setCreationDateTime(thread.getCreationDateTime());
-
-        // Set the tags
-        dto.setTags(thread.getTags());
-
-        return dto;
-    }
-
-
     public PendingThreadDTO threadToPendingThreadDTO(Thread thread) {
         if (thread == null) {
             return null;

@@ -98,7 +98,7 @@ public class InMemoryRepository {
             while (true){
                 try {
                     MustLogAction action = (MustLogAction) ios.readObject();
-                    System.out.println("Current action:  " + action);
+                    //System.out.println("Current action:  " + action);
                     // Handle different action types
                     if (action instanceof IncrementingSequenceAction){
                         if (((IncrementingSequenceAction) action).getType() == SequenceType.POST){
@@ -112,9 +112,8 @@ public class InMemoryRepository {
                         }
                     }
                     if (action instanceof AddUserAction) {
-                        System.out.println(true);
                         cacheManipulation.addUserToCache(((AddUserAction) action).getUserId());
-                        System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
+                        //System.out.println("Member ID: " + cache.getAllMemberID().get(((AddUserAction) action).getUserId()));
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         cacheManipulation.addThreadToCache(
                                 addThreadAction.getThreadId(),
@@ -124,7 +123,7 @@ public class InMemoryRepository {
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
                         );
-                        System.out.println("Para for all threads: " + cache.getParametersForAllThreads());
+
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         cacheManipulation.changeThreadToxicStatus(
                                 changeThreadStatusAction.getThreadId(),
@@ -148,7 +147,7 @@ public class InMemoryRepository {
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
-                        System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
+                        //System.out.println("Para for all posts: " + cache.getParametersForAllPosts());
                     } else if (action instanceof LikePostAction likePostAction) {
                         cacheManipulation.likePost(
                                 likePostAction.getPostId(),
@@ -238,17 +237,23 @@ public class InMemoryRepository {
         for (Map.Entry<Long, ConcurrentHashMap<String, Object>> entry : cache.getParametersForAllThreads().entrySet()) {
             Long threadId = entry.getKey();
             ConcurrentHashMap<String, Object> threadParaMap = entry.getValue();
+            try {
+                if (threadParaMap.get("ToxicStatus").equals(1)) {
 
-            if (threadParaMap.get("ToxicStatus").equals(1)) {
-                BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
-                score = ensureUniqueScore(returnCollectionByAlgorithm, score);
-                HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
-                returnCollectionByAlgorithm.put(score, returnedMap);
+                    BigDecimal score = BigDecimal.valueOf(getThreadRelevancy(threadParaMap));
+                    score = ensureUniqueScore(returnCollectionByAlgorithm, score);
+                    HashMap<String, Number> returnedMap = returnThreadMapBuilder(threadParaMap, threadId);
+                    returnCollectionByAlgorithm.put(score, returnedMap);
 
-                BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
-                postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
-                returnCollectionByPostCreation.put(postCreationDate, returnedMap);
+                    BigDecimal postCreationDate = BigDecimal.valueOf(((Long) threadParaMap.get("PostCreationDate")).longValue());
+                    postCreationDate = ensureUniqueScore(returnCollectionByPostCreation, postCreationDate);
+                    returnCollectionByPostCreation.put(postCreationDate, returnedMap);
+                }
+            } catch (NullPointerException e){
+                System.out.println(threadParaMap);
             }
+
+
         }
 
         return returnCollection;

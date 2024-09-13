@@ -157,12 +157,13 @@ public class ThreadController {
     }
 
     @Operation(description = "This operation reports a thread to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report")
+    @PatchMapping("/report/{id}/{category}")
     public ResponseEntity<String> reportThread(
-            @RequestBody ThreadRequestDTO threadRequestDTO,
+            @PathVariable Long id,
+            @PathVariable ThreadCategoryEnum category,
             @RequestParam("reason") String reason) {
         try {
-            boolean success = threadService.reportThread(threadRequestDTO, reason);
+            boolean success = threadService.reportThread(reason, id, category);
             if (success) {
                 return ResponseEntity.ok("Thread reported successfully."); // 200 OK
             } else {
@@ -183,9 +184,7 @@ public class ThreadController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         try {
-            // Set the threadID in the DTO
-            threadRequestDTO.setId(threadID);
-            ToxicStatusEnum statusEnum = threadService.updateThread(userDetails.getId(), threadRequestDTO);
+            ToxicStatusEnum statusEnum = threadService.updateThread(userDetails.getId(), threadRequestDTO, threadID);
             return new ResponseEntity<>(statusEnum, HttpStatus.OK);
 
         } catch (Exception e) {
