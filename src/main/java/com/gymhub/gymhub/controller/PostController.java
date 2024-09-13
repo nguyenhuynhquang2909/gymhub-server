@@ -114,30 +114,23 @@ public class PostController {
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
     @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createPost(
+    public ResponseEntity<ToxicStatusEnum> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
             @ModelAttribute PostRequestDTO post,
             @RequestParam("uploadedFile") List<MultipartFile> files) {
         try {
-            boolean success = postService.createPost(post, files, userDetails);
-
-            if (success) {
-                return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created if the post was created successfully
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // 400 Bad Request if there was an error
-            }
+            ToxicStatusEnum toxicity = postService.createPost(post, files, userDetails);
+            return new ResponseEntity<>(toxicity, HttpStatus.CREATED);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-
-
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
     @PatchMapping("/update/{id}")
-    public ResponseEntity<Void> updatePost(
+    public ResponseEntity<ToxicStatusEnum> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @Parameter(description = "The id of the post to be updated", required = true)
@@ -145,15 +138,13 @@ public class PostController {
             @RequestParam List<MultipartFile> files) {
 
         try {
-            boolean success = postService.updatePost(userDetails.getId(), body, files);
-
-            if (success) {
-                return ResponseEntity.ok().build(); // 200 OK if the update was successful
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden if the user is not authorized or any other error
-            }
+            ToxicStatusEnum statusEnum = postService.updatePost(userDetails.getId(), body, files);
+            return new ResponseEntity<>(statusEnum, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
+            if (e instanceof IllegalArgumentException){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

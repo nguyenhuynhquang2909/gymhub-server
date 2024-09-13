@@ -73,114 +73,93 @@ public class PostService {
     }
 
     @Transactional
-    public boolean createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) {
-        try {
-            long postId = postSequence.getNextPostId();
-            Long ownerId = ((CustomUserDetails)user).getId();
+    public ToxicStatusEnum createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) throws IOException {
+        long postId = postSequence.getNextPostId();
+        Long ownerId = ((CustomUserDetails)user).getId();
 
-            // Validate the member
-            Member author = memberRepository.findById(ownerId)
-                    .orElseThrow(() -> new IllegalArgumentException("Author not found"));
-
-            // Validate the thread
-            Long threadId = postRequestDTO.getThreadId();
-            Thread thread = threadRepository.findById(threadId)
-                    .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
-
-
-
-            //   CallAI PAI
-            AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
-            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-            System.out.println(predictionVal);
-            ToxicStatusEnum tempToxicEnum;
-            boolean tempResolveStatus;
-            String tempReason;
-            if (predictionVal >= 0.5) {
-                tempToxicEnum = ToxicStatusEnum.PENDING;
-                tempResolveStatus = true;
-                tempReason = "Body Shaming";
-            } else {
-                tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
-                tempResolveStatus = false;
-                tempReason = "";
-                // Create the post
-            }
-            Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), author, thread);
-
-            postRepository.save(post);
-
-            // Handle the encoded image
-            List<Image> images = new LinkedList<>();
-            for (MultipartFile file : files) {
-                System.out.println(file.getBytes() instanceof byte[]);
-                Image image = new Image();
-                image.setPost(post);
-                image.setEncodedImage(file.getBytes());
-                images.add(image);
-                imageRepository.save(image);
-            }
-
-
-            this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), ownerId, tempToxicEnum, tempResolveStatus, tempReason);
-            return true;
+        // Validate the member
+        Member author = memberRepository.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        // Validate the thread
+        Long threadId = postRequestDTO.getThreadId();
+        Thread thread = threadRepository.findById(threadId)
+                .orElseThrow(() -> new IllegalArgumentException("Thread not found"));
+        //   CallAI PAI
+        AiRequestBody aiRequestBody = new AiRequestBody(postRequestDTO.getContent());
+        double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+        System.out.println(predictionVal);
+        ToxicStatusEnum tempToxicEnum;
+        boolean tempResolveStatus;
+        String tempReason;
+        if (predictionVal >= 0.5) {
+            tempToxicEnum = ToxicStatusEnum.PENDING;
+            tempResolveStatus = true;
+            tempReason = "Body Shaming";
+        } else {
+            tempToxicEnum = ToxicStatusEnum.NOT_TOXIC;
+            tempResolveStatus = false;
+            tempReason = "";
+            // Create the post
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        Post post = new Post(postId, LocalDateTime.now(), postRequestDTO.getContent(), author, thread);
+
+        postRepository.save(post);
+
+        // Handle the encoded image
+        List<Image> images = new LinkedList<>();
+        for (MultipartFile file : files) {
+            Image image = new Image();
+            image.setPost(post);
+            image.setEncodedImage(file.getBytes());
+            images.add(image);
+            imageRepository.save(image);
         }
+        this.inMemoryRepository.addPostToCache(postId, postRequestDTO.getThreadId(), ownerId, tempToxicEnum, tempResolveStatus, tempReason);
+        return tempToxicEnum;
     }
 
     @Transactional
-    public boolean updatePost(Long memberId, UpdatePostRequestDTO updatePostRequestDTO, List<MultipartFile> files) {
-        try {
-            Post post = postRepository.findById(updatePostRequestDTO.getPostId())
-                    .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+    public ToxicStatusEnum updatePost(Long userId, UpdatePostRequestDTO updatePostRequestDTO, List<MultipartFile> files) throws IOException {
+        Post post = postRepository.findById(updatePostRequestDTO.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-            // Validate if the user is authorized to update this post
-            if (!post.getAuthor().getId().equals(memberId)) {
-                return false;
-            }
-
-            // Update post content
-            post.setContent(updatePostRequestDTO.getContent());
-            if (files == null || files.isEmpty()) {
-                imageRepository.deleteByPostId(updatePostRequestDTO.getPostId());
-                return true;
-            }
-            else {
-                Set<byte[]> byteArraySet = new HashSet<>();
-                for (Image image : post.getImages()) {
-                    byteArraySet.add(image.getEncodedImage());
-                }
-                for (MultipartFile file : files) {
-                    int orginalLength = byteArraySet.size();
-                    byteArraySet.add(file.getBytes());
-                    if (orginalLength != byteArraySet.size()) {
-                        Image image = new Image();
-                        image.setEncodedImage(file.getBytes());
-                        image.setPost(post);
-                        imageRepository.save(image);
-                        post.getImages().add(image);
-                    }
-                }
-            }
-            // Save the updated post
-            postRepository.save(post);
-            //CALL AI API
-            AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
-            double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
-            if (predictionVal >= 0.5){
-                //Removing the id of the post from the non_toxic map
-                inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), ToxicStatusEnum.PENDING, "Potentially Body Shaming");
-            }
-            return true;
-        } catch (IllegalArgumentException | SecurityException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (post.getAuthor().getId() != userId) {
+            throw new IllegalArgumentException("You are not allowed to update this post");
         }
+        // Update post content
+        post.setContent(updatePostRequestDTO.getContent());
+        if (files == null || files.isEmpty()) {
+            imageRepository.deleteByPostId(updatePostRequestDTO.getPostId());
+        }
+        else {
+            Set<byte[]> byteArraySet = new HashSet<>();
+            for (Image image : post.getImages()) {
+                byteArraySet.add(image.getEncodedImage());
+            }
+            for (MultipartFile file : files) {
+                int orginalLength = byteArraySet.size();
+                byteArraySet.add(file.getBytes());
+                if (orginalLength != byteArraySet.size()) {
+                    Image image = new Image();
+                    image.setEncodedImage(file.getBytes());
+                    image.setPost(post);
+                    imageRepository.save(image);
+                    post.getImages().add(image);
+                }
+            }
+        }
+        // Save the updated post
+        postRepository.save(post);
+        //CALL AI API
+        AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
+        double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
+        ToxicStatusEnum currentToxicStatusEnum = ToxicStatusEnum.NOT_TOXIC;
+        if (predictionVal >= 0.5){
+            currentToxicStatusEnum = ToxicStatusEnum.PENDING;
+            //Removing the id of the post from the non_toxic map
+            inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), currentToxicStatusEnum, "Potentially Body Shaming");
+        }
+        return currentToxicStatusEnum;
     }
 
     public boolean reportPost(PostRequestDTO postRequestDTO, String reason, Long postId) {
