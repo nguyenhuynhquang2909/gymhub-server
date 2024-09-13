@@ -92,22 +92,22 @@ public class PostController {
         }
     }
 
-    @Operation(description = "This operation returns a list of posts belonging to the authenticated member", tags = "Member Profile Page")
-    @GetMapping("/user")
-    public List<PostResponseDTO> getPostsOfAMember(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Parameter(description = "The number of posts to be returned in a single fetch", required = false)
-            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
-            @Parameter(description = "The next page to be fetched", required = false)
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
-
-        try {
-            return postService.getPostsByUserId(userDetails.getId());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null; // Return null or handle as per your application's needs
-        }
-    }
+//    @Operation(description = "This operation returns a list of posts belonging to the authenticated member", tags = "Member Profile Page")
+//    @GetMapping("/user")
+//    public List<PostResponseDTO> getPostsOfAMember(
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @Parameter(description = "The number of posts to be returned in a single fetch", required = false)
+//            @RequestParam(value = "limit", required = false, defaultValue = "5") Integer limit,
+//            @Parameter(description = "The next page to be fetched", required = false)
+//            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+//
+//        try {
+//            return postService.getPostsByUserId(userDetails.getId());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null; // Return null or handle as per your application's needs
+//        }
+//    }
 
     @Operation(description = "This operation creates a new post", tags = "Thread Page")
     @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
