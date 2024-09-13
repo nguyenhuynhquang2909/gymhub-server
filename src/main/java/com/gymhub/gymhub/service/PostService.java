@@ -12,6 +12,7 @@ import com.gymhub.gymhub.helper.PostSequence;
 import com.gymhub.gymhub.in_memory.Cache;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.repository.*;
+import com.gymhub.gymhub.service.CustomException.UnauthorizedUserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -119,12 +120,12 @@ public class PostService {
     }
 
     @Transactional
-    public ToxicStatusEnum updatePost(Long userId, UpdatePostRequestDTO updatePostRequestDTO, List<MultipartFile> files) throws IOException {
+    public ToxicStatusEnum updatePost(Long userId, UpdatePostRequestDTO updatePostRequestDTO, List<MultipartFile> files) throws IOException, UnauthorizedUserException {
         Post post = postRepository.findById(updatePostRequestDTO.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         if (post.getAuthor().getId() != userId) {
-            throw new IllegalArgumentException("You are not allowed to update this post");
+            throw new UnauthorizedUserException("You are not allowed to update this post");
         }
         // Update post content
         post.setContent(updatePostRequestDTO.getContent());

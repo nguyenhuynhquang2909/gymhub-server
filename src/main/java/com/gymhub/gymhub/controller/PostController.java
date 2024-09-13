@@ -5,6 +5,7 @@ import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.config.JwtTokenProvider;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.in_memory.SessionStorage;
+import com.gymhub.gymhub.service.CustomException.UnauthorizedUserException;
 import com.gymhub.gymhub.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -142,7 +143,7 @@ public class PostController {
             return new ResponseEntity<>(statusEnum, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
-            if (e instanceof IllegalArgumentException){
+            if (e instanceof UnauthorizedUserException){
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
