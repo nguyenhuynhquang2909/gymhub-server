@@ -16,11 +16,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,12 +90,13 @@ public class MemberController {
     }
 
     @Operation(description = "This operation changes the information of a member", tags = "Member Profile Page")
-    @PutMapping("/update/member-{id}")
+    @PutMapping(value = "/update/member-{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
     public ResponseEntity<Void> updateMember(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @RequestBody MemberRequestDTO memberRequestDTO) {
+            @ModelAttribute MemberRequestDTO memberRequestDTO,
+            @RequestParam("uploadedFile") MultipartFile profilePicture) {
         try {
-            memberService.updateMemberInfo(customUserDetails.getId(), memberRequestDTO);
+            memberService.updateMemberInfo(customUserDetails.getId(), memberRequestDTO, profilePicture);
             return ResponseEntity.ok().build(); // 200 OK
         } catch (IllegalArgumentException e) {
             e.printStackTrace();

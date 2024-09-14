@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
@@ -56,7 +58,7 @@ public class MemberService {
     }
 
 
-    public ResponseEntity<Void> updateMemberInfo(Long memberId, MemberRequestDTO memberRequestDTO) {
+    public ResponseEntity<Void> updateMemberInfo(Long memberId, MemberRequestDTO memberRequestDTO, MultipartFile file) throws IOException {
         Optional<Member> member = memberRepository.findById(memberId);
         if (member.isPresent()) {
             Member existingMember = member.get();
@@ -65,16 +67,9 @@ public class MemberService {
             existingMember.setPassword(memberRequestDTO.getPassword());
             existingMember.setEmail(memberRequestDTO.getEmail());
             existingMember.setBio(memberRequestDTO.getBio());
-
-            // Handle avatar conversion from Base64 string to byte[]
-            if (memberRequestDTO.getStringAvatar() != null && !memberRequestDTO.getStringAvatar().isEmpty()) {
-                byte[] decodedAvatar = Base64.getDecoder().decode(memberRequestDTO.getStringAvatar()); // Convert Base64 string to byte[]
-                existingMember.setAvatar(decodedAvatar); // Set the decoded avatar byte[] in the Member entity
-            }
-
+            existingMember.setAvatar(file.getBytes());
             // Save the updated member in the repository
             memberRepository.save(existingMember);
-
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

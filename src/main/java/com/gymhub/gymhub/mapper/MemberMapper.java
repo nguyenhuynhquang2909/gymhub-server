@@ -44,22 +44,6 @@ public class MemberMapper {
         return dto;
     }
 
-
-    public MemberRequestDTO memberToMemberRequestDTO(Member member) {
-        MemberRequestDTO dto = new MemberRequestDTO();
-        dto.setUserName(member.getUserName());
-        dto.setEmail(member.getEmail());
-        dto.setPassword(member.getPassword());
-        dto.setBio(member.getBio());
-
-        // Convert avatar from byte[] to Base64 string for request DTO
-        if (member.getAvatar() != null) {
-            dto.setStringAvatar(Base64.getEncoder().encodeToString(member.getAvatar()));
-        }
-
-        return dto;
-    }
-
     public BannedMemberDTO memberToBannedMemberDTO(Member member, Long bannedUntil, String reason) {
         Date banUntilDate = new Date(bannedUntil);
         return new BannedMemberDTO(

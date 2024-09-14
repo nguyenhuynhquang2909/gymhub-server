@@ -23,9 +23,6 @@ public class MemberRequestDTO {
     @Schema(description = "A short description of the user")
     private String bio;
 
-    @Schema(description = "Avatar of the user by base64 encoded to String")
-    private String stringAvatar;
-
     @Schema(description = "The password of an account")
     private String password;
 
@@ -34,7 +31,6 @@ public class MemberRequestDTO {
         this.userName = userName;
         this.email = email;
         this.bio = bio;
-        this.stringAvatar = stringAvatar;
         this.password = password;
     }
 

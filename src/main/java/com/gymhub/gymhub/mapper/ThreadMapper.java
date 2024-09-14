@@ -32,7 +32,6 @@ public class ThreadMapper {
         dto.setBeenLiked(inMemoryRepository.checkIfAThreadHasBeenLikedByAMemberId(thread.getId(), thread.getOwner().getId()));
         dto.setResolveStatus(inMemoryRepository.getResolveStatusByThreadId(thread.getId()));
 
-        // Set toxic status
         Integer toxicStatusBoolean = inMemoryRepository.getToxicStatusByThreadId(thread.getId());
         if (toxicStatusBoolean == 1) {
             dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
@@ -42,7 +41,7 @@ public class ThreadMapper {
             dto.setToxicStatus(ToxicStatusEnum.TOXIC);
         }
 
-        // Set author details
+
         dto.setAuthorName(thread.getOwner().getUserName());
         dto.setAuthorId(thread.getOwner().getId());
         dto.setAuthorAvatar(thread.getOwner().getStringAvatar());
