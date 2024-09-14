@@ -2,7 +2,10 @@ package com.gymhub.gymhub.service;
 
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
+import com.gymhub.gymhub.dto.MemberResponseDTO;
+import com.gymhub.gymhub.dto.UpdateMemberPreviewResponseDTO;
 import com.gymhub.gymhub.in_memory.Cache;
+import com.gymhub.gymhub.mapper.MemberMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -27,6 +31,8 @@ public class MemberService {
 
     @Autowired
     private Cache cache;
+    @Autowired
+    private MemberMapper memberMapper;
 
 
 
@@ -73,6 +79,17 @@ public class MemberService {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public UpdateMemberPreviewResponseDTO displayMemberUpdatePreview(Long memberId){
+        Optional<Member> member = memberRepository.findById(memberId);
+        if (member.isPresent()) {
+            Member existingMember = member.get();
+            UpdateMemberPreviewResponseDTO updateMemberPreviewResponseDTO = memberMapper.memberToMemberUpdatePreviewDTO(existingMember);
+            return updateMemberPreviewResponseDTO;
+        }else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 

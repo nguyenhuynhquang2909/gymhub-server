@@ -4,6 +4,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.BannedMemberDTO;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
+import com.gymhub.gymhub.dto.UpdateMemberPreviewResponseDTO;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,16 @@ public class MemberMapper {
 
     @Autowired
     private InMemoryRepository inMemoryRepository;
+
+    public UpdateMemberPreviewResponseDTO memberToMemberUpdatePreviewDTO(Member member) {
+       UpdateMemberPreviewResponseDTO updateMemberPreviewResponseDTO = new UpdateMemberPreviewResponseDTO();
+       updateMemberPreviewResponseDTO.setUserName(member.getUserName());
+       updateMemberPreviewResponseDTO.setEmail(member.getEmail());
+       updateMemberPreviewResponseDTO.setBio(member.getBio());
+       updateMemberPreviewResponseDTO.setTitle(member.getTitle());
+       updateMemberPreviewResponseDTO.setPassword(member.getPassword()); //decode to original form
+        return updateMemberPreviewResponseDTO;
+    }
 
     public MemberResponseDTO memberToMemberResponseDTO(Member member) {
         MemberResponseDTO dto = new MemberResponseDTO();

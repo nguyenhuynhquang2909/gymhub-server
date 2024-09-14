@@ -68,9 +68,9 @@ public class ThreadResponseDTO {
 
     //also include array of tags id
 
-    private  String[] tagIds;
+    private  int[] tagIds;
 
-    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason, String[] tagIds) {
+    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason, int[] tagIds) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
