@@ -66,8 +66,11 @@ public class ThreadResponseDTO {
     @Schema(description = "Only display this if the thread is currently being reported by member, ban by AI or ban by mod")
     private String reason;
 
+    //also include array of tags id
 
-    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason) {
+    private  String[] tagIds;
+
+    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason, String[] tagIds) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -81,5 +84,6 @@ public class ThreadResponseDTO {
         this.toxicStatus = toxicStatus;
         this.resolveStatus = resolveStatus;
         this.reason = reason;
+        this.tagIds = tagIds;
     }
 }
