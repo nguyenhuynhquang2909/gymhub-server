@@ -24,7 +24,7 @@ public class MemberMapper {
        updateMemberPreviewResponseDTO.setEmail(member.getEmail());
        updateMemberPreviewResponseDTO.setBio(member.getBio());
        updateMemberPreviewResponseDTO.setTitle(member.getTitle());
-       updateMemberPreviewResponseDTO.setPassword(member.getPassword());//this password should be encoded in human readable format
+       updateMemberPreviewResponseDTO.setPassword(member.getPassword()); //decode to original form
         return updateMemberPreviewResponseDTO;
     }
 

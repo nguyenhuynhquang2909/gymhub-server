@@ -50,13 +50,14 @@ public class ThreadMapper {
 
         // Fetch and set tag IDs for the thread
         Set<Tag> tags = thread.getTags();
-        String[] tagIdsArray = tags.stream()
-                .map(tag -> String.valueOf(tag.getId()))  // Convert each Tag's ID to String
-                .toArray(String[]::new);                  // Convert Set<Tag> to String[]
+        int[] tagIdsArray = tags.stream()
+                .mapToInt(tag -> tag.getId().intValue())  // Convert Set<Tag> to int[]
+                .toArray();
         dto.setTagIds(tagIdsArray);
 
         return dto;
     }
+
 
     public Thread toThread(ThreadRequestDTO threadRequestDTO) {
         Thread thread = new Thread();
