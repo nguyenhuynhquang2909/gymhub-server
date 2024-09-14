@@ -23,8 +23,7 @@ public class Member extends ForumAccount {
     private String bio;
 
     @Setter
-    @JsonIgnore
-    @Column(name = "avatar", nullable = true, updatable = true)
+    @Column(name = "avatar", nullable = true, updatable = true, columnDefinition="bytea")
     private byte[] avatar;
 
     @Setter
