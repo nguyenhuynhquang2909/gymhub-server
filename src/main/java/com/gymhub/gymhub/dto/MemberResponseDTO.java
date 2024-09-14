@@ -25,7 +25,7 @@ public class MemberResponseDTO {
     private String email;
 
     @Schema(description = "Title (or Batch) of the user")
-    private String title;
+    private TitleEnum title;
 
     @Schema(description = "A short description of the user")
     private String bio;
@@ -57,7 +57,7 @@ public class MemberResponseDTO {
     @Schema(description = "The date when the member ban is lifted. Null if member is not in the ban list")
     private Date banUntilDate;
 
-    public MemberResponseDTO(Long id, String userName, String email, String title, String bio, String avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
+    public MemberResponseDTO(Long id, String userName, String email, TitleEnum title, String bio, String avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
         this.id = id;
         this.userName = userName;
         this.email = email;

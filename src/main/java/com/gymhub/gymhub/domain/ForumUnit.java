@@ -1,4 +1,5 @@
 package com.gymhub.gymhub.domain;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +19,7 @@ public abstract class ForumUnit {
     @Id
     private Long id;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "creation_date", nullable = false, updatable = true)
     private LocalDateTime creationDateTime;
 

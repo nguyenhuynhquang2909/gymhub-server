@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.mapper;
 
+import com.gymhub.gymhub.domain.Tag;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Component;
 import com.gymhub.gymhub.domain.Thread;
 
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class ThreadMapper {
@@ -19,7 +22,8 @@ public class ThreadMapper {
         dto.setId(thread.getId());
 
         // Convert LocalDateTime to Long (epoch seconds)
-        dto.setCreationDateTime(thread.getCreationDateTime().toEpochSecond(ZoneOffset.UTC));
+        dto.setCreationDateTime(thread.getCreationDateTime());
+
         // Set ThreadResponseDTO fields from cache
         dto.setPostCount(inMemoryRepository.getPostCountOfAThreadByThreadId(thread.getId()));
         dto.setLikeCount(inMemoryRepository.getLikeCountByThreadId(thread.getId()));
@@ -31,7 +35,6 @@ public class ThreadMapper {
         Integer toxicStatusBoolean = inMemoryRepository.getToxicStatusByThreadId(thread.getId());
         if (toxicStatusBoolean == 1) {
             dto.setToxicStatus(ToxicStatusEnum.NOT_TOXIC);
-
         } else if (toxicStatusBoolean == 0) {
             dto.setToxicStatus(ToxicStatusEnum.PENDING);
         } else if (toxicStatusBoolean == -1) {
@@ -43,6 +46,13 @@ public class ThreadMapper {
         dto.setAuthorId(thread.getOwner().getId());
         dto.setAuthorAvatar(thread.getOwner().getStringAvatar());
         dto.setTitle(thread.getTitle());
+
+        // Fetch and set tag IDs for the thread
+        Set<Tag> tags = thread.getTags();
+        String[] tagIdsArray = tags.stream()
+                .map(tag -> String.valueOf(tag.getId()))  // Convert each Tag's ID to String
+                .toArray(String[]::new);                  // Convert Set<Tag> to String[]
+        dto.setTagIds(tagIdsArray);
 
         return dto;
     }

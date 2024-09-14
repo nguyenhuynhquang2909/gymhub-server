@@ -1,5 +1,6 @@
 package com.gymhub.gymhub.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gymhub.gymhub.dto.ThreadCategoryEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ public class Thread extends ForumUnit {
     )
     private Set<Tag> tags = new HashSet<>();
 
+
     public Thread(String name, LocalDateTime creationDateTime) {
         super(creationDateTime);
         this.title = name;
@@ -68,4 +71,6 @@ public class Thread extends ForumUnit {
         this.owner = owner;
         this.tags = tags;
     }
+
+
 }
