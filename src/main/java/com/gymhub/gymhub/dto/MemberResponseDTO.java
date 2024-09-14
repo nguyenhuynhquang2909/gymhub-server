@@ -57,6 +57,13 @@ public class MemberResponseDTO {
     @Schema(description = "The date when the member ban is lifted. Null if member is not in the ban list")
     private Date banUntilDate;
 
+    //extra fields for member update preview
+
+    @Schema(description = "Member password, not encoded ")
+    private String password;
+
+    //full constructor
+
     public MemberResponseDTO(Long id, String userName, String email, TitleEnum title, String bio, String avatar, Date joinDate, int likeCount, int postCount, int followerCount, int followingCount, Set<Long> followerIds, Set<Long> followingIds, Date banUntilDate) {
         this.id = id;
         this.userName = userName;
@@ -72,5 +79,16 @@ public class MemberResponseDTO {
         this.followerIds = followerIds;
         this.followingIds = followingIds;
         this.banUntilDate = banUntilDate;
+    }
+
+    //constructor for update preview
+
+    public MemberResponseDTO( String email,String userName,  TitleEnum title, String bio,String password, String avatar) {
+        this.email = email;
+        this.userName = userName;
+        this.title = title;
+        this.password = password;
+        this.bio = bio;
+        this.avatar = avatar;
     }
 }

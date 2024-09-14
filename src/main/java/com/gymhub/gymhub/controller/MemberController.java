@@ -5,6 +5,7 @@ import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
 import com.gymhub.gymhub.dto.PostResponseDTO;
+import com.gymhub.gymhub.dto.UpdateMemberPreviewResponseDTO;
 import com.gymhub.gymhub.mapper.MemberMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
@@ -103,6 +104,29 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
+    //Member Preview API
+
+    @Operation(description = "Member update preview for authenticated member", tags = "Member Profile Page")
+    @PostMapping("/preview/member-{id}")
+    public ResponseEntity<UpdateMemberPreviewResponseDTO> memberUpdatePreview(
+            @PathVariable("id") Long memberID, // Adding memberID as a path variable
+            @AuthenticationPrincipal CustomUserDetails customUserDetails)
+    {
+        try {
+           UpdateMemberPreviewResponseDTO updateMemberPreviewResponseDTO = memberService.displayMemberUpdatePreview(memberID);
+            return ResponseEntity.ok(updateMemberPreviewResponseDTO);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+
+
+
 
     @Operation(description = "This operation allows a member to follow another member", tags = "Member Actions")
     @PostMapping("/follow/{followingId}")
