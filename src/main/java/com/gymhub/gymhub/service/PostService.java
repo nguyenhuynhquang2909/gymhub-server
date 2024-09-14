@@ -201,7 +201,7 @@ public class PostService {
         int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
         // Set the new title based on total likes
         TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
-        postOwner.setTitle(newTitle.name());
+        postOwner.setTitle(newTitle);
         memberRepository.save(postOwner);
 
         return true; // Operation succeeded
@@ -233,11 +233,12 @@ public class PostService {
         int totalLikes = inMemoryRepository.getMemberTotalLikeCountByMemberId(postOwnerId);
         // Set the new title based on total likes
         TitleEnum newTitle = titleService.setTitleBasedOnLikeCounts(totalLikes);
-        postOwner.setTitle(newTitle.name());
+        postOwner.setTitle(newTitle);
         memberRepository.save(postOwner);
 
         return true; // Operation succeeded
     }
+
 
 
 

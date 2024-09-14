@@ -4,12 +4,15 @@ import com.gymhub.gymhub.config.CustomUserDetails;
 import com.gymhub.gymhub.domain.Member;
 import com.gymhub.gymhub.dto.MemberRequestDTO;
 import com.gymhub.gymhub.dto.MemberResponseDTO;
+import com.gymhub.gymhub.dto.PostResponseDTO;
 import com.gymhub.gymhub.mapper.MemberMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
 import com.gymhub.gymhub.service.MemberService;
+import com.gymhub.gymhub.service.PostService;
 import com.gymhub.gymhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -40,6 +45,24 @@ public class MemberController {
 
     @Autowired
     private MemberMapper memberMapper;
+
+    @Autowired
+    private PostService postService;
+    @Operation(description = "This operation returns a list of all posts belonging to a member", tags = "Member Profile Page")
+    @GetMapping("/{id}/post")
+    public List<PostResponseDTO> getPostsOfAMember(
+            @PathVariable("id") Long id) {  // Capture the id from the URL path
+
+        try {
+            // Pass the captured id to the service method
+            return postService.getPostsByUserId(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exception according to your application's needs
+            return Collections.emptyList(); // Return an empty list instead of null
+        }
+    }
+
 
     @Operation(description = "This operation returns member information", tags = "Member Profile Page")
     @GetMapping("/{id}")
