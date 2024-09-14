@@ -115,7 +115,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the thread this post belongs to", required = true)
             @ModelAttribute PostRequestDTO post,
-            @RequestParam("uploadedFile") List<MultipartFile> files) {
+            @RequestParam(value = "uploadedFile", required = false) List<MultipartFile> files) {
         try {
             ToxicStatusEnum toxicity = postService.createPost(post, files, userDetails);
             return new ResponseEntity<>(toxicity, HttpStatus.CREATED);
@@ -126,13 +126,12 @@ public class PostController {
     }
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
-    @PatchMapping("/update/{id}")
+    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ToxicStatusEnum> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id,
             @Parameter(description = "The id of the post to be updated", required = true)
-            @RequestBody UpdatePostRequestDTO body,
-            @RequestParam List<MultipartFile> files) {
+            @ModelAttribute UpdatePostRequestDTO body,
+            @RequestParam(value = "uploadedFile", required = false) List<MultipartFile> files) {
 
         try {
             ToxicStatusEnum statusEnum = postService.updatePost(userDetails.getId(), body, files);
@@ -179,7 +178,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the likePost method in the service
-            boolean success = postService.likePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
+            boolean success = postService.likePost(memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was liked successfully
@@ -204,7 +203,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the unlikePost method in the service
-            boolean success = postService.unlikePost(postRequestDTO, memberRequestDTO, id, userDetails.getId());
+            boolean success = postService.unlikePost(memberRequestDTO, id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was unliked successfully

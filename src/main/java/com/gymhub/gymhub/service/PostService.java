@@ -138,9 +138,9 @@ public class PostService {
                 byteArraySet.add(image.getEncodedImage());
             }
             for (MultipartFile file : files) {
-                int orginalLength = byteArraySet.size();
+                int originalLength = byteArraySet.size();
                 byteArraySet.add(file.getBytes());
-                if (orginalLength != byteArraySet.size()) {
+                if (originalLength != byteArraySet.size()) {
                     Image image = new Image();
                     image.setEncodedImage(file.getBytes());
                     image.setPost(post);
@@ -175,7 +175,7 @@ public class PostService {
         return result;
     }
 
-    public boolean likePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
+    public boolean likePost(MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
 
         // Get the set of posts the member has liked
@@ -208,7 +208,7 @@ public class PostService {
     }
 
 
-    public boolean unlikePost(PostRequestDTO postRequestDTO, MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
+    public boolean unlikePost(MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
         long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
         // Get the set of posts the member has liked
         Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
