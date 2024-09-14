@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,6 +79,19 @@ public class TagService {
 
         thread.getTags().remove(tag);
         threadRepository.save(thread);
+    }
+
+
+    public List<Tag> getTagsByThreadId(Long threadId) {
+        // Find the thread by its ID
+        Thread thread = threadRepository.findById(threadId)
+                .orElseThrow(() -> new IllegalArgumentException("Thread not found with ID: " + threadId));
+
+        // Get the set of tags from the thread
+        Set<Tag> tags = thread.getTags();
+
+        // Convert the Set<Tag> to List<Tag> and return
+        return tags.stream().collect(Collectors.toList());
     }
 }
 
