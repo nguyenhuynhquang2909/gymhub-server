@@ -119,8 +119,8 @@ public class InMemoryRepository {
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         cacheManipulation.addThreadToCache(
                                 addThreadAction.getThreadId(),
-                                addThreadAction.getCategory(),
-                                addThreadAction.getToxicStatus(),
+                                ThreadCategoryEnum.valueOf(addThreadAction.getCategory()),
+                                ToxicStatusEnum.valueOf(addThreadAction.getToxicStatus()),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
@@ -129,15 +129,15 @@ public class InMemoryRepository {
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         cacheManipulation.changeThreadToxicStatus(
                                 changeThreadStatusAction.getThreadId(),
-                                changeThreadStatusAction.getCategory(),
-                                changeThreadStatusAction.getToxicStatus(),
+                                ThreadCategoryEnum.valueOf(changeThreadStatusAction.getCategory()),
+                                ToxicStatusEnum.valueOf(changeThreadStatusAction.getToxicStatus()),
                                 changeThreadStatusAction.getReason()
                         );
                     } else if (action instanceof ChangePostStatusAction changePostStatusAction) {
                         cacheManipulation.changePostToxicStatus(
                                 changePostStatusAction.getPostId(),
                                 changePostStatusAction.getThreadId(),
-                                changePostStatusAction.getToxicStatus(),
+                                ToxicStatusEnum.valueOf(changePostStatusAction.getToxicStatus()),
                                 changePostStatusAction.getReason()
                         );
                     } else if (action instanceof AddPostAction addPostAction) {
@@ -145,7 +145,7 @@ public class InMemoryRepository {
                                 addPostAction.getPostId(),
                                 addPostAction.getThreadId(),
                                 addPostAction.getUserId(),
-                                addPostAction.getToxicStatus(),
+                                ToxicStatusEnum.valueOf(addPostAction.getToxicStatus()),
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
