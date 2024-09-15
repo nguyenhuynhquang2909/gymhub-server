@@ -20,10 +20,26 @@ import java.util.Set;
 @Entity
 @Table(name = "thread")
 @Schema(description = "Details unique to threads")
-@NamedEntityGraph(
-        name = "Thread.owner",
-        attributeNodes = @NamedAttributeNode("owner")
-)
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+
+                name = "Thread.owner",
+                attributeNodes = @NamedAttributeNode("owner"),
+                includeAllAttributes = true
+        ),
+        @NamedEntityGraph(
+                name = "Thread.tags",
+                attributeNodes = @NamedAttributeNode("tags"),
+                includeAllAttributes = true
+        ),
+        @NamedEntityGraph(
+                name = "Thread.full", // Fetch both author and images
+                attributeNodes = {
+                        @NamedAttributeNode("owner"),
+                        @NamedAttributeNode("tags")
+                }
+        )
+})
 public class Thread extends ForumUnit {
 
     @Column(name = "title", nullable = false, updatable = true)

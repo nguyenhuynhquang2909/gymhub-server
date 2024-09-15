@@ -22,11 +22,12 @@ public interface ThreadRepository extends JpaRepository<Thread, Long> {
     List<Thread> findAll();
 
 
-@EntityGraph(value = "Thread.owner", type = EntityGraph.EntityGraphType.LOAD)
-    List<Thread> findByIdIn(List<Long> ids);
-
     @Query("SELECT t FROM Thread t JOIN FETCH t.owner WHERE t.id IN :ids")
     List<Thread> findAllByIdsWithOwner(@Param("ids") List<Long> ids);
+
+    @EntityGraph(value = "Thread.full", type = EntityGraph.EntityGraphType.FETCH)
+    @Query("SELECT t FROM Thread t WHERE t.id IN :ids")
+    List<Thread> findAllThreadsByThreadIdList(@Param("ids") List<Long> ids);
 
 
 }
