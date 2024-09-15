@@ -76,13 +76,9 @@ public class GymhubApplication {
 
 	//TODO Write a post construct method that read from the log and fill in the cache by calling the corresponding methods
 
+
+
 	@PostConstruct
-	private void restoreCache(){
-		inMemoryRepository.restoreFromLog();
-
-	}
-
-//	@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 		List<Member> members = memberRepository.findAll();
@@ -112,33 +108,42 @@ public class GymhubApplication {
 
 	}
 
+	@PostConstruct
+	private void restoreCache(){
+		inMemoryRepository.restoreFromLog();
+
+	}
+
 	private void readAction() {
 		System.out.println("Starting read action");
-		ObjectInputStream ios;
-		try {
-			ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH));
+
+		// Ensure the file exists and is not empty
+		File logFile = new File(LOG_FILE_PATH);
+		if (!logFile.exists() || logFile.length() == 0) {
+			System.out.println("Log file is empty or does not exist.");
+			return;
+		}
+
+		try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(logFile))) {
 			while (true) {
 				try {
-					try {
-						MustLogAction obj = (MustLogAction) ios.readObject();
-						System.out.println("Deserialized: " + obj);
-					} catch (EOFException e){
-						System.out.println("Finished read action");
-						break;
-					}
-
-
-				}catch (ClassNotFoundException e){
+					MustLogAction obj = (MustLogAction) ios.readObject();
+					System.out.println("Deserialized: " + obj);
+				} catch (EOFException e) {
+					System.out.println("Finished read action");
+					break; // Break the loop on reaching the end of the file
+				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
 			}
-		} catch (IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-
 	}
 
 
 
 }
+
+
+

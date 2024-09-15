@@ -95,6 +95,20 @@ public class InMemoryRepository {
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
     public void restoreFromLog() {
+        File logFile = new File(LOG_FILE_PATH);
+        if (!logFile.exists()) {
+            try {
+                logFile.getParentFile().mkdirs();
+                logFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        if (logFile.length() == 0) {
+            System.out.println("Log file is empty");
+            return;
+        }
         try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
 
             while (true){
