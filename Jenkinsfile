@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    tools { 
-        maven 'my-maven' 
+    tools {
+        maven 'my-maven'
     }
     environment {
         DOCKER_CREDENTIALS_ID = 'dockerhub-token'
@@ -19,6 +19,16 @@ pipeline {
             }
         }
 
+        stage('Pull Latest Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        sh "docker pull ${DOCKER_IMAGE}:latest || true"
+                    }
+                }
+            }
+        }
+
         stage('Build with Maven') {
             steps {
                 sh 'mvn --version'
@@ -29,11 +39,28 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t quangnguyen2909/gymhub .'
+                script {
+                    def currentHash = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                    def latestHash = sh(returnStdout: true, script: 'docker inspect --format="{{index .Config.Labels \\"commit\\"}}" ${DOCKER_IMAGE}:latest || echo "none"').trim()
+
+                    if (currentHash == latestHash) {
+                        echo "No changes in the source code. Skipping Docker build."
+                    } else {
+                        echo "Changes detected. Building new Docker image."
+                        sh "docker build -t ${DOCKER_IMAGE}:latest --label commit=${currentHash} ."
+                    }
+                }
             }
         }
 
         stage('Push Docker Image to Docker Hub') {
+            when {
+                expression {
+                    def currentHash = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                    def latestHash = sh(returnStdout: true, script: 'docker inspect --format="{{index .Config.Labels \\"commit\\"}}" ${DOCKER_IMAGE}:latest || echo "none"').trim()
+                    return currentHash != latestHash
+                }
+            }
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
