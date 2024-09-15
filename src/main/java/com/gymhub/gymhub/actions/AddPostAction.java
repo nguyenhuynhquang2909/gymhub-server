@@ -13,7 +13,7 @@ public class AddPostAction extends MustLogAction {
     private long threadId;
     private long postId;
     private long userId;
-    private ToxicStatusEnum toxicStatus;
+    private String toxicStatus;
     private boolean resolveStatus;
     private String reason;
 
@@ -23,7 +23,7 @@ public class AddPostAction extends MustLogAction {
         this.threadId = threadId;
         this.postId = postId;
         this.userId = userId;
-        this.toxicStatus = toxicStatus;
+        this.toxicStatus = toxicStatus.name();
         this.resolveStatus = resolveStatus;
         this.reason = reason;
     }

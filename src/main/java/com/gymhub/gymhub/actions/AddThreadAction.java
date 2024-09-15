@@ -10,8 +10,8 @@ public class AddThreadAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private long threadId;
     private LocalDateTime creationDateTime;
-    private ThreadCategoryEnum category;
-    private ToxicStatusEnum toxicStatus;
+    private String category;
+    private String toxicStatus;
     private long authorId;
     private boolean resolveStatus;
     private String reason;
@@ -23,9 +23,9 @@ public class AddThreadAction extends MustLogAction {
         super();
         this.actionType = "Add Thread";
         this.threadId = threadId;
-        this.category = category;
+        this.category = category.name();
         this.creationDateTime = creationDateTime;
-        this.toxicStatus = toxicStatus;
+        this.toxicStatus = toxicStatus.name();
         this.authorId = authorId;
         this.resolveStatus = resolveStatus;
         this.reason = reason;

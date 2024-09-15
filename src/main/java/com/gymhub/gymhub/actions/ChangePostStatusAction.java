@@ -10,7 +10,7 @@ public class ChangePostStatusAction extends MustLogAction {
     private static final long serialVersionUID = 1L;
     private long postId;
     private long threadId;
-    private ToxicStatusEnum toxicStatus;
+    private String toxicStatus;
     private boolean resolveStatus;
     private String reason;
 
@@ -20,7 +20,7 @@ public class ChangePostStatusAction extends MustLogAction {
         this.actionType = "Change Post Status";
         this.postId = postId;
         this.threadId = threadId;
-        this.toxicStatus = toxicStatus;
+        this.toxicStatus = toxicStatus.name();
         this.resolveStatus = resolveStatus;
         this.reason = reason;
     }
