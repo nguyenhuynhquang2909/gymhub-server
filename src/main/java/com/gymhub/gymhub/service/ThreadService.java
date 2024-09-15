@@ -69,7 +69,7 @@ public class ThreadService {
             }
         }
         // Fetch all threads in a single query
-        List<Thread> threads = threadRepository.findAllByIdsWithOwner(allThreadIds);
+        List<Thread> threads = threadRepository.findAllThreadsByThreadIdList(allThreadIds);
         Map<Long, Thread> threadMap = threads.stream().collect(Collectors.toMap(Thread::getId, thread -> thread));
         // Prepare the return collection
         HashMap<String, List<ThreadResponseDTO>> returnCollection = new HashMap<>();
@@ -103,9 +103,6 @@ public class ThreadService {
     public List<ThreadResponseDTO> getAllThreadsByCategory(ThreadCategoryEnum category, int limit, int offset) {
         List<Long> listOfThreadIdByCategory = //inMemoryRepository.returnThreadByCategory(category, limit, offset);
                 inMemoryRepository.getThreadIdsByCategoryAndStatus(category, 1);
-
-        System.out.println("List of thread id by category : " + listOfThreadIdByCategory);
-
         List<ThreadResponseDTO> returnList = mapThreadListToThreadResponseDTOList(listOfThreadIdByCategory);
         System.out.println("List of Thread DTOs " + returnList);
         return returnList;
@@ -227,7 +224,7 @@ public class ThreadService {
 
     public List<Thread> getAllThreadsByListOfIds(List<Long> threadIds) {
 
-        List<Thread> returnList = threadRepository.findAllByIdsWithOwner(threadIds);
+        List<Thread> returnList = threadRepository.findAllThreadsByThreadIdList(threadIds);
 
         return returnList;
 
