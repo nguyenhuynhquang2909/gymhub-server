@@ -92,12 +92,13 @@ public class InMemoryRepository {
 
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
+    //overwrite object input stream to read actions object from log file (custom deserialization)
+    // Restore from log
     public void restoreFromLog() {
         try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
 
             while (true){
                 try {
-                    ios.readObject();
                     MustLogAction action = (MustLogAction) ios.readObject();
                     //System.out.println("Current action:  " + action);
                     // Handle different action types
@@ -118,8 +119,8 @@ public class InMemoryRepository {
                     } else if (action instanceof AddThreadAction addThreadAction) {
                         cacheManipulation.addThreadToCache(
                                 addThreadAction.getThreadId(),
-                                ThreadCategoryEnum.valueOf(addThreadAction.getCategory()),
-                                ToxicStatusEnum.valueOf(addThreadAction.getToxicStatus()),
+                                addThreadAction.getCategory(),
+                                addThreadAction.getToxicStatus(),
                                 addThreadAction.getAuthorId(),
                                 addThreadAction.isResolveStatus(),
                                 addThreadAction.getReason()
@@ -128,15 +129,15 @@ public class InMemoryRepository {
                     } else if (action instanceof ChangeThreadStatusAction changeThreadStatusAction) {
                         cacheManipulation.changeThreadToxicStatus(
                                 changeThreadStatusAction.getThreadId(),
-                                ThreadCategoryEnum.valueOf(changeThreadStatusAction.getCategory()),
-                                ToxicStatusEnum.valueOf(changeThreadStatusAction.getToxicStatus()),
+                                changeThreadStatusAction.getCategory(),
+                                changeThreadStatusAction.getToxicStatus(),
                                 changeThreadStatusAction.getReason()
                         );
                     } else if (action instanceof ChangePostStatusAction changePostStatusAction) {
                         cacheManipulation.changePostToxicStatus(
                                 changePostStatusAction.getPostId(),
                                 changePostStatusAction.getThreadId(),
-                                ToxicStatusEnum.valueOf(changePostStatusAction.getToxicStatus()),
+                                changePostStatusAction.getToxicStatus(),
                                 changePostStatusAction.getReason()
                         );
                     } else if (action instanceof AddPostAction addPostAction) {
@@ -144,7 +145,7 @@ public class InMemoryRepository {
                                 addPostAction.getPostId(),
                                 addPostAction.getThreadId(),
                                 addPostAction.getUserId(),
-                                ToxicStatusEnum.valueOf(addPostAction.getToxicStatus()),
+                                addPostAction.getToxicStatus(),
                                 addPostAction.isResolveStatus(),
                                 addPostAction.getReason()
                         );
@@ -158,8 +159,12 @@ public class InMemoryRepository {
                         );
                     }
 
-
-                } catch (EOFException e){
+                }catch (ClassCastException classCastException){
+                    System.out.println("Reading object line: " + ios.readLine());
+                    System.out.println();
+                    classCastException.printStackTrace();
+                }
+                catch (EOFException e){
                     System.out.println("Finished Reading");
                     break;
                 }
@@ -173,6 +178,7 @@ public class InMemoryRepository {
         }
 
     }
+
 
 
     /**
@@ -376,7 +382,7 @@ public class InMemoryRepository {
     public boolean changeThreadToxicStatusForMemberReporting(long threadId, ThreadCategoryEnum category,  ToxicStatusEnum newStatus, String reason) {
         cacheManipulation.changeThreadToxicStatus(threadId, category, newStatus, reason);
         // Log the action
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, ToxicStatusEnum.PENDING, true, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, ToxicStatusEnum.PENDING, false, reason);
         logAction(action);
 
         return true;
