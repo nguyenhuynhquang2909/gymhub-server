@@ -107,14 +107,17 @@ public class PostService {
         postRepository.save(post);
 
         // Handle the encoded image
-        List<Image> images = new LinkedList<>();
-        for (MultipartFile file : files) {
-            Image image = new Image();
-            image.setPost(post);
-            image.setEncodedImage(file.getBytes());
-            images.add(image);
-            imageRepository.save(image);
+        if (files != null){
+            List<Image> images = new LinkedList<>();
+            for (MultipartFile file : files) {
+                Image image = new Image();
+                image.setPost(post);
+                image.setEncodedImage(file.getBytes());
+                images.add(image);
+                imageRepository.save(image);
+            }
         }
+
         this.inMemoryRepository.addPostToCache(postRequestDTO.getThreadId(), postId, ownerId, tempToxicEnum, tempResolveStatus, tempReason);
         return tempToxicEnum;
     }
@@ -137,17 +140,20 @@ public class PostService {
             for (Image image : post.getImages()) {
                 byteArraySet.add(image.getEncodedImage());
             }
-            for (MultipartFile file : files) {
-                int originalLength = byteArraySet.size();
-                byteArraySet.add(file.getBytes());
-                if (originalLength != byteArraySet.size()) {
-                    Image image = new Image();
-                    image.setEncodedImage(file.getBytes());
-                    image.setPost(post);
-                    imageRepository.save(image);
-                    post.getImages().add(image);
+            if (files != null){
+                for (MultipartFile file : files) {
+                    int originalLength = byteArraySet.size();
+                    byteArraySet.add(file.getBytes());
+                    if (originalLength != byteArraySet.size()) {
+                        Image image = new Image();
+                        image.setEncodedImage(file.getBytes());
+                        image.setPost(post);
+                        imageRepository.save(image);
+                        post.getImages().add(image);
+                    }
                 }
             }
+
         }
         // Save the updated post
         postRepository.save(post);

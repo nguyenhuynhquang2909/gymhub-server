@@ -10,8 +10,8 @@ package com.gymhub.gymhub.actions;
     public class ChangeThreadStatusAction extends MustLogAction {
         private static final long serialVersionUID = 1L;
         private long threadId;
-        private ThreadCategoryEnum category;
-        private ToxicStatusEnum toxicStatus;
+        private String category;
+        private String toxicStatus;
         private boolean resolveStatus;
         private String reason;
 
@@ -21,8 +21,8 @@ package com.gymhub.gymhub.actions;
             super();
             this.actionType = "Change Thread Status";
             this.threadId = threadId;
-            this.category = category;
-            this.toxicStatus = toxicStatus;
+            this.category = category.name();
+            this.toxicStatus = toxicStatus.name();
             this.resolveStatus = resolveStatus;
             this.reason = reason;
         }
