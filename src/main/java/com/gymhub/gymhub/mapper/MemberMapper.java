@@ -23,7 +23,7 @@ public class MemberMapper {
        updateMemberPreviewResponseDTO.setUserName(member.getUserName());
        updateMemberPreviewResponseDTO.setEmail(member.getEmail());
        updateMemberPreviewResponseDTO.setBio(member.getBio());
-       updateMemberPreviewResponseDTO.setTitle(member.getTitle());
+       updateMemberPreviewResponseDTO.setLikeCount(inMemoryRepository.getMemberTotalLikeCountByMemberId(member.getId()));
        updateMemberPreviewResponseDTO.setPassword(member.getPassword()); //decode to original form
         return updateMemberPreviewResponseDTO;
     }

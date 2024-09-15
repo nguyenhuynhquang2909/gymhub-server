@@ -92,6 +92,8 @@ public class InMemoryRepository {
 
     //overwrite object input stream to read actions object from log file (custom deserialization)
     // Restore from log
+    //overwrite object input stream to read actions object from log file (custom deserialization)
+    // Restore from log
     public void restoreFromLog() {
         try (ObjectInputStream ios = new ObjectInputStream(new FileInputStream(LOG_FILE_PATH))) {
 
@@ -157,7 +159,12 @@ public class InMemoryRepository {
                         );
                     }
 
-                } catch (EOFException e){
+                }catch (ClassCastException classCastException){
+                    System.out.println("Reading object line: " + ios.readLine());
+                    System.out.println();
+                    classCastException.printStackTrace();
+                }
+                catch (EOFException e){
                     System.out.println("Finished Reading");
                     break;
                 }
@@ -171,6 +178,7 @@ public class InMemoryRepository {
         }
 
     }
+
 
 
     /**
@@ -374,7 +382,7 @@ public class InMemoryRepository {
     public boolean changeThreadToxicStatusForMemberReporting(long threadId, ThreadCategoryEnum category,  ToxicStatusEnum newStatus, String reason) {
         cacheManipulation.changeThreadToxicStatus(threadId, category, newStatus, reason);
         // Log the action
-        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, ToxicStatusEnum.PENDING, true, reason);
+        ChangeThreadStatusAction action = new ChangeThreadStatusAction(threadId, category, ToxicStatusEnum.PENDING, false, reason);
         logAction(action);
 
         return true;
