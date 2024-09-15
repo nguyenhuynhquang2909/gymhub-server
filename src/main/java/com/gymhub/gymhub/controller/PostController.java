@@ -146,14 +146,14 @@ public class PostController {
     }
 
     @Operation(description = "This operation reports a post to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report/post-{id}")
+    @PatchMapping("/report/post-{id}/{threadId}")
     public ResponseEntity<String> reportPost(
-            @RequestBody PostRequestDTO postRequestDTO,
             @PathVariable Long id,
+            @PathVariable Long threadId,
             @RequestParam String reason) {
 
         try {
-            boolean success = postService.reportPost(postRequestDTO, reason, id);
+            boolean success = postService.reportPost(threadId, reason, id);
             if (success) {
                 return ResponseEntity.ok("Post reported successfully."); // 200 OK
             } else {
@@ -170,8 +170,7 @@ public class PostController {
     @PatchMapping("/like/post-{id}")
     public ResponseEntity<Void> likePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id,
-            @RequestBody PostRequestDTO postRequestDTO) {
+            @PathVariable Long id) {
 
         try {
             // Create a MemberRequestDTO from the authenticated user's details
@@ -195,8 +194,7 @@ public class PostController {
     @PatchMapping("/unlike/post-{id}")
     public ResponseEntity<Void> unlikePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id,
-            @RequestBody PostRequestDTO postRequestDTO) {
+            @PathVariable Long id) {
 
         try {
             // Create a MemberRequestDTO from the authenticated user's details

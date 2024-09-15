@@ -169,9 +169,7 @@ public class PostService {
         return currentToxicStatusEnum;
     }
 
-    public boolean reportPost(PostRequestDTO postRequestDTO, String reason, Long postId) {
-        long threadId = postRequestDTO.getThreadId();
-
+    public boolean reportPost(long threadId, String reason, Long postId) {
         boolean result = inMemoryRepository.changePostToxicStatusForMemberReporting(postId, threadId, ToxicStatusEnum.PENDING, reason);
 
         ChangePostStatusAction action = new ChangePostStatusAction(
