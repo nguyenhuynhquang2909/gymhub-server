@@ -67,6 +67,7 @@ public class InMemoryRepository {
         //Implementing Custom Serialization with ObjectOutputStream
         try{;
             File file = new File(LOG_FILE_PATH);
+            file.getParentFile().mkdirs();
             if (file.exists()){
                 try(FileOutputStream fos = new FileOutputStream(file, true)){
                     customOutputStream = new CustomOutputStream(fos);
@@ -75,6 +76,7 @@ public class InMemoryRepository {
 
             }
             else {
+                System.out.println("Log file does not exist. Create a new log file at " + LOG_FILE_PATH);
                 file.createNewFile();
                 try (FileOutputStream fos = new FileOutputStream(file, true)) {
                     objectOutputStream = new ObjectOutputStream(fos);
