@@ -1,12 +1,15 @@
 package com.gymhub.gymhub.controller;
 
 import com.gymhub.gymhub.config.CustomUserDetails;
+import com.gymhub.gymhub.domain.Member;
+import com.gymhub.gymhub.domain.Moderator;
 import com.gymhub.gymhub.domain.Post;
 import com.gymhub.gymhub.domain.Thread;
 import com.gymhub.gymhub.dto.*;
 import com.gymhub.gymhub.mapper.ModeratorMapper;
 import com.gymhub.gymhub.mapper.PostMapper;
 import com.gymhub.gymhub.mapper.ThreadMapper;
+import com.gymhub.gymhub.repository.ModeratorRepository;
 import com.gymhub.gymhub.repository.PostRepository;
 import com.gymhub.gymhub.repository.ThreadRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,15 +43,26 @@ public class ModController {
 
     @Autowired
     private ModeratorMapper moderatorMapper;
+    @Autowired
+    private ModeratorRepository moderatorRepository;
 
     @Operation(description = "This operation returns mod profile information",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<ModeratorRequestAndResponseDTO> getMod(@RequestParam String modUsername) {
+    public ResponseEntity<ModeratorRequestAndResponseDTO> getMod(@PathVariable("id") Long id)  {
         try {
-            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(modUsername);
-            ModeratorRequestAndResponseDTO response = moderatorMapper.customUserDetailToDTO (userDetails);
-            return ResponseEntity.ok(response); // 200 OK
+
+            // Load the user details
+            Optional<Moderator> moderatorOptional = moderatorRepository.findById(id);
+
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(moderatorOptional.get().getUserName());
+
+            // Extract the Member object from CustomUserDetails
+            Moderator moderator = userDetails.getModerator();
+
+            // Map Member to MemberResponseDTO
+            ModeratorRequestAndResponseDTO responseDTO =  moderatorMapper.modToModDTO(moderator);
+            return ResponseEntity.ok(responseDTO); // 200 OK
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
