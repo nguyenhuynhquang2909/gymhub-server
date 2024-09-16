@@ -8,6 +8,7 @@ import com.gymhub.gymhub.dto.PostResponseDTO;
 import com.gymhub.gymhub.dto.UpdateMemberPreviewResponseDTO;
 import com.gymhub.gymhub.mapper.MemberMapper;
 import com.gymhub.gymhub.repository.InMemoryRepository;
+import com.gymhub.gymhub.repository.MemberRepository;
 import com.gymhub.gymhub.service.CustomUserDetailsService;
 import com.gymhub.gymhub.service.MemberService;
 import com.gymhub.gymhub.service.PostService;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -51,11 +53,13 @@ public class MemberController {
 
     @Autowired
     private PostService postService;
+    @Autowired
+    private MemberRepository memberRepository;
+
     @Operation(description = "This operation returns a list of all posts belonging to a member", tags = "Member Profile Page")
     @GetMapping("/{id}/post")
     public List<PostResponseDTO> getPostsOfAMember(
             @PathVariable("id") Long id) {  // Capture the id from the URL path
-
         try {
             // Pass the captured id to the service method
             return postService.getPostsByUserId(id);
@@ -69,10 +73,12 @@ public class MemberController {
 
     @Operation(description = "This operation returns member information", tags = "Member Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<MemberResponseDTO> getMember(@RequestParam String memberUsername) {
+    public ResponseEntity<MemberResponseDTO> getMember(@PathVariable("id") Long id) {
         try {
             // Load the user details
-            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(memberUsername);
+            Optional<Member> memberOptional = memberRepository.findById(id);
+
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(memberOptional.get().getUserName());
 
             // Extract the Member object from CustomUserDetails
             Member member = userDetails.getMember();  // Assuming your CustomUserDetails has a getMember() method
@@ -91,7 +97,7 @@ public class MemberController {
     }
 
     @Operation(description = "This operation changes the information of a member", tags = "Member Profile Page")
-    @PutMapping(value = "/update/member-{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+    @PutMapping(value = "/update/member-{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateMember(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @ModelAttribute MemberRequestDTO memberRequestDTO,
@@ -113,10 +119,9 @@ public class MemberController {
     @PostMapping("/preview/member-{id}")
     public ResponseEntity<UpdateMemberPreviewResponseDTO> memberUpdatePreview(
             @PathVariable("id") Long memberID, // Adding memberID as a path variable
-            @AuthenticationPrincipal CustomUserDetails customUserDetails)
-    {
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         try {
-           UpdateMemberPreviewResponseDTO updateMemberPreviewResponseDTO = memberService.displayMemberUpdatePreview(customUserDetails.getId());
+            UpdateMemberPreviewResponseDTO updateMemberPreviewResponseDTO = memberService.displayMemberUpdatePreview(customUserDetails.getId());
             return ResponseEntity.ok(updateMemberPreviewResponseDTO);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -126,9 +131,6 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
         }
     }
-
-
-
 
 
     @Operation(description = "This operation allows a member to follow another member", tags = "Member Actions")
