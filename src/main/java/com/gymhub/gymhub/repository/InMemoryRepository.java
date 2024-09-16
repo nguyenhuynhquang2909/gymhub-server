@@ -338,6 +338,9 @@ public class InMemoryRepository {
     public HashMap<Long, HashMap<Integer, LinkedList<Long>>> getPendingPosts() {
         HashMap<Long, HashMap<Integer, LinkedList<Long>>> pendingPostsByThread = new HashMap<>();
 
+        System.out.println("InMemeory Repo testing");
+        System.out.println("PendingPostByThread " + pendingPostsByThread);
+
         for (Map.Entry<Long, HashMap<Integer, LinkedList<Long>>> threadEntry : cache.getPostListByThreadIdAndToxicStatus().entrySet()) {
             Long threadId = threadEntry.getKey();
             HashMap<Integer, LinkedList<Long>> postsByStatus = threadEntry.getValue();

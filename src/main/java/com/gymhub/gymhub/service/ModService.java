@@ -57,21 +57,34 @@ public class ModService {
     }
 
     public List<PendingPostDTO> getAllPendingPosts() {
+        // Get the pending posts map from the inMemoryRepository
         HashMap<Long, HashMap<Integer, LinkedList<Long>>> pendingPostsMap = inMemoryRepository.getPendingPosts();
         List<PendingPostDTO> pendingPostDTOs = new ArrayList<>();
 
+        // Use a set to avoid duplicates
+        Set<Long> uniquePostIds = new HashSet<>();
+
+        // Iterate over the map entries and filter posts with status PENDING (0)
         for (Map.Entry<Long, HashMap<Integer, LinkedList<Long>>> threadEntry : pendingPostsMap.entrySet()) {
             Long threadId = threadEntry.getKey();
             HashMap<Integer, LinkedList<Long>> postsByStatus = threadEntry.getValue();
 
+            // Get the list of pending posts (status 0 is for pending posts)
             LinkedList<Long> pendingPostsInThread = postsByStatus.get(0); // Assuming 0 is the status for pending posts
 
             if (pendingPostsInThread != null) {
                 for (Long postId : pendingPostsInThread) {
-                    Post post = postRepository.findById(postId)
-                            .orElseThrow(() -> new RuntimeException("Post not found"));
-                    PendingPostDTO pendingPostDTO = postMapper.postToPendingPostDTO(post);
-                    pendingPostDTOs.add(pendingPostDTO);
+                    // Check if the post ID is already processed
+                    if (!uniquePostIds.contains(postId)) {
+                        Post post = postRepository.findById(postId)
+                                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+                        PendingPostDTO pendingPostDTO = postMapper.postToPendingPostDTO(post);
+                        pendingPostDTOs.add(pendingPostDTO);
+
+                        // Add post ID to the set to avoid duplicates
+                        uniquePostIds.add(postId);
+                    }
                 }
             }
         }
@@ -86,25 +99,39 @@ public class ModService {
         HashMap<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> pendingThreadsMap = inMemoryRepository.getPendingThreads();
         List<PendingThreadDTO> pendingThreadDTOs = new ArrayList<>();
 
-        // Iterate over the map entries
+        // Use a set to avoid duplicates
+        Set<Long> uniqueThreadIds = new HashSet<>();
+
+        // Iterate over the map entries and filter threads with status PENDING (0)
         for (Map.Entry<ThreadCategoryEnum, HashMap<Integer, LinkedList<Long>>> categoryEntry : pendingThreadsMap.entrySet()) {
             HashMap<Integer, LinkedList<Long>> threadsByStatus = categoryEntry.getValue();
 
-            // Get the list of pending threads (assuming 0 is the status for pending threads)
+            // Get the list of pending threads (status 0 is for pending threads)
             LinkedList<Long> pendingThreadsInCategory = threadsByStatus.get(0);
 
             if (pendingThreadsInCategory != null) {
                 for (Long threadId : pendingThreadsInCategory) {
-                    Thread thread = threadRepository.findById(threadId)
-                            .orElseThrow(() -> new RuntimeException("Thread not found"));
-                    PendingThreadDTO pendingThreadDTO = threadMapper.threadToPendingThreadDTO(thread);
-                    pendingThreadDTOs.add(pendingThreadDTO);
+                    // Check if the thread ID is already processed
+                    if (!uniqueThreadIds.contains(threadId)) {
+                        Thread thread = threadRepository.findById(threadId)
+                                .orElseThrow(() -> new RuntimeException("Thread not found"));
+
+                        // Ensure the thread has toxic status PENDING
+                        if (threadMapper.toThreadResponseDTO(thread).getToxicStatus() == ToxicStatusEnum.PENDING) {
+                            PendingThreadDTO pendingThreadDTO = threadMapper.threadToPendingThreadDTO(thread);
+                            pendingThreadDTOs.add(pendingThreadDTO);
+                            // Add thread ID to the set to avoid duplicates
+                            uniqueThreadIds.add(threadId);
+                        }
+                    }
                 }
             }
         }
 
         return pendingThreadDTOs;
     }
+
+
 
 
     public void banMember(Long userId, Date banUntilDate, String banReason) {
