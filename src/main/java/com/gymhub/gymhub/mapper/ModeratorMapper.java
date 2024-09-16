@@ -10,6 +10,7 @@ public class ModeratorMapper {
 
     public  ModeratorRequestAndResponseDTO modToModDTO(Moderator moderator) {
         ModeratorRequestAndResponseDTO dto = new ModeratorRequestAndResponseDTO();
+        dto.setId(moderator.getId());
         dto.setUsername(moderator.getUserName());
         dto.setEmail(moderator.getEmail());
         dto.setPassword(moderator.getPassword()); // For now, include the password

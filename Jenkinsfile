@@ -37,35 +37,19 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push Docker Image') {
             steps {
                 script {
                     def currentHash = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                     def latestHash = sh(returnStdout: true, script: 'docker inspect --format="{{index .Config.Labels \\"commit\\"}}" ${DOCKER_IMAGE}:latest || echo "none"').trim()
 
                     if (currentHash == latestHash) {
-                        echo "No changes in the source code. Skipping Docker build."
+                        echo "No changes in the source code. Skipping Docker build and push."
                     } else {
                         echo "Changes detected. Building new Docker image."
-                        sh "docker buildx build --platform linux/amd64 -t ${DOCKER_IMAGE}:latest --label commit=${currentHash} . --push"
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            when {
-                expression {
-                    def currentHash = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-                    def latestHash = sh(returnStdout: true, script: 'docker inspect --format="{{index .Config.Labels \\"commit\\"}}" ${DOCKER_IMAGE}:latest || echo "none"').trim()
-                    return currentHash != latestHash
-                }
-            }
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        echo "Pushing new Docker image."
-                        sh "docker push ${DOCKER_IMAGE}:latest"
+                        docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                            sh "docker buildx build --platform linux/amd64 -t ${DOCKER_IMAGE}:latest --label commit=${currentHash} . --push"
+                        }
                     }
                 }
             }
