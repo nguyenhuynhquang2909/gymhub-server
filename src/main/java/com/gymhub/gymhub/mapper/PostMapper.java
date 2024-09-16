@@ -76,6 +76,7 @@ public class PostMapper {
         } else {
             dto.setMemberAvatar(null); // Handle null avatar
         }
+        dto.setThreadCategoryEnum(post.getThread().getCategory());
 
 
         return dto;

@@ -68,7 +68,10 @@ public class PostResponseDTO {
     private TitleEnum title;
     private String memberAvatar;
 
-    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String content, List<String> encodedImage, String reason, String username, TitleEnum title, String memberAvatar) {
+    //include category
+    private ThreadCategoryEnum threadCategoryEnum;
+
+    public PostResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, ToxicStatusEnum toxicStatus, boolean resolveStatus, boolean beenLiked, int postCount, int viewCount, String authorName, String authorId, String content, List<String> encodedImage, String reason, String username, TitleEnum title, String memberAvatar, ThreadCategoryEnum threadCategoryEnum) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -85,5 +88,6 @@ public class PostResponseDTO {
         this.username = username;
         this.title = title;
         this.memberAvatar = memberAvatar;
+        this.threadCategoryEnum = threadCategoryEnum;
     }
 }
