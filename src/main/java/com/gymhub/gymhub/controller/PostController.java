@@ -126,7 +126,7 @@ public class PostController {
     }
 
     @Operation(description = "This operation changes the content and the image of a post (checks if the member is the post owner)", tags = "Thread Page")
-    @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ToxicStatusEnum> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "The id of the post to be updated", required = true)
@@ -146,7 +146,7 @@ public class PostController {
     }
 
     @Operation(description = "This operation reports a post to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report/post-{id}/{threadId}")
+    @PutMapping("/report/post-{id}/{threadId}")
     public ResponseEntity<String> reportPost(
             @PathVariable Long id,
             @PathVariable Long threadId,
@@ -167,7 +167,7 @@ public class PostController {
 
 
     @Operation(description = "This operation likes a post by a member", tags = "Thread Page")
-    @PatchMapping("/like/post-{id}")
+    @PutMapping("/like/post-{id}")
     public ResponseEntity<Void> likePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
@@ -191,7 +191,7 @@ public class PostController {
     }
 
     @Operation(description = "This operation unlikes a post by a member", tags = "Thread Page")
-    @PatchMapping("/unlike/post-{id}")
+    @PutMapping("/unlike/post-{id}")
     public ResponseEntity<Void> unlikePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {

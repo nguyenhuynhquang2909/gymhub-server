@@ -94,7 +94,7 @@ public class ModController {
 
     @Operation(description = "This operation helps mod to decide whether a pending post is toxic or not",
             tags = "Mod Dashboard Page")
-    @PatchMapping("/mod-{modId}/resolvePendingPost-{postId}")
+    @PutMapping("/mod-{modId}/resolvePendingPost-{postId}")
     public ResponseEntity<Void> resolveAPendingPost(
             @PathVariable("modId") Long modId,
             @PathVariable("postId") Long postId,
@@ -112,7 +112,7 @@ public class ModController {
 
     @Operation(description = "This operation helps mod to decide whether a pending thread is toxic or not",
             tags = "Mod Dashboard Page")
-    @PatchMapping("/mod-{modId}/resolvePendingThread-{threadId}")
+    @PutMapping("/mod-{modId}/resolvePendingThread-{threadId}")
     public ResponseEntity<Void> resolveAPendingThread(
             @PathVariable("modId") Long modId,
             @PathVariable("threadId") Long threadId,
@@ -129,7 +129,7 @@ public class ModController {
     }
 
     @Operation(description = "This operation helps mod to ban a member with a duration in milliseconds", tags = "Mod Dashboard Page")
-    @PatchMapping("/dashboard/mod-{modId}/ban/member-{memberId}")
+    @PutMapping("/dashboard/mod-{modId}/ban/member-{memberId}")
     public ResponseEntity<Void> banAMember(@PathVariable("memberId") Long userId,
                                            @RequestParam("duration") Long durationMillis,
                                            @RequestParam("reason") String reason) {
@@ -156,7 +156,7 @@ public class ModController {
     }
 
     @Operation(description = "This operation helps mod to immediately ban a post while surfing the forum", tags = "Mod Surfing Forum")
-    @PatchMapping("/dashboard/mod-{modId}/ban/post-{postId}/thread-{threadId}/status-{status}")
+    @PutMapping("/dashboard/mod-{modId}/ban/post-{postId}/thread-{threadId}/status-{status}")
     public ResponseEntity<Void> banAPost(
             @PathVariable("modId") Long modId,
             @PathVariable("postId") Long postId,
