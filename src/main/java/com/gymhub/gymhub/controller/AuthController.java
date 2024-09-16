@@ -103,26 +103,30 @@ public class AuthController {
 
     }
 
-    @Operation(summary = "Log users out", description = "Authenticate a user and returns a JWT Token")
-    @PostMapping(value = "/logout", consumes = "application/json", produces = "application/json")
+    @Operation(summary = "Log users out", description = "Logs out the user by clearing the authentication token and creating a new guest session")
+    @PostMapping(value = "/logout")
     public ResponseEntity<Void> logUserOut(HttpServletResponse response) {
-        //Disable the current access token
-        String token = cookieManager.getCookieValue("AuthenticationCookie");
-        Cookie cookie = new Cookie("AuthenticationCookie", token);
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        // Clear the authentication token stored in cookies
+        Cookie authCookie = new Cookie("AuthenticationCookie", null);
+        authCookie.setPath("/"); // Make sure this matches the path of the original cookie
+        authCookie.setHttpOnly(true);
+        authCookie.setMaxAge(0); // Immediately expire the cookie
+        response.addCookie(authCookie);
 
-        //Disable the current response token
-        //Generate a new session for guest
+        // Clear security context to log the user out
+        SecurityContextHolder.clearContext();
+
+        // Generate a new session ID for a guest user
         UUID sessionID = sessionStorage.createNewSessionWhenViewThread();
         Cookie sessionCookie = new Cookie("SessionCookie", sessionID.toString());
-        sessionCookie.setPath("/");
+        sessionCookie.setPath("/"); // Ensure the path is correct for the session cookie
         sessionCookie.setHttpOnly(true);
-        sessionCookie.setMaxAge(60 * 60);
+        sessionCookie.setMaxAge(60 * 60); // Set session cookie expiration (1 hour)
         response.addCookie(sessionCookie);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK); // Return HTTP 200 OK status
     }
+
 
     @Operation(
             summary = "Get User Profile",
