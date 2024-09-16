@@ -70,7 +70,16 @@ public class ThreadResponseDTO {
 
     private  int[] tagIds;
 
-    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason, int[] tagIds) {
+
+
+
+    //also include category
+
+    private ThreadCategoryEnum threadCategoryEnum;
+
+
+
+    public ThreadResponseDTO(Long id, LocalDateTime creationDateTime, int likeCount, int viewCount, boolean beenLiked, int postCount, String authorName, Long authorId, String authorAvatar, String title, ToxicStatusEnum toxicStatus, boolean resolveStatus, String reason, int[] tagIds, ThreadCategoryEnum threadCategoryEnum) {
         this.id = id;
         this.creationDateTime = creationDateTime;
         this.likeCount = likeCount;
@@ -85,5 +94,6 @@ public class ThreadResponseDTO {
         this.resolveStatus = resolveStatus;
         this.reason = reason;
         this.tagIds = tagIds;
+        this.threadCategoryEnum = threadCategoryEnum;
     }
 }

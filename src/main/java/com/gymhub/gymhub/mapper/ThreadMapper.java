@@ -54,6 +54,8 @@ public class ThreadMapper {
                 .toArray();
         dto.setTagIds(tagIdsArray);
 
+        dto.setThreadCategoryEnum(thread.getCategory());
+
         return dto;
     }
 
