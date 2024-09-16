@@ -173,7 +173,7 @@ public class ModController {
     }
 
     @Operation(description = "This operation helps mod to immediately ban a thread while surfing the forum", tags = "Mod Surfing Forum")
-    @PatchMapping("/dashboard/mod-{modId}/ban/thread-{threadId}/category-{category}/status-{status}")
+    @PutMapping("/dashboard/mod-{modId}/ban/thread-{threadId}/category-{category}/status-{status}")
     public ResponseEntity<Void> banAThread(
             @PathVariable("modId") Long modId,
             @PathVariable("threadId") Long threadId,

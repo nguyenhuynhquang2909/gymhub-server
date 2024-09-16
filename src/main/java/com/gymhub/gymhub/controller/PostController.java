@@ -177,7 +177,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the likePost method in the service
-            boolean success = postService.likePost(memberRequestDTO, id, userDetails.getId());
+            boolean success = postService.likePost(userDetails.getId(), id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was liked successfully
@@ -201,7 +201,7 @@ public class PostController {
             MemberRequestDTO memberRequestDTO = new MemberRequestDTO(userDetails.getId());
 
             // Call the unlikePost method in the service
-            boolean success = postService.unlikePost(memberRequestDTO, id, userDetails.getId());
+            boolean success = postService.unlikePost(userDetails.getId(), id, userDetails.getId());
 
             if (success) {
                 return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was unliked successfully

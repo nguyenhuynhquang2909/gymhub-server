@@ -179,8 +179,9 @@ public class PostService {
         return result;
     }
 
-    public boolean likePost(MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
-        long memberId = memberRequestDTO.getId(); // Member ID who is liking the post
+    public boolean likePost(Long memberId, Long postId, Long postOwnerId) {
+
+
 
         // Get the set of posts the member has liked
         Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
@@ -212,8 +213,8 @@ public class PostService {
     }
 
 
-    public boolean unlikePost(MemberRequestDTO memberRequestDTO, Long postId, Long postOwnerId) {
-        long memberId = memberRequestDTO.getId(); // Member ID who is unliking the post
+    public boolean unlikePost(Long memberId, Long postId, Long postOwnerId) {
+
         // Get the set of posts the member has liked
         Set<Long> likedPosts = cache.getPostLikeListByUser().getOrDefault(memberId, new HashSet<>());
 
