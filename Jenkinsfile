@@ -47,7 +47,7 @@ pipeline {
                         echo "No changes in the source code. Skipping Docker build."
                     } else {
                         echo "Changes detected. Building new Docker image."
-                        sh "docker build -t ${DOCKER_IMAGE}:latest --label commit=${currentHash} ."
+                        sh "docker buildx build --platform linux/amd64 -t ${DOCKER_IMAGE}:latest --label commit=${currentHash} . --push"
                     }
                 }
             }
@@ -64,7 +64,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        sh 'docker push quangnguyen2909/gymhub:latest'
+                        echo "Pushing new Docker image."
+                        sh "docker push ${DOCKER_IMAGE}:latest"
                     }
                 }
             }
