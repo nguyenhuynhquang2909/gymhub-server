@@ -157,7 +157,7 @@ public class ThreadController {
     }
 
     @Operation(description = "This operation reports a thread to the server and returns a boolean indicating success", tags = "Thread Page")
-    @PatchMapping("/report/{id}/{category}")
+    @PutMapping("/report/{id}/{category}")
     public ResponseEntity<String> reportThread(
             @PathVariable Long id,
             @PathVariable ThreadCategoryEnum category,
@@ -176,7 +176,7 @@ public class ThreadController {
     }
 
     @Operation(description = "This operation updates the thread title by finding thread ID (checks if the member is the thread owner)", tags = "Thread Page")
-    @PatchMapping("/update/{threadID}")
+    @PutMapping("/update/{threadID}")
     public ResponseEntity<ToxicStatusEnum> updateThread(
             @Parameter(description = "The ID of the thread to be updated", required = true)
             @PathVariable Long threadID,
