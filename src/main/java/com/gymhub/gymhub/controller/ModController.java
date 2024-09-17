@@ -46,10 +46,28 @@ public class ModController {
     @Autowired
     private ModeratorRepository moderatorRepository;
 
-    @Operation(description = "This operation returns mod profile information",
+
+
+    @Operation(description = "This operation returns mod profile information by username",
+            tags = "Mod Profile Page")
+    @GetMapping("/username/{modUsername}")  // Changed to use a path variable
+    public ResponseEntity<ModeratorRequestAndResponseDTO> getModByUsername(@PathVariable String modUsername) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(modUsername);
+            ModeratorRequestAndResponseDTO response = moderatorMapper.customUserDetailToDTO(userDetails);
+            return ResponseEntity.ok(response); // 200 OK
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        }
+    }
+
+
+
+    @Operation(description = "This operation returns mod profile information by Id",
             tags = "Mod Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<ModeratorRequestAndResponseDTO> getMod(@PathVariable("id") Long id)  {
+    public ResponseEntity<ModeratorRequestAndResponseDTO> getModById(@PathVariable("id") Long id)  {
         try {
 
             // Load the user details
