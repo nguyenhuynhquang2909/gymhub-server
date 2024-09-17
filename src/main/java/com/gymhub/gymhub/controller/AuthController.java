@@ -84,15 +84,27 @@ public class AuthController {
             .orElseThrow(() -> new RuntimeException("Refresh token is not in the database"));
     }
 
-    @Operation(summary = "Register User", description = "Register a new user")
+    @Operation(summary = "Register Member User", description = "Register a new user as member")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "User registered successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid registration details")
     })
-    @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDTO registerRequestDTO) {
-        return authService.registerUser(registerRequestDTO);
+    @PostMapping(value = "/register/member", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> registerMember(@RequestBody RegisterRequestDTO registerRequestDTO) {
+        return authService.registerMember(registerRequestDTO);
     }
+
+    @Operation(summary = "Register Mod User", description = "Register a new user as moderator")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid registration details")
+    })
+    @PostMapping(value = "/register/mod", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> registerMod(@RequestBody RegisterRequestDTO registerRequestDTO) {
+        return authService.registerMod(registerRequestDTO);
+    }
+
+
 
     @Operation(summary = "Login User", description = "Authenticate a user and returns a JWT Token")
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
