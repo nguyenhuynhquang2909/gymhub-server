@@ -10,6 +10,7 @@ import lombok.Setter;
 @MappedSuperclass
 public class ForumAccount {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Add this to auto-generate the ID
     private Long id;
 
     @Column(name = "username", unique = true, nullable = false, updatable = true)

@@ -38,10 +38,20 @@ public class Member extends ForumAccount {
 
 
 
+
     public Member(Long id, String userName, String password, String email, Date joinDate) {
         super(id, userName, password, email);
         this.joinDate = joinDate;
     }
 
+    // Another constructor example without the 'id'
+    public Member(String userName, String password, String email) {
+        super(null, userName, password, email);
+    }
 
+    // Ensure this constructor sets the fields properly
+    public Member(String userName, String password, String email, Date joinDate) {
+        super(null, userName, password, email);
+        this.joinDate = joinDate;  // Set the joinDate here
+    }
 }
