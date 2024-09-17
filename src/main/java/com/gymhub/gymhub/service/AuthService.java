@@ -99,6 +99,11 @@ public class AuthService {
         inMemoryRepository.addUserToCache(mod.getId());
         return ResponseEntity.ok("User registered successfully as Moderator");
     }
+
+
+
+
+
     public ResponseEntity<AuthRespone> authenticateUser(HttpServletResponse response, LoginRequestDTO loginRequestDTO) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword())
@@ -119,7 +124,6 @@ public class AuthService {
         sessionCookie.setPath("/");
         sessionCookie.setMaxAge(60 * 60);
         response.addCookie(sessionCookie);
-
 
         return ResponseEntity.ok(new AuthRespone(jwt));
     }

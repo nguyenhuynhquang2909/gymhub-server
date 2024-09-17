@@ -104,16 +104,17 @@ public class AuthController {
         return authService.registerMod(registerRequestDTO);
     }
 
+//login for both mod and member
 
-
-    @Operation(summary = "Login User", description = "Authenticate a user and returns a JWT Token")
+    @Operation(summary = "Login ", description = "Authenticate a user and returns a JWT Token")
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<AuthRespone> authenticateUser(
             @RequestBody LoginRequestDTO loginRequestDTO,
             HttpServletResponse response) {
         return authService.authenticateUser(response, loginRequestDTO);
-
     }
+
+
 
     @Operation(summary = "Log users out", description = "Logs out the user by clearing the authentication token and creating a new guest session")
     @PostMapping(value = "/logout")
