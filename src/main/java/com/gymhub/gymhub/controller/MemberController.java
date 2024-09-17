@@ -14,7 +14,6 @@ import com.gymhub.gymhub.service.MemberService;
 import com.gymhub.gymhub.service.PostService;
 import com.gymhub.gymhub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,9 +70,30 @@ public class MemberController {
     }
 
 
-    @Operation(description = "This operation returns member information", tags = "Member Profile Page")
+
+
+    @Operation(description = "This operation returns member information by username", tags = "Member Profile Page")
+    @GetMapping("/username/{username}")  // Changed the mapping to be more specific
+    public ResponseEntity<MemberResponseDTO> getMemberByUsername(@PathVariable String username) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(username);
+            Member member = userDetails.getMember();
+            MemberResponseDTO memberResponseDTO = memberMapper.memberToMemberResponseDTO(member);
+            return ResponseEntity.ok(memberResponseDTO);
+        } catch (UsernameNotFoundException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+
+
+    @Operation(description = "This operation returns member information by member ID", tags = "Member Profile Page")
     @GetMapping("/{id}")
-    public ResponseEntity<MemberResponseDTO> getMember(@PathVariable("id") Long id) {
+    public ResponseEntity<MemberResponseDTO> getMemberById(@PathVariable("id") Long id) {
         try {
             // Load the user details
             Optional<Member> memberOptional = memberRepository.findById(id);
