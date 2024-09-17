@@ -2,6 +2,7 @@ package com.gymhub.gymhub.domain;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Pattern;
 
 import java.sql.Date;
