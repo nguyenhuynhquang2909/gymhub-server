@@ -72,12 +72,13 @@ public class ThreadMapper {
             return null;
         }
 
+        Long ownerId = thread.getOwner().getId();
         Long threadId = thread.getId();
         ThreadCategoryEnum threadCategory = thread.getCategory();
         String authorUsername = thread.getOwner() != null ? thread.getOwner().getUserName() : null;
         String title = thread.getTitle();
         String reason = inMemoryRepository.getReasonByThreadId(threadId);
 
-        return new PendingThreadDTO(threadId, threadCategory, authorUsername, title, reason);
+        return new PendingThreadDTO(ownerId,threadId, threadCategory, authorUsername, title, reason);
     }
 }

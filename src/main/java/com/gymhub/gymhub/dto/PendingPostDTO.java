@@ -5,6 +5,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PendingPostDTO {
+    private Long ownerId;
     private Long postID;
     private String authorUsername;
     private String content;
@@ -12,7 +13,8 @@ public class PendingPostDTO {
     //Add 1 more field:
     private Long threadId;
 
-    public PendingPostDTO(Long postID, String authorUsername, String content, String reason, Long threadId) {
+    public PendingPostDTO(Long ownerId, Long postID, String authorUsername, String content, String reason, Long threadId) {
+        this.ownerId = ownerId;
         this.postID = postID;
         this.authorUsername = authorUsername;
         this.content = content;

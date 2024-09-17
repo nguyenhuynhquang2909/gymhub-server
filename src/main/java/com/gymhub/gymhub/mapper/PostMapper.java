@@ -87,13 +87,13 @@ public class PostMapper {
         if (post == null) {
             return null;
         }
-
+        Long ownerId = post.getAuthor().getId();
         Long postID = post.getId();
         String authorUsername = post.getAuthor() != null ? post.getAuthor().getUserName() : null;
         String content = post.getContent();
         String reason = inMemoryRepository.getReasonByPostId(postID);
         Long threadId = post.getThread().getId();
 
-        return new PendingPostDTO(postID, authorUsername, content, reason,threadId);
+        return new PendingPostDTO(ownerId, postID, authorUsername, content, reason,threadId);
     }
 }
