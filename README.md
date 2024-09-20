@@ -16,7 +16,7 @@
 ## **Tech Stack**
 - **Backend**: Spring Boot
 - **Frontend**: NextJS
-- **Database**: PostgreSQL with Redis for caching
+- **Database**: PostgreSQL
 - **Authentication**: JWT-based authentication
 - **DevOps**: Docker, Jenkins for CI/CD
 - **AI Model**: Python, TensorFlow, and Pandas for toxic comment detection
