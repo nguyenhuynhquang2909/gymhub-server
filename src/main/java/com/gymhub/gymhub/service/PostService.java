@@ -53,7 +53,6 @@ public class PostService {
     private Cache cache;
 
 
-
     @Autowired
     private TitleService titleService;
 
@@ -76,7 +75,7 @@ public class PostService {
     public ToxicStatusEnum createPost(PostRequestDTO postRequestDTO, List<MultipartFile> files, UserDetails user) throws IOException {
         long postId = postSequence.getNextPostId();
         System.out.println(postId);
-        Long ownerId = ((CustomUserDetails)user).getId();
+        Long ownerId = ((CustomUserDetails) user).getId();
 
         // Validate the member
         Member author = memberRepository.findById(ownerId)
@@ -107,7 +106,7 @@ public class PostService {
         postRepository.save(post);
 
         // Handle the encoded image
-        if (files != null){
+        if (files != null) {
             List<Image> images = new LinkedList<>();
             for (MultipartFile file : files) {
                 Image image = new Image();
@@ -134,13 +133,12 @@ public class PostService {
         post.setContent(updatePostRequestDTO.getContent());
         if (files == null || files.isEmpty()) {
             imageRepository.deleteByPostId(updatePostRequestDTO.getPostId());
-        }
-        else {
+        } else {
             Set<byte[]> byteArraySet = new HashSet<>();
             for (Image image : post.getImages()) {
                 byteArraySet.add(image.getEncodedImage());
             }
-            if (files != null){
+            if (files != null) {
                 for (MultipartFile file : files) {
                     int originalLength = byteArraySet.size();
                     byteArraySet.add(file.getBytes());
@@ -161,7 +159,7 @@ public class PostService {
         AiRequestBody aiRequestBody = new AiRequestBody(updatePostRequestDTO.getContent());
         double predictionVal = this.aiHandler.postDataToLocalHost(aiRequestBody);
         ToxicStatusEnum currentToxicStatusEnum = ToxicStatusEnum.NOT_TOXIC;
-        if (predictionVal >= 0.5){
+        if (predictionVal >= 0.5) {
             currentToxicStatusEnum = ToxicStatusEnum.PENDING;
             //Removing the id of the post from the non_toxic map
             inMemoryRepository.changePostToxicStatusForMemberReporting(updatePostRequestDTO.getPostId(), updatePostRequestDTO.getThreadId(), currentToxicStatusEnum, "Potentially Body Shaming");
@@ -180,7 +178,6 @@ public class PostService {
     }
 
     public boolean likePost(Long memberId, Long postId, Long postOwnerId) {
-
 
 
         // Get the set of posts the member has liked
@@ -244,6 +241,20 @@ public class PostService {
         return true; // Operation succeeded
     }
 
+    @Transactional
+    public boolean deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        if (!(post.getImages().isEmpty())) {
+            // Delete associated images (if any)
+            imageRepository.deleteByPostId(postId);
+        }
+        // Delete the post
+        postRepository.delete(post);
+
+        return true;
+    }
 
 
 }

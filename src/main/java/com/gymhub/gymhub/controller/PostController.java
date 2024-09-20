@@ -69,8 +69,7 @@ public class PostController {
                     sessionStorage.addThreadToThreadView(sessionID, id);
                 }
                 return postService.getPostsByThreadId(id);
-            }
-            else { // User is logged in
+            } else { // User is logged in
                 Long userID = jwtTokenProvider.getClaimsFromJwt(token).get("userID", Long.class);
                 if (cookieManager.getCookieValue("SessionID") == null) { // No session ID in cookie
                     sessionID = sessionStorage.createNewSession(userID);
@@ -138,7 +137,7 @@ public class PostController {
             return new ResponseEntity<>(statusEnum, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
-            if (e instanceof UnauthorizedUserException){
+            if (e instanceof UnauthorizedUserException) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -213,4 +212,19 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error if something went wrong
         }
     }
+
+
+    @Operation(description = "This operation deletes a post by its ID", tags = "Thread Page")
+    @DeleteMapping("/delete/post-{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+
+        try {
+            postService.deletePost(id);
+            return ResponseEntity.status(HttpStatus.OK).build(); // 200 OK if the post was deleted successfully
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error for other failures
+        }
+    }
+
 }
