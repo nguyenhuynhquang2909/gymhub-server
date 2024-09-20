@@ -78,7 +78,7 @@ public class GymhubApplication {
 
 
 
-	@PostConstruct
+	//@PostConstruct
 	private void cacheFill() throws IOException {
 		System.out.println("Duong hello test ");
 		List<Member> members = memberRepository.findAll();
